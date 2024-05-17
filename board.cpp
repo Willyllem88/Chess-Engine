@@ -10,7 +10,6 @@ Board::~Board() {
     free();
 }
 
-//Loads the initial textures for the pieces
 bool Board::loadMedia() {
     mWhitePawnTexture = loadTexture("./img/whitePawn.png");
     if (mWhitePawnTexture == nullptr) {
@@ -25,7 +24,6 @@ bool Board::loadMedia() {
     return true;
 }
 
-//Renders the board and the pieces
 void Board::render() {
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
@@ -46,7 +44,6 @@ void Board::render() {
     }
 }
 
-//Frees the textures
 void Board::free() {
     if (mWhitePawnTexture != nullptr) {
         SDL_DestroyTexture(mWhitePawnTexture);

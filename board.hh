@@ -9,8 +9,14 @@ class Board {
 public:
     Board(SDL_Renderer* renderer);
     ~Board();
+
+    //Loads the initial textures for the pieces
     bool loadMedia();
+
+    //Renders the board and the pieces
     void render();
+
+    //Frees the textures
     void free();
 
 private:
