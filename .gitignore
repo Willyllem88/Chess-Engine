@@ -1,5 +1,0 @@
-# Ignore compiled object files
-*.o
-
-# Ignore the engine executable file
-engine
