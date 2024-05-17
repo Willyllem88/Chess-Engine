@@ -1,4 +1,4 @@
-# Project Title
+# Guillem's Chess Engine
 
 This is a project made by Guillem Cabré. Its purpouse is to learn how a Chess Engine works, doing so by using my algorithmic experience, also learning from other projects. To gain expertice in the computer science field.
 
