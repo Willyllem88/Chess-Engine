@@ -5,7 +5,7 @@ const int SCREEN_HEIGHT = 640;
 
 int main(int argc, char* argv[]) {
     if (argc != 0) {
-        //MISSING: do a propper usage() function
+        //MISSING: do a propper usage() function, do it propperly
         printf("Usage: %s\n", argv[0]);
         return 1;
     }
