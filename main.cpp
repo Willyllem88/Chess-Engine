@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
     bool quit = false;
     SDL_Event e;
 
+    //Checks all the input options, and processes them
     for (int i = 1; i < argc; ++i) {
         std::cout << argv[i] << std::endl; //DELETE, just for testing
         //switch (argv[i]) {
