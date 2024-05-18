@@ -5,7 +5,7 @@
 #include </usr/include/SDL2/SDL_image.h>
 
 #include "myApp.hh"
-#include "structs.hh"
+#include "utils.hh"
 
 class Board {
 public:

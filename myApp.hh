@@ -4,7 +4,7 @@
 #include </usr/include/SDL2/SDL.h>
 #include </usr/include/SDL2/SDL_image.h>
 
-#include "structs.hh"
+#include "utils.hh"
 
 class MyApp{
     public:
@@ -12,20 +12,33 @@ class MyApp{
         ~MyApp();
 
         bool init();
-        
-        //Loads the initial textures for the pieces, it'll return false if there has been any error
-        bool loadMedia();
+
+        //Asks if the user has made a move
+        bool isPieceMoveAvailable();
+
+        //Gets the move made by the user
+        //Pre: pieceMoveAvailable() == true
+        PieceMove getMove();
 
         bool handleEvents();
 
         //Renders the board and the pieces
         void render(PieceMatrix& pm);
 
+
         //Frees the textures
         void free();
         
     private:
-        //Window
+        //used to detect mouse slides.
+        bool pressed;
+        bool pieceMoveAvailable;
+        MouseMove lastMouseMove;
+        void MousePosMoveToPieceMove(MouseMove& move);
+        PieceMove lastPieceMove;
+        
+
+        //__WINDOW__
         const int TILE_SIZE = 80;
         const int SCREEN_WIDTH = 640;
         const int SCREEN_HEIGHT = 640;
@@ -36,7 +49,7 @@ class MyApp{
         SDL_Event e;
         
 
-        //Models
+        //__MODELS_: textures for the pieces
         SDL_Texture* mWhitePawnTexture;
         SDL_Texture* mWhiteBishopTexture;
         SDL_Texture* mWhiteKnightTexture;
@@ -51,6 +64,7 @@ class MyApp{
         SDL_Texture* mBlackQueenTexture;
         SDL_Texture* mBlackKingTexture;
 
+        bool loadMedia();
         SDL_Texture* loadTexture(const std::string &path);
 };
 

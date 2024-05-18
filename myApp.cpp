@@ -1,6 +1,9 @@
 #include "myApp.hh"
 
 MyApp::MyApp() {
+    pieceMoveAvailable = false;
+    pressed = false;
+
     mWhitePawnTexture = nullptr; 
     mWhiteBishopTexture = nullptr;
     mWhiteKnightTexture = nullptr;
@@ -48,40 +51,36 @@ bool MyApp::init() {
     return true;
 }
 
-bool MyApp::loadMedia() {
-    mWhitePawnTexture = loadTexture("./img/whitePawn.png");
-    if (mWhitePawnTexture == nullptr) return false;
-    mWhiteBishopTexture = loadTexture("./img/whiteBishop.png");
-    if (mWhiteBishopTexture == nullptr) return false;
-    mWhiteKnightTexture = loadTexture("./img/whiteKnight.png");
-    if (mWhiteKnightTexture == nullptr) return false;
-    mWhiteRookTexture = loadTexture("./img/whiteRook.png");
-    if (mWhiteRookTexture == nullptr) return false;
-    mWhiteQueenTexture = loadTexture("./img/whiteQueen.png");
-    if (mWhiteQueenTexture == nullptr) return false;
-    mWhiteKingTexture = loadTexture("./img/whiteKing.png");
-    if (mWhiteKingTexture == nullptr) return false;
+bool MyApp::isPieceMoveAvailable() {
+    return pieceMoveAvailable;
+}
 
-    mBlackPawnTexture = loadTexture("./img/blackPawn.png");
-    if (mBlackPawnTexture == nullptr) return false;
-    mBlackBishopTexture = loadTexture("./img/blackBishop.png");
-    if (mBlackBishopTexture == nullptr) return false;
-    mBlackKnightTexture = loadTexture("./img/blackKnight.png");
-    if (mBlackKnightTexture == nullptr) return false;
-    mBlackRookTexture = loadTexture("./img/blackRook.png");
-    if (mBlackRookTexture == nullptr) return false;
-    mBlackQueenTexture = loadTexture("./img/blackQueen.png");
-    if (mBlackQueenTexture == nullptr) return false;
-    mBlackKingTexture = loadTexture("./img/blackKing.png");
-    if (mBlackKingTexture == nullptr) return false;
-
-    return true;
+PieceMove MyApp::getMove() {
+    pieceMoveAvailable = false;
+    return lastPieceMove;
 }
 
 bool MyApp::handleEvents() {
     while (SDL_PollEvent(&e) != 0) {
+        //Handle QUIT
         if (e.type == SDL_QUIT) {
             return false; // SOMETHING ELSE HERE
+        }
+        //Handle mouse click
+        else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            pressed = true;
+            lastMouseMove.from = MousePos(e.button.x, e.button.y);
+            SDL_GetMouseState(&lastMouseMove.from.x, &lastMouseMove.from.y);
+            std::cout << "Mouse button pressed at (" << lastMouseMove.from.x << ", " << lastMouseMove.from.y << ")\n";
+        }
+        //Handle mouse release
+        else if (e.type == SDL_MOUSEBUTTONUP && pressed) {
+            pressed = false;
+            lastMouseMove.to = MousePos(e.button.x, e.button.y);
+            SDL_GetMouseState(&lastMouseMove.to.x, &lastMouseMove.to.y);
+            std::cout << "Mouse button released at (" << lastMouseMove.to.x << ", " << lastMouseMove.to.y << ")\n";
+            MousePosMoveToPieceMove(lastMouseMove);
+            pieceMoveAvailable = true;
         }
     }
     return true;
@@ -168,6 +167,42 @@ void MyApp::free() {
     SDL_DestroyWindow(window);
     window = nullptr;
     SDL_Quit();
+}
+
+void MyApp::MousePosMoveToPieceMove(MouseMove& move) {
+    //Convert MousePos to PieceMove
+    lastPieceMove.from = PiecePos(move.from.x / TILE_SIZE, move.from.y / TILE_SIZE);
+    lastPieceMove.to = PiecePos(move.to.x / TILE_SIZE, move.to.y / TILE_SIZE);
+}
+
+bool MyApp::loadMedia() {
+    mWhitePawnTexture = loadTexture("./img/whitePawn.png");
+    if (mWhitePawnTexture == nullptr) return false;
+    mWhiteBishopTexture = loadTexture("./img/whiteBishop.png");
+    if (mWhiteBishopTexture == nullptr) return false;
+    mWhiteKnightTexture = loadTexture("./img/whiteKnight.png");
+    if (mWhiteKnightTexture == nullptr) return false;
+    mWhiteRookTexture = loadTexture("./img/whiteRook.png");
+    if (mWhiteRookTexture == nullptr) return false;
+    mWhiteQueenTexture = loadTexture("./img/whiteQueen.png");
+    if (mWhiteQueenTexture == nullptr) return false;
+    mWhiteKingTexture = loadTexture("./img/whiteKing.png");
+    if (mWhiteKingTexture == nullptr) return false;
+
+    mBlackPawnTexture = loadTexture("./img/blackPawn.png");
+    if (mBlackPawnTexture == nullptr) return false;
+    mBlackBishopTexture = loadTexture("./img/blackBishop.png");
+    if (mBlackBishopTexture == nullptr) return false;
+    mBlackKnightTexture = loadTexture("./img/blackKnight.png");
+    if (mBlackKnightTexture == nullptr) return false;
+    mBlackRookTexture = loadTexture("./img/blackRook.png");
+    if (mBlackRookTexture == nullptr) return false;
+    mBlackQueenTexture = loadTexture("./img/blackQueen.png");
+    if (mBlackQueenTexture == nullptr) return false;
+    mBlackKingTexture = loadTexture("./img/blackKing.png");
+    if (mBlackKingTexture == nullptr) return false;
+
+    return true;
 }
 
 SDL_Texture* MyApp::loadTexture(const std::string &path) {

@@ -20,9 +20,16 @@ int main(int argc, char* argv[]) {
         //}
     }
 
+    PieceMove lastPieceMove;
     while (1) {
         if (!myApp.handleEvents())
             break;
+        
+        if (myApp.isPieceMoveAvailable()) {
+            lastPieceMove = myApp.getMove();
+            std::cout << "Move from (" << lastPieceMove.from.x << ", " << lastPieceMove.from.y << ") to (" << lastPieceMove.to.x << ", " << lastPieceMove.to.y << ")\n";
+            //board.movePiece(lastPieceMove);
+        }
         board.printBoardApp(&myApp);
     }
 
