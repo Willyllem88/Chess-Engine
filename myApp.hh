@@ -34,9 +34,8 @@ class MyApp{
         bool pressed;
         bool pieceMoveAvailable;
         MouseMove lastMouseMove;
-        void MousePosMoveToPieceMove(MouseMove& move);
         PieceMove lastPieceMove;
-        
+        void MousePosMoveToPieceMove(MouseMove& move);        
 
         //__WINDOW__
         const int TILE_SIZE = 80;

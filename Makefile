@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20
 
 LDFLAGS = -lSDL2 -lSDL2_image
 
-SRC = main.cpp myApp.cpp board.cpp
+SRC = main.cpp myApp.cpp board.cpp utils.cpp
 
 OBJ = $(SRC:.cpp=.o)
 

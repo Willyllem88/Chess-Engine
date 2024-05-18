@@ -11,13 +11,9 @@ int main(int argc, char* argv[]) {
         return 1;
 
 
-    //Checks all the input options, and processes them
+    //DELETE, just for testing
     for (int i = 1; i < argc; ++i) {
         std::cout << argv[i] << std::endl; //DELETE, just for testing
-        //switch (argv[i]) {
-        //    case "-b":
-        //    (...)
-        //}
     }
 
     PieceMove lastPieceMove;
@@ -28,7 +24,7 @@ int main(int argc, char* argv[]) {
         if (myApp.isPieceMoveAvailable()) {
             lastPieceMove = myApp.getMove();
             std::cout << "Move from (" << lastPieceMove.from.x << ", " << lastPieceMove.from.y << ") to (" << lastPieceMove.to.x << ", " << lastPieceMove.to.y << ")\n";
-            //board.movePiece(lastPieceMove);
+            board.movePiece(lastPieceMove);
         }
         board.printBoardApp(&myApp);
     }

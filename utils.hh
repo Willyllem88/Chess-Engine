@@ -5,9 +5,10 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <iomanip>
 
 //This will only be used when displaying the info of the board
-enum pieceType{
+enum PieceType{
     WHITE_PAWN,
     WHITE_BISHOP,
     WHITE_KNIGHT,
@@ -25,7 +26,9 @@ enum pieceType{
     NONE
 };
 
-typedef std::vector<std::vector<pieceType>> PieceMatrix;
+typedef std::vector<std::vector<PieceType>> PieceMatrix;
+
+std::string pieceToString(PieceType p);
 
 //Structs for the mouse and the pieces moves
 
