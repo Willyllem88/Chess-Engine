@@ -1,72 +1,74 @@
-#include "Board.hh"
+#include "board.hh"
 
-const int TILE_SIZE = 80;
 
-Board::Board(SDL_Renderer* renderer)
-    : mRenderer(renderer), mWhitePawnTexture(nullptr), mBlackPawnTexture(nullptr) {
-}
-
-Board::~Board() {
-    free();
-}
-
-bool Board::loadMedia() {
-    mWhitePawnTexture = loadTexture("./img/whitePawn.png");
-    if (mWhitePawnTexture == nullptr) {
-        return false;
+//FIX: maybe put this into another file
+std::string pieceToString(pieceType p) {
+    switch (p) {
+        case (WHITE_PAWN):
+            return "White Pawn";
+        case (BLACK_PAWN):
+            return "Black Pawn";
+        // (...)
+        default:
+            return "";
     }
-
-    mBlackPawnTexture = loadTexture("./img/blackPawn.png");
-    if (mBlackPawnTexture == nullptr) {
-        return false;
-    }
-
-    return true;
 }
 
-void Board::render() {
-    for (int i = 0; i < 8; ++i) {
+Board::Board() {
+    setDefaulValues();
+}
+
+Board::~Board() { }
+
+void Board::setDefaulValues() {
+    whitePawn = 0x00ff000000000000;
+    whiteBishop = 0x2400000000000000;
+    whiteKnight = 0x4200000000000000;
+    whiteRook = 0x8100000000000000;
+    whiteQueen = 0x1000000000000000;
+    whiteKing = 0x0800000000000000;
+
+    blackPawn = 0x000000000000ff00;
+    blackBishop = 0x0000000000000024;
+    blackKnight = 0x0000000000000042;
+    blackRook = 0x0000000000000081;
+    blackQueen = 0x0000000000000010;
+    blackKing = 0x0000000000000008;
+}   
+
+void Board::getPieceMatrix(PieceMatrix& b) {
+    Board::bitBoardToMatrix(b);
+}
+
+void Board::printBoardApp(MyApp* a) {
+    PieceMatrix pm (8, std::vector<pieceType>(8, NONE));
+    bitBoardToMatrix(pm);
+    a->render(pm);
+    return;
+}
+
+void Board::bitBoardToMatrix(PieceMatrix& b) {
+    uint64_t aux = 0x8000000000000000;
+    for (int i = 7; i >= 0; --i) {
         for (int j = 0; j < 8; ++j) {
-            SDL_Rect fillRect = { j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE };
-            if ((i + j) % 2 == 0) {
-                SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);  // White
-            } else {
-                SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);  // Black
-            }
-            SDL_RenderFillRect(mRenderer, &fillRect);
+            //Could be optimized if doing similarly to binary search, bitmaps such as: allPieces -> colorPiece -> individuaPiece
+            if (whitePawn & aux) b[i][j] = WHITE_PAWN;
+            else if (whiteBishop & aux) b[i][j] = WHITE_BISHOP;
+            else if (whiteKnight & aux) b[i][j] = WHITE_KNIGHT;
+            else if (whiteRook & aux) b[i][j] = WHITE_ROOK;
+            else if (whiteQueen & aux) b[i][j] = WHITE_QUEEN;
+            else if (whiteKing & aux) b[i][j] = WHITE_KING;   
 
-            if (i == 1) {
-                SDL_RenderCopy(mRenderer, mBlackPawnTexture, nullptr, &fillRect);
-            } else if (i == 6) {
-                SDL_RenderCopy(mRenderer, mWhitePawnTexture, nullptr, &fillRect);
-            }
+            else if (blackPawn & aux) b[i][j] = BLACK_PAWN;
+            else if (blackBishop & aux) b[i][j] = BLACK_BISHOP;
+            else if (blackKnight & aux) b[i][j] = BLACK_KNIGHT;
+            else if (blackRook & aux) b[i][j] = BLACK_ROOK;
+            else if (blackQueen & aux) b[i][j] = BLACK_QUEEN;
+            else if (blackKing & aux) b[i][j] = BLACK_KING;
+
+            else b[i][j] = pieceType::NONE;
+            
+            aux = aux >> 1;
         }
     }
-}
-
-void Board::free() {
-    if (mWhitePawnTexture != nullptr) {
-        SDL_DestroyTexture(mWhitePawnTexture);
-        mWhitePawnTexture = nullptr;
-    }
-
-    if (mBlackPawnTexture != nullptr) {
-        SDL_DestroyTexture(mBlackPawnTexture);
-        mBlackPawnTexture = nullptr;
-    }
-}
-
-SDL_Texture* Board::loadTexture(const std::string &path) {
-    SDL_Texture* newTexture = nullptr;
-    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-    if (loadedSurface == nullptr) {
-        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
-    } else {
-        newTexture = SDL_CreateTextureFromSurface(mRenderer, loadedSurface);
-        if (newTexture == nullptr) {
-            printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-        }
-        SDL_FreeSurface(loadedSurface);
-    }
-    return newTexture;
 }

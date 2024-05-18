@@ -1,10 +1,24 @@
-OPTIONS = -Wall -Wextra -Werror -Wno-sign-compare -std=c++20 -lSDL2 -lSDL2_image
+CXX = g++
 
-all: main.cpp board.o
-	g++ -o engine main.cpp *.o $(OPTIONS) 
+CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20
 
-board: board.cpp board.hh
-	g++ -c board.o board.cpp $(OPTIONS)
+LDFLAGS = -lSDL2 -lSDL2_image
+
+SRC = main.cpp myApp.cpp board.cpp
+
+OBJ = $(SRC:.cpp=.o)
+
+EXEC = engine
+
+
+
+all: $(EXEC)
+
+$(EXEC): $(OBJ)
+	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o engine
+	rm -f $(OBJ) $(EXEC)
