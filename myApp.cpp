@@ -83,6 +83,11 @@ bool MyApp::handleEvents() {
             //INFO: No need to check if the move is valid, since the user can only move the pieces inside the board
             pieceMoveAvailable = true;
         }
+        else if (e.type == SDL_WINDOWEVENT) {
+            if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                resizeWindow(e.window.data1, e.window.data2);
+            }
+        }
     }
     return true;
 }
@@ -93,7 +98,7 @@ void MyApp::render(PieceMatrix& pm) {
 
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
-            SDL_Rect fillRect = { j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE };
+            SDL_Rect fillRect = { j * TILE_SIZE + A8_x, i * TILE_SIZE + A8_y, TILE_SIZE, TILE_SIZE };
             //Print board
             if ((i + j) % 2 == 0) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  // White
@@ -172,8 +177,17 @@ void MyApp::free() {
 
 void MyApp::MousePosMoveToPieceMove(MouseMove& move) {
     //Convert MousePos to PieceMove
-    lastPieceMove.from = PiecePos(move.from.x / TILE_SIZE, move.from.y / TILE_SIZE);
-    lastPieceMove.to = PiecePos(move.to.x / TILE_SIZE, move.to.y / TILE_SIZE);
+    lastPieceMove.from = PiecePos((move.from.x - A8_x)/TILE_SIZE, (move.from.y - A8_y)/TILE_SIZE);
+    lastPieceMove.to = PiecePos((move.to.x - A8_x)/TILE_SIZE, (move.to.y - A8_y)/TILE_SIZE);
+}
+
+void MyApp::resizeWindow(int newWidth, int newHeight) {
+    this->SCREEN_WIDTH = newWidth;
+    this->SCREEN_HEIGHT = newHeight;
+    TILE_SIZE = std::min(SCREEN_WIDTH, SCREEN_HEIGHT) / 8;
+    A8_x = (SCREEN_WIDTH - 8 * TILE_SIZE) / 2;
+    A8_y = (SCREEN_HEIGHT - 8 * TILE_SIZE) / 2;
+    // Adjust TILE_SIZE based on new dimensions, if necessary
 }
 
 bool MyApp::loadMedia() {

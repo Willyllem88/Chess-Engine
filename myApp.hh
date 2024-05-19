@@ -38,9 +38,12 @@ class MyApp{
         void MousePosMoveToPieceMove(MouseMove& move);        
 
         //__WINDOW__
-        const int TILE_SIZE = 80;
-        const int SCREEN_WIDTH = 640;
-        const int SCREEN_HEIGHT = 640;
+        int TILE_SIZE = 80;
+        int SCREEN_WIDTH = 640;
+        int SCREEN_HEIGHT = 640;
+        int A8_x = 0; //The coordinates of the A8 square, in pixels
+        int A8_y = 0; 
+        void resizeWindow(int width, int height);
 
         SDL_Window* window;
         SDL_Renderer* renderer;
