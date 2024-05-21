@@ -7,6 +7,8 @@ Board::Board() {
 Board::~Board() { }
 
 void Board::setDefaulValues() {
+    moveTurn = WHITE;
+
     allPieces = 0xffff00000000ffff;
     whitePieces = 0xffff000000000000;
     blackPieces = 0x000000000000ffff;
@@ -44,7 +46,19 @@ void Board::movePiece(PieceMove& move) {
 
     removePiece(*fromPieceBitMap, fromBit);
     if (toPieceBitMap != nullptr) removePiece(*toPieceBitMap, toBit);    
-    addPiece(*fromPieceBitMap, toBit); 
+    addPiece(*fromPieceBitMap, toBit);
+    moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
+}
+
+std::set<PieceMove> Board::getLegalMoves() {
+    std::set<PieceMove> legalMoves;
+    for (int i = 0; i < 0; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            std::set<PieceMove> pieceLegalMoves;
+
+        }
+    }
+    return legalMoves;
 }
 
 void Board::getPieceMatrix(PieceMatrix& b) {
@@ -81,26 +95,12 @@ void Board::addPiece(uint64_t& targetBitMap, uint64_t& bit) {
     targetBitMap = targetBitMap | bit;
 }
 
+void Board::getPieceLegalMoves(uint64_t& pieceBitMap, uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+
+}
+
 uint64_t* Board::bitToPieceBitMap(uint64_t bit) {
-    if (bit & allPieces) { //If there is a piece
-        if(bit & whitePieces) { //If it's a white piece
-            if (bit & whitePawn) return &whitePawn;
-            else if (bit & whiteBishop) return &whiteBishop;
-            else if (bit & whiteKnight) return &whiteKnight;
-            else if (bit & whiteRook) return &whiteRook;
-            else if (bit & whiteQueen) return &whiteQueen;
-            else if (bit & whiteKing) return &whiteKing;
-        }
-        else { //If it's a black piece
-            if (bit & blackPawn) return &blackPawn;
-            else if (bit & blackBishop) return &blackBishop;
-            else if (bit & blackKnight) return &blackKnight;
-            else if (bit & blackRook) return &blackRook;
-            else if (bit & blackQueen) return &blackQueen;
-            else if (bit & blackKing) return &blackKing;
-        }
-    }
-    return nullptr;
+    return vecPiecesBitmaps[bitToPieceType(bit)];
 }
 
 PieceType Board::bitToPieceType(uint64_t bit) {

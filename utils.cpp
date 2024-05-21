@@ -49,7 +49,7 @@ std::string pieceToString(PieceType p) {
             return "Black King";
             break;
 
-        case NONE:
+        default:
             return "None";
             break;
     }

@@ -18,6 +18,8 @@ public:
     //It'll move the piece in the board.
     void movePiece(PieceMove& move);
 
+    //It'll return the legal moves of the pieces.
+    std::set<PieceMove> getLegalMoves();
 
     //Pre: b must be a PieceMatrix size 8x8.
     //Post: b will contain all de pieces in a matrix.
@@ -33,6 +35,8 @@ private:
     //It will add the bit to the targetBitMap.
     void addPiece(uint64_t& targetBitMap, uint64_t& bit);
 
+    void getPieceLegalMoves(uint64_t& pieceBitMap, uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+
     //It will return the pieceType of the bit.
     //Also, it will return the pieceBitMap of the piece.
     uint64_t* bitToPieceBitMap(uint64_t bit);
@@ -47,7 +51,7 @@ private:
     //It will convert the x and y to a bit.
     void xyToBit(int i, int j, uint64_t& bit);
 
-
+    PieceColor moveTurn;
 
     //Bitmaps: seeing from whites view the MSB (most significant bit) will be located in (a-1), and the LSB in (h-8)
     uint64_t allPieces;
@@ -71,6 +75,9 @@ private:
     uint64_t blackKing;
 
     uint64_t blackPieces;
+
+    //Piece bitmaps, they can be mapped with the pieceType enum.
+    std::vector<uint64_t*> vecPiecesBitmaps = {&whitePawn, &whiteBishop, &whiteKnight, &whiteRook, &whiteQueen, &whiteKing, &blackPawn, &blackBishop, &blackKnight, &blackRook, &blackQueen, &blackKing};
 };
 
 #endif

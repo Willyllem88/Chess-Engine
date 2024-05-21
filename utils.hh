@@ -26,6 +26,11 @@ enum PieceType{
     NONE
 };
 
+enum PieceColor {
+    WHITE,
+    BLACK
+};
+
 typedef std::vector<std::vector<PieceType>> PieceMatrix;
 
 std::string pieceToString(PieceType p);
