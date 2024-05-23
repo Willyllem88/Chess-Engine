@@ -54,3 +54,8 @@ std::string pieceToString(PieceType p) {
             break;
     }
 }
+
+std::string pieceColorToString(PieceColor p) {
+    if (p == WHITE) return "White";
+    else return "Black";
+}

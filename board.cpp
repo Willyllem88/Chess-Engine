@@ -30,8 +30,8 @@ void Board::setDefaulValues() {
 
 void Board::movePiece(PieceMove& move) {
     uint64_t fromBit, toBit;
-    xyToBit(move.from.x, move.from.y, fromBit);
-    xyToBit(move.to.x, move.to.y, toBit);
+    ijToBit(move.from.x, move.from.y, fromBit);
+    ijToBit(move.to.x, move.to.y, toBit);
 
     uint64_t *fromPieceBitMap, *toPieceBitMap;
     fromPieceBitMap = bitToPieceBitMap(fromBit);
@@ -52,10 +52,11 @@ void Board::movePiece(PieceMove& move) {
 
 std::set<PieceMove> Board::getLegalMoves() {
     std::set<PieceMove> legalMoves;
-    for (int i = 0; i < 0; ++i) {
+    uint64_t bit = 0x8000000000000000;
+    for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
-            std::set<PieceMove> pieceLegalMoves;
-
+            getPieceLegalMoves(bit, legalMoves);
+            bit = bit >> 1;
         }
     }
     return legalMoves;
@@ -72,7 +73,18 @@ void Board::printBoardApp(MyApp* a) {
     return;
 }
 
-void Board::xyToBit(int x, int y, uint64_t& bit) {
+//FIX: highly probable to do it in a more efficient way
+std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t& bit) {
+    uint64_t aux = 0x8000000000000000;
+    for (int i = 0; i < 64; ++i) {
+        if (aux == bit)
+            return std::make_pair(i%8, 7 - i/8);
+        aux = aux >> 1;
+    }
+    return std::make_pair(0, 0);    
+}
+
+void Board::ijToBit(int x, int y, uint64_t& bit) {
     bit = 0x8000000000000000;
     bit = bit >> (x + 8 * (7-y));
 }
@@ -95,8 +107,34 @@ void Board::addPiece(uint64_t& targetBitMap, uint64_t& bit) {
     targetBitMap = targetBitMap | bit;
 }
 
-void Board::getPieceLegalMoves(uint64_t& pieceBitMap, uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
-
+//BEHAVIOUR: it will add the legal moves of the piece to the set
+void Board::getPieceLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+    //CORRECT: if its pinned, return
+    PieceType piece;
+    piece = bitToPieceType(bit);
+    if (moveTurn == WHITE) {
+        switch(piece) {
+            case WHITE_PAWN:
+                getWhitePawnLegalMoves(bit, pieceLegalMoves);
+                break;
+            case WHITE_BISHOP:
+                getBishopLegalMoves(bit, pieceLegalMoves);
+                break;
+            default:;
+        }
+    }
+    else {
+        switch(piece) {
+            case BLACK_PAWN: {
+                getBlackPawnLegalMoves(bit, pieceLegalMoves);
+                break;
+            }
+            case BLACK_BISHOP:
+                getBishopLegalMoves(bit, pieceLegalMoves);
+                break;            
+            default:;
+        }
+    }
 }
 
 uint64_t* Board::bitToPieceBitMap(uint64_t bit) {

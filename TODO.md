@@ -2,10 +2,6 @@
 
 Here I will list the pending tasks. Just to not forget those ideas that might benefit the project.
 
-## SHORT TERM
-
+* Think of all possible moves before the players makes the click. (goas also with the other one)
 * It will render only when a move its done.
-
-## LONG TERM
-
-* Resize with sense
+* Provide en passant behaviour

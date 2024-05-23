@@ -1,6 +1,8 @@
 #ifndef STRUCTS_HH
 #define STRUCTS_HH
 
+#include <unistd.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -35,6 +37,8 @@ typedef std::vector<std::vector<PieceType>> PieceMatrix;
 
 std::string pieceToString(PieceType p);
 
+std::string pieceColorToString(PieceColor p);
+
 //Structs for the mouse and the pieces moves
 
 struct MousePos {
@@ -57,6 +61,7 @@ struct PiecePos {
     uint16_t y;
     inline PiecePos() : x(0), y(0) { };
     inline PiecePos(uint16_t x, uint16_t y) : x(x), y(y) { };
+    inline PiecePos(std::pair<uint16_t, uint16_t> p) : x(p.first), y(p.second) { };
 };
 
 struct PieceMove {
@@ -64,6 +69,13 @@ struct PieceMove {
     PiecePos to;
 
     inline PieceMove() : from(PiecePos(0, 0)), to(PiecePos(0, 0)) { };
+
+    bool operator<(const PieceMove& other) const {
+        if (from.x != other.from.x) return from.x < other.from.x;
+        if (from.y != other.from.y) return from.y < other.from.y;
+        if (to.x != other.to.x) return to.x < other.to.x;
+        return to.y < other.to.y;
+    }
 };
 
 #endif
