@@ -30,23 +30,17 @@ void Board::setDefaulValues() {
 
 void Board::movePiece(PieceMove& move) {
     uint64_t fromBit, toBit;
-    ijToBit(move.from.x, move.from.y, fromBit);
-    ijToBit(move.to.x, move.to.y, toBit);
-
+    ijToBit(move.from.i, move.from.j, fromBit);
+    ijToBit(move.to.i, move.to.j, toBit);
+    std::cout << "Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
     uint64_t *fromPieceBitMap, *toPieceBitMap;
     fromPieceBitMap = bitToPieceBitMap(fromBit);
     toPieceBitMap = bitToPieceBitMap(toBit);
 
 
-    //FIX: POSTERIORLY, FIXABLE ADDING THE RULES OF THE GAME
-    if (fromPieceBitMap == nullptr) {
-        std::cout << "There is no piece in the origin\n";
-        return;
-    }
-
-    removePiece(*fromPieceBitMap, fromBit);
-    if (toPieceBitMap != nullptr) removePiece(*toPieceBitMap, toBit);    
+    if (toPieceBitMap != nullptr) removePiece(*toPieceBitMap, toBit);
     addPiece(*fromPieceBitMap, toBit);
+    removePiece(*fromPieceBitMap, fromBit);
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
 }
 
@@ -59,6 +53,11 @@ std::set<PieceMove> Board::getLegalMoves() {
             bit = bit >> 1;
         }
     }
+    //FIX: add the castling moves
+    //FIX: add the en passant moves
+    
+    //FIX: eliminate those moves from the king that put the king in check
+    //FIX: filter the moves that put the king in check
     return legalMoves;
 }
 
@@ -78,15 +77,15 @@ std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t& bit) {
     uint64_t aux = 0x8000000000000000;
     for (int i = 0; i < 64; ++i) {
         if (aux == bit)
-            return std::make_pair(i%8, 7 - i/8);
+            return std::make_pair(7 - i/8, i%8);
         aux = aux >> 1;
     }
     return std::make_pair(0, 0);    
 }
 
-void Board::ijToBit(int x, int y, uint64_t& bit) {
+void Board::ijToBit(int i, int j, uint64_t& bit) {
     bit = 0x8000000000000000;
-    bit = bit >> (x + 8 * (7-y));
+    bit = bit >> (8 * (7-i) + j);
 }
 
 void Board::removePiece(uint64_t& targetBitMap, uint64_t& bit) {
@@ -117,28 +116,44 @@ void Board::getPieceLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMov
             case WHITE_PAWN:
                 getWhitePawnLegalMoves(bit, pieceLegalMoves);
                 break;
+            case WHITE_KNIGHT:
+                getKnightLegalMoves(bit, pieceLegalMoves);
+                break;
             case WHITE_BISHOP:
                 getBishopLegalMoves(bit, pieceLegalMoves);
                 break;
+            case WHITE_ROOK:
+                getRookLegalMoves(bit, pieceLegalMoves);
+                break;
+            case WHITE_QUEEN:
+                getQueenLegalMoves(bit, pieceLegalMoves);
+                break;  
             default:;
         }
     }
     else {
         switch(piece) {
-            case BLACK_PAWN: {
+            case BLACK_PAWN:
                 getBlackPawnLegalMoves(bit, pieceLegalMoves);
                 break;
-            }
             case BLACK_BISHOP:
                 getBishopLegalMoves(bit, pieceLegalMoves);
-                break;            
+                break;  
+            case BLACK_ROOK:
+                getRookLegalMoves(bit, pieceLegalMoves);
+                break; 
+            case BLACK_QUEEN:
+                getQueenLegalMoves(bit, pieceLegalMoves);
+                break;         
             default:;
         }
     }
 }
 
 uint64_t* Board::bitToPieceBitMap(uint64_t bit) {
-    return vecPiecesBitmaps[bitToPieceType(bit)];
+    PieceType piece = bitToPieceType(bit);
+    if (piece == NONE) return nullptr;
+    else return vecPiecesBitmaps[piece];
 }
 
 PieceType Board::bitToPieceType(uint64_t bit) {
@@ -167,7 +182,6 @@ void Board::bitBoardToMatrix(PieceMatrix& b) {
     uint64_t aux = 0x8000000000000000;
     for (int i = 7; i >= 0; --i) {
         for (int j = 0; j < 8; ++j) {
-            //Could be optimized if doing similarly to binary search, bitmaps such as: allPieces -> colorPiece -> individuaPiece
             b[i][j] = bitToPieceType(aux);
             aux = aux >> 1;
         }

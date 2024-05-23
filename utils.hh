@@ -15,15 +15,15 @@ enum PieceType{
     WHITE_BISHOP,
     WHITE_KNIGHT,
     WHITE_ROOK,
-    WHITE_KING,
     WHITE_QUEEN,
+    WHITE_KING,
 
     BLACK_PAWN,
     BLACK_BISHOP,
     BLACK_KNIGHT,
     BLACK_ROOK,
-    BLACK_KING,
     BLACK_QUEEN,
+    BLACK_KING,
 
     NONE
 };
@@ -57,24 +57,22 @@ struct MouseMove {
 };
 
 struct PiecePos {
-    uint16_t x;
-    uint16_t y;
-    inline PiecePos() : x(0), y(0) { };
-    inline PiecePos(uint16_t x, uint16_t y) : x(x), y(y) { };
-    inline PiecePos(std::pair<uint16_t, uint16_t> p) : x(p.first), y(p.second) { };
+    uint16_t i, j;
+    inline PiecePos() : i(0), j(0) { };
+    inline PiecePos(uint16_t x, uint16_t y) : i(x), j(y) { };
+    inline PiecePos(std::pair<uint16_t, uint16_t> p) : i(p.first), j(p.second) { };
 };
 
 struct PieceMove {
-    PiecePos from;
-    PiecePos to;
+    PiecePos from, to;
 
     inline PieceMove() : from(PiecePos(0, 0)), to(PiecePos(0, 0)) { };
 
     bool operator<(const PieceMove& other) const {
-        if (from.x != other.from.x) return from.x < other.from.x;
-        if (from.y != other.from.y) return from.y < other.from.y;
-        if (to.x != other.to.x) return to.x < other.to.x;
-        return to.y < other.to.y;
+        if (from.i != other.from.i) return from.i < other.from.i;
+        if (from.j != other.from.j) return from.j < other.from.j;
+        if (to.i != other.to.i) return to.i < other.to.i;
+        return to.j < other.to.j;
     }
 };
 

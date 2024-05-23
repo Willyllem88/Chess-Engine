@@ -177,8 +177,8 @@ void MyApp::free() {
 
 void MyApp::MousePosMoveToPieceMove(MouseMove& move) {
     //Convert MousePos to PieceMove
-    lastPieceMove.from = PiecePos((move.from.x - A8_x)/TILE_SIZE, (move.from.y - A8_y)/TILE_SIZE);
-    lastPieceMove.to = PiecePos((move.to.x - A8_x)/TILE_SIZE, (move.to.y - A8_y)/TILE_SIZE);
+    lastPieceMove.from = PiecePos((move.from.y - A8_y)/TILE_SIZE, (move.from.x - A8_x)/TILE_SIZE);
+    lastPieceMove.to = PiecePos((move.to.y - A8_y)/TILE_SIZE, (move.to.x - A8_x)/TILE_SIZE);
 }
 
 void MyApp::resizeWindow(int newWidth, int newHeight) {

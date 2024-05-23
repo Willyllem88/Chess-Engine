@@ -41,6 +41,10 @@ private:
     void getWhitePawnLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
     void getBlackPawnLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
     void getBishopLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getKnightLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getRookLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getQueenLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getKingLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
     
 
     //It will return the pieceType of the bit.
@@ -63,7 +67,6 @@ private:
 
     //Bitmaps: seeing from whites view the MSB (most significant bit) will be located in (a-1), and the LSB in (h-8)
     uint64_t allPieces;
-    uint64_t targetPieces; //FIX: no code to handle this yet
 
     //White pieces
     uint64_t whitePawn;
@@ -74,6 +77,7 @@ private:
     uint64_t whiteKing;
 
     uint64_t whitePieces;
+    uint64_t whiteTargetedSquares; //Squares targeted by black pieces
     
     //Black pieces
     uint64_t blackPawn;
@@ -84,6 +88,7 @@ private:
     uint64_t blackKing;
 
     uint64_t blackPieces;
+    uint64_t blackTargetedSquares; //Squares targeted by white pieces
 
     //Piece bitmaps, they can be mapped with the pieceType enum.
     std::vector<uint64_t*> vecPiecesBitmaps = {&whitePawn, &whiteBishop, &whiteKnight, &whiteRook, &whiteQueen, &whiteKing, &blackPawn, &blackBishop, &blackKnight, &blackRook, &blackQueen, &blackKing};
