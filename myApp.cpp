@@ -71,14 +71,14 @@ bool MyApp::handleEvents() {
             pressed = true;
             lastMouseMove.from = MousePos(e.button.x, e.button.y);
             SDL_GetMouseState(&lastMouseMove.from.x, &lastMouseMove.from.y);
-            std::cout << "Mouse button pressed at (" << lastMouseMove.from.x << ", " << lastMouseMove.from.y << ")\n";
+            //std::cout << "Mouse button pressed at (" << lastMouseMove.from.x << ", " << lastMouseMove.from.y << ")\n";
         }
         //Handle mouse release
         else if (e.type == SDL_MOUSEBUTTONUP && pressed) {
             pressed = false;
             lastMouseMove.to = MousePos(e.button.x, e.button.y);
             SDL_GetMouseState(&lastMouseMove.to.x, &lastMouseMove.to.y);
-            std::cout << "Mouse button released at (" << lastMouseMove.to.x << ", " << lastMouseMove.to.y << ")\n";
+            //std::cout << "Mouse button released at (" << lastMouseMove.to.x << ", " << lastMouseMove.to.y << ")\n";
             MousePosMoveToPieceMove(lastMouseMove);
             //INFO: No need to check if the move is valid, since the user can only move the pieces inside the board
             pieceMoveAvailable = true;

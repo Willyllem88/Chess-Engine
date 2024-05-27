@@ -2,15 +2,17 @@
 
 Here I will list the pending tasks. Just to not forget those ideas that might benefit the project.
 
-## VERY IMPORTANT
+## TO DO
 
-
+* Give some information when executing without arguments
+* Handle all arguments
+* The ENGINE
 
 ## FIX SHORT TERM
 
-* Think of all possible moves before the players makes the click. (goas also with the other one)
 * It will render only when a move its done.
-* Provide en passant behaviour
+* Provide castle logic
+* Provide promote logic (think how to do it)
 
 # FIX LONG TERM
 

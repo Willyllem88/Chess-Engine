@@ -25,7 +25,6 @@ class MyApp{
         //Renders the board and the pieces
         void render(PieceMatrix& pm);
 
-
         //Frees the textures
         void free();
         

@@ -2,6 +2,7 @@
 
 Board::Board() {
     setDefaulValues();
+    calculateLegalMoves();
 }
 
 Board::~Board() { }
@@ -10,8 +11,14 @@ void Board::setDefaulValues() {
     moveTurn = WHITE;
 
     allPieces = 0xffff00000000ffff;
+    enPassant = 0;
     whitePieces = 0xffff000000000000;
+    whiteTargetedSquares = 0; //Squares targeted by white pieces
+    whitePinnedSquares = 0;
     blackPieces = 0x000000000000ffff;
+    blackTargetedSquares = 0;
+    blackPinnedSquares = 0;
+    //FIX: more values to be set
 
     whitePawn = 0x00ff000000000000;
     whiteBishop = 0x2400000000000000;
@@ -29,63 +36,198 @@ void Board::setDefaulValues() {
 }
 
 void Board::movePiece(PieceMove& move) {
-    uint64_t fromBit, toBit;
-    ijToBit(move.from.i, move.from.j, fromBit);
-    ijToBit(move.to.i, move.to.j, toBit);
-    std::cout << "Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
-    uint64_t *fromPieceBitMap, *toPieceBitMap;
-    fromPieceBitMap = bitToPieceBitMap(fromBit);
-    toPieceBitMap = bitToPieceBitMap(toBit);
+    //FIX: where do i put the pinned bitmap to 0;
+    //Checks if the move is legal
+    if (legalMoves.find(move) == legalMoves.end()) {
+        std::cout << "    Invalid Move!\n";
+        return;
+    }
+    std::cout << "    Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
+    
+    //If the moves is a pown that mvoes two squares, it updates the board info in order to let en passant.
+    updateEnPassant(move);
 
+    makeAMove(move);
 
-    if (toPieceBitMap != nullptr) removePiece(*toPieceBitMap, toBit);
-    addPiece(*fromPieceBitMap, toBit);
-    removePiece(*fromPieceBitMap, fromBit);
+    //Given the move, update the legal moves set
+    calculateLegalMoves();
+
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
+
+    calculateLegalMoves();
 }
 
-std::set<PieceMove> Board::getLegalMoves() {
-    std::set<PieceMove> legalMoves;
+void Board::calculateLegalMoves() {
+    //Updates the set with all the moves
+    getAllPiecesMoves(legalMoves);
+    //Detects if I'm checked. If so, eliminates eliminates those moves that don't free me from check
+    manageCheck(legalMoves);
+    if (legalMoves.empty()) {
+        std::cout <<    "_____________________________________\n" <<
+                        "_____________CHECKMATED______________\n" <<
+                        "_____________________________________\n";
+        //FIX: Manage checkmate
+    }
+    //Eliminates those moves that put the king into check
+    eliminatePinnedCheckMoves(legalMoves);
+}
+
+void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {
+    legalMoves.clear();
+
+    uint64_t *myPieces = (moveTurn == WHITE) ? &whitePieces : &blackPieces;
+    uint64_t *oponentTargetedeSquares = (moveTurn == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares; //new
+    uint64_t *oponentPinnedSquares = (moveTurn == WHITE) ? &blackPinnedSquares : &whitePinnedSquares; //new
+    *oponentTargetedeSquares = 0; *oponentPinnedSquares = 0;
+
     uint64_t bit = 0x8000000000000000;
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
-            getPieceLegalMoves(bit, legalMoves);
+            if (bit & *myPieces)
+                getPieceMoves(bit, legalMoves);
             bit = bit >> 1;
         }
     }
-    //FIX: add the castling moves
-    //FIX: add the en passant moves
-    
-    //FIX: eliminate those moves from the king that put the king in check
-    //FIX: filter the moves that put the king in check
-    return legalMoves;
 }
 
-void Board::getPieceMatrix(PieceMatrix& b) {
-    Board::bitBoardToMatrix(b);
-}
-
-void Board::printBoardApp(MyApp* a) {
-    PieceMatrix pm (8, std::vector<PieceType>(8, NONE));
-    bitBoardToMatrix(pm);
-    a->render(pm);
-    return;
-}
-
-//FIX: highly probable to do it in a more efficient way
-std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t& bit) {
-    uint64_t aux = 0x8000000000000000;
-    for (int i = 0; i < 64; ++i) {
-        if (aux == bit)
-            return std::make_pair(7 - i/8, i%8);
-        aux = aux >> 1;
+void Board::getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+    PieceType piece;
+    piece = bitToPieceType(bit);
+    switch(piece) {
+        case WHITE_PAWN:
+            getWhitePawnMoves(bit, pieceLegalMoves);
+            break;
+        case WHITE_BISHOP:
+            getBishopMoves(bit, pieceLegalMoves);
+            break;
+        case WHITE_KNIGHT:
+            getKnightMoves(bit, pieceLegalMoves);
+            break;
+        case WHITE_ROOK:
+            getRookMoves(bit, pieceLegalMoves);
+            break;
+        case WHITE_QUEEN:
+            getQueenMoves(bit, pieceLegalMoves);
+            break;
+        case WHITE_KING:
+            getKingMoves(bit, pieceLegalMoves);
+            break; 
+        case BLACK_PAWN:
+            getBlackPawnMoves(bit, pieceLegalMoves);
+            break;
+        case BLACK_BISHOP:
+            getBishopMoves(bit, pieceLegalMoves);
+            break;
+        case BLACK_KNIGHT:
+            getKnightMoves(bit, pieceLegalMoves);
+            break;
+        case BLACK_ROOK:
+            getRookMoves(bit, pieceLegalMoves);
+            break;
+        case BLACK_QUEEN:
+            getQueenMoves(bit, pieceLegalMoves);
+            break;
+        case BLACK_KING:
+            getKingMoves(bit, pieceLegalMoves);
+            break;
+        default:;
     }
-    return std::make_pair(0, 0);    
 }
 
-void Board::ijToBit(int i, int j, uint64_t& bit) {
-    bit = 0x8000000000000000;
-    bit = bit >> (8 * (7-i) + j);
+void Board::updateEnPassant(PieceMove& move) {
+    enPassant = 0;
+    uint64_t aux;
+    ijToBit(move.from.i, move.from.j, aux);
+    PieceType p = bitToPieceType(aux);
+    //White takes black pawn through en passant
+    if (p == WHITE_PAWN && (move.from.i-move.to.i) == 2)
+        enPassant = aux >> 8;
+    //Black takes white pawn through en passant
+    else if (p == BLACK_PAWN && (move.to.i-move.from.i) == 2)
+        enPassant = aux << 8; 
+}
+
+void Board::manageCheck(std::set<PieceMove> &legalMoves) {
+    uint64_t *myKing = (moveTurn == WHITE) ? &whiteKing : &blackKing;
+    uint64_t *myTargetedSquares = (moveTurn == WHITE) ? &whiteTargetedSquares : &blackTargetedSquares;
+    if (*myKing & ~*myTargetedSquares)
+        return;
+
+    for (auto moveIterator = legalMoves.begin(); moveIterator != legalMoves.end(); ) {
+        PieceMove move = *moveIterator;
+        uint64_t fromBit;
+        ijToBit(move.from.i, move.from.j, fromBit);
+
+        //Explanation: if the move initial position is pinned, we'll create a copy of the class board (baux). Baux will calculate which squares will be targeted when the move is done. If the move puts the king in check. It will be removed from legalMoves set.
+        Board baux = *this;
+        baux.makeAMove(move);
+        baux.moveTurn = (baux.moveTurn == WHITE) ? BLACK : WHITE;
+        baux.getAllPiecesMoves(baux.legalMoves);
+
+        //Check if the move puts the king in danger
+        if (fromBit & whitePieces && baux.whiteKing & baux.whiteTargetedSquares)
+            moveIterator = legalMoves.erase(moveIterator);
+        else if (fromBit & blackPieces && baux.blackKing & baux.blackTargetedSquares)
+            moveIterator = legalMoves.erase(moveIterator);
+        else
+            ++moveIterator;
+    }
+}
+
+void Board::eliminatePinnedCheckMoves(std::set<PieceMove> &legalMoves) {
+    uint64_t *myPinnedSquares = (moveTurn == WHITE) ? &whitePinnedSquares : &blackPinnedSquares;
+
+    if (*myPinnedSquares == 0) return;
+
+    for (auto moveIterator = legalMoves.begin(); moveIterator != legalMoves.end(); ) {
+        PieceMove move = *moveIterator;
+        uint64_t fromBit;
+        ijToBit(move.from.i, move.from.j, fromBit);
+
+        //Explanation: if the move initial position is pinned, we'll create a copy of the class board (baux). Baux will calculate which squares will be targeted when the move is done. If the move puts the king in check. It will be removed from legalMoves set.
+        if (*myPinnedSquares & fromBit) {
+            Board baux = *this;
+            baux.makeAMove(move);
+            baux.moveTurn = (baux.moveTurn == WHITE) ? BLACK : WHITE;
+            baux.getAllPiecesMoves(baux.legalMoves);
+
+            //Check if the move puts the king in danger
+            if (fromBit & whitePieces && baux.whiteKing & baux.whiteTargetedSquares)
+                moveIterator = legalMoves.erase(moveIterator);
+            else if (fromBit & blackPieces && baux.blackKing & baux.blackTargetedSquares)
+                moveIterator = legalMoves.erase(moveIterator);
+            else
+                ++moveIterator;
+        }
+        else ++moveIterator;
+    }
+}
+
+void Board::makeAMove(PieceMove& move) {
+    uint64_t fromBit, toBit;
+    uint64_t *fromPieceBitmap, *toPieceBitmap;
+    ijToBit(move.from.i, move.from.j, fromBit);
+    ijToBit(move.to.i, move.to.j, toBit);
+    fromPieceBitmap = bitToPieceBitMap(fromBit);
+    toPieceBitmap = bitToPieceBitMap(toBit);
+
+    //Modifies the bitmaps in order to materialize the move
+    if (toPieceBitmap != nullptr)
+        removePiece(*toPieceBitmap, toBit);
+    //Take en passant logic
+    else if ((*fromPieceBitmap & whitePawn) && (move.from.j != move.to.j)) {
+        uint64_t aux = toBit << 8;
+        removePiece(blackPawn, aux);
+    }
+    else if (*fromPieceBitmap & blackPawn && move.from.j != move.to.j) {
+        uint64_t aux = toBit >> 8;
+        removePiece(whitePawn, aux);
+    }
+
+    //Add the piece to its new location
+    addPiece(*fromPieceBitmap, toBit);
+    //Remove the piece from it last location
+    removePiece(*fromPieceBitmap, fromBit);
 }
 
 void Board::removePiece(uint64_t& targetBitMap, uint64_t& bit) {
@@ -106,54 +248,41 @@ void Board::addPiece(uint64_t& targetBitMap, uint64_t& bit) {
     targetBitMap = targetBitMap | bit;
 }
 
-//BEHAVIOUR: it will add the legal moves of the piece to the set
-void Board::getPieceLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
-    //CORRECT: if its pinned, return
-    PieceType piece;
-    piece = bitToPieceType(bit);
-    if (moveTurn == WHITE) {
-        switch(piece) {
-            case WHITE_PAWN:
-                getWhitePawnLegalMoves(bit, pieceLegalMoves);
-                break;
-            case WHITE_KNIGHT:
-                getKnightLegalMoves(bit, pieceLegalMoves);
-                break;
-            case WHITE_BISHOP:
-                getBishopLegalMoves(bit, pieceLegalMoves);
-                break;
-            case WHITE_ROOK:
-                getRookLegalMoves(bit, pieceLegalMoves);
-                break;
-            case WHITE_QUEEN:
-                getQueenLegalMoves(bit, pieceLegalMoves);
-                break;  
-            default:;
-        }
-    }
-    else {
-        switch(piece) {
-            case BLACK_PAWN:
-                getBlackPawnLegalMoves(bit, pieceLegalMoves);
-                break;
-            case BLACK_BISHOP:
-                getBishopLegalMoves(bit, pieceLegalMoves);
-                break;  
-            case BLACK_ROOK:
-                getRookLegalMoves(bit, pieceLegalMoves);
-                break; 
-            case BLACK_QUEEN:
-                getQueenLegalMoves(bit, pieceLegalMoves);
-                break;         
-            default:;
-        }
-    }
+void Board::getPieceMatrix(PieceMatrix& b) {
+    Board::bitBoardToMatrix(b);
+}
+
+std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t& bit) {
+    //This creepy function is a hardware instruction that retruns the number of leading zeros
+    int x = __builtin_clzll(bit);
+    return std::make_pair(7 - x/8, x%8);    
+}
+
+void Board::ijToBit(int i, int j, uint64_t& bit) {
+    bit = 0x8000000000000000;
+    bit = bit >> (8 * (7-i) + j);
 }
 
 uint64_t* Board::bitToPieceBitMap(uint64_t bit) {
-    PieceType piece = bitToPieceType(bit);
-    if (piece == NONE) return nullptr;
-    else return vecPiecesBitmaps[piece];
+    if (bit & allPieces) { //If there is a piece
+        if(bit & whitePieces) { //If it's a white piece
+            if (bit & whitePawn) return &whitePawn;
+            else if (bit & whiteBishop) return &whiteBishop;
+            else if (bit & whiteKnight) return &whiteKnight;
+            else if (bit & whiteRook) return &whiteRook;
+            else if (bit & whiteQueen) return &whiteQueen;
+            else if (bit & whiteKing) return &whiteKing;
+        }
+        else { //If it's a black piece
+            if (bit & blackPawn) return &blackPawn;
+            else if (bit & blackBishop) return &blackBishop;
+            else if (bit & blackKnight) return &blackKnight;
+            else if (bit & blackRook) return &blackRook;
+            else if (bit & blackQueen) return &blackQueen;
+            else if (bit & blackKing) return &blackKing;
+        }
+    }
+    return nullptr;
 }
 
 PieceType Board::bitToPieceType(uint64_t bit) {
@@ -186,4 +315,11 @@ void Board::bitBoardToMatrix(PieceMatrix& b) {
             aux = aux >> 1;
         }
     }
+}
+
+void Board::printBoardApp(MyApp* a) {
+    PieceMatrix pm (8, std::vector<PieceType>(8, NONE));
+    bitBoardToMatrix(pm);
+    a->render(pm);
+    return;
 }

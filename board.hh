@@ -10,6 +10,7 @@
 class Board {
 public:
     Board();
+
     ~Board();
 
     //It'll set the pieces in the initial position.
@@ -17,9 +18,6 @@ public:
 
     //It'll move the piece in the board.
     void movePiece(PieceMove& move);
-
-    //It'll return the legal moves of the pieces.
-    std::set<PieceMove> getLegalMoves();
 
     //Pre: b must be a PieceMatrix size 8x8.
     //Post: b will contain all de pieces in a matrix.
@@ -29,23 +27,41 @@ public:
     void printBoardApp(MyApp* a);
 
 private:
+    void calculateLegalMoves();
+    void getAllPiecesMoves(std::set<PieceMove>& pieceLegalMoves);
+    void getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+
+    void updateEnPassant(PieceMove& move);
+
+    //Detects if I'm checked. If so, eliminates eliminates those moves that don't free me from check.
+    void manageCheck(std::set<PieceMove> &legalMoves);
+
+    //It will eliminate, based on the moveTurn, those moves that put in check the king from the set.
+    void eliminatePinnedCheckMoves(std::set<PieceMove> &legalMoves);
+
+    void makeAMove(PieceMove& move);
+
     //It will remove the bit from the targetBitMap.
     void removePiece(uint64_t& targetBitMap, uint64_t& bit);
 
     //It will add the bit to the targetBitMap.
     void addPiece(uint64_t& targetBitMap, uint64_t& bit);
 
-    //It will return the legal moves of the piece.
-    void getPieceLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-
-    void getWhitePawnLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getBlackPawnLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getBishopLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getKnightLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getRookLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getQueenLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getKingLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    //It will return the moves of the pieces, all moves, even those that put the king in check.
+    //  Aditionaly, the <white|black>TargetedSquares bitmaps will be filled.
+    void getWhitePawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getBlackPawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getBishopMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getKnightMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getRookMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getQueenMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    void getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
     
+    //Given a bit in a uint64_t, it where it is located through (i, j) coordinates
+    std::pair<uint16_t, uint16_t> bitToij(uint64_t& bit);
+
+    //It will convert the x and y to a bit.
+    void ijToBit(int i, int j, uint64_t& bit);
 
     //It will return the pieceType of the bit.
     //Also, it will return the pieceBitMap of the piece.
@@ -58,15 +74,12 @@ private:
     //  The returned matrix will be filled from the white player's view. PieceMatrix[0][0] = a-7, PieceMatrix[7][7] = h-0
     void bitBoardToMatrix(PieceMatrix& b);
 
-    std::pair<uint16_t, uint16_t> bitToij(uint64_t& bit);
-
-    //It will convert the x and y to a bit.
-    void ijToBit(int i, int j, uint64_t& bit);
-
     PieceColor moveTurn;
+    std::set<PieceMove> legalMoves;
 
     //Bitmaps: seeing from whites view the MSB (most significant bit) will be located in (a-1), and the LSB in (h-8)
     uint64_t allPieces;
+    uint64_t enPassant;
 
     //White pieces
     uint64_t whitePawn;
@@ -78,6 +91,7 @@ private:
 
     uint64_t whitePieces;
     uint64_t whiteTargetedSquares; //Squares targeted by black pieces
+    uint64_t whitePinnedSquares;
     
     //Black pieces
     uint64_t blackPawn;
@@ -89,11 +103,9 @@ private:
 
     uint64_t blackPieces;
     uint64_t blackTargetedSquares; //Squares targeted by white pieces
+    uint64_t blackPinnedSquares;
 
-    //Piece bitmaps, they can be mapped with the pieceType enum.
-    std::vector<uint64_t*> vecPiecesBitmaps = {&whitePawn, &whiteBishop, &whiteKnight, &whiteRook, &whiteQueen, &whiteKing, &blackPawn, &blackBishop, &blackKnight, &blackRook, &blackQueen, &blackKing};
-
-    //Board information bitmaps
+    //Board information bitmaps, static constexpr because they are constant and will be used in the whole program.
     static constexpr uint64_t A_FILE = 0x8080808080808080;
     static constexpr uint64_t B_FILE = 0x4040404040404040;
     static constexpr uint64_t C_FILE = 0x2020202020202020;

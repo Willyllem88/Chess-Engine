@@ -2,7 +2,7 @@
 #define STRUCTS_HH
 
 #include <unistd.h>
-
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -39,7 +39,9 @@ std::string pieceToString(PieceType p);
 
 std::string pieceColorToString(PieceColor p);
 
-//Structs for the mouse and the pieces moves
+//Structs for the mouse and the pieces moves.
+//  The mouse will be trackts with (x, y) coordinates
+//  The pieces with (i, j) coordinates
 
 struct MousePos {
     int x;
@@ -61,12 +63,16 @@ struct PiecePos {
     inline PiecePos() : i(0), j(0) { };
     inline PiecePos(uint16_t x, uint16_t y) : i(x), j(y) { };
     inline PiecePos(std::pair<uint16_t, uint16_t> p) : i(p.first), j(p.second) { };
+    bool operator==(const PiecePos& other) const {
+        return i == other.i and j == other.j;
+    }
 };
 
 struct PieceMove {
     PiecePos from, to;
 
     inline PieceMove() : from(PiecePos(0, 0)), to(PiecePos(0, 0)) { };
+    inline PieceMove(PiecePos f, PiecePos t) : from(f), to(t) { };
 
     bool operator<(const PieceMove& other) const {
         if (from.i != other.from.i) return from.i < other.from.i;

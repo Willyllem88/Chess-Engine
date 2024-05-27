@@ -37,12 +37,11 @@ The executable file will be the `engine` file.
 
 ### Executing options
 
-The default settings will be the player playing through the GUI agains the chess engine. He will start with white pieces and the engine will make its move when as soon as possible.
+The default settings will be the player playing through the GUI agains itself.
 The options are specified with -smth format:
-* `-b` or `--black`: the player will play with black pieces.
-* `-w` or `--white`: the player will play with white pieces.
-* `-c` or `--console-only`: when you just want performance. It will not use some aspects just designed for the GUI. The player will be able to write its moves through the console as well, no visual information will be given.
-* `-e` or `--engine`: for having the engine play against itself. The user will just be a viewer. This option can't be used with `-b` or `w`.
-* `-d` or `--debug`: it will output information about the match for a debugging purpouse. It will show the information through the console.
-* `-t` or `--timespan`: the time (in seconds) that the engine will take for making it move after its opponent. It is highly recommendable when the engine is in `-e` mode.
+* `**-b**` or `**--black**`: the player will play with black pieces.
+* `**-w**` or `**--white**`: the player will play with white pieces.
+* `**-c**` or `**--console-only**`: when you just want performance. It will not use some aspects just designed for the GUI. The player will be able to write its moves through the console as well, no visual aid will be given.
+* `**-e**` or `**--engine**`: for having the engine play against itself. The user will just be a viewer. This option can't be used with `-b` or `-w`.
+* `**-t** <u>seconds<\u>` or `**--timespan** <u>seconds<\u>`: the time (in seconds) that the engine will take for making it move after its opponent. 0 seconds if not specified. Useful with using `-e`.
 

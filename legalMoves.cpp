@@ -2,177 +2,213 @@
 
 #include "board.hh"
 
-void Board::getWhitePawnLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+void Board::getWhitePawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     PieceMove move;
+    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *oponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
     move.from = bitToij(bit);
-    uint64_t aux;
-    aux = bit >> 8; //One square forward
-    if (aux & ~allPieces) {
-        move.to = bitToij(aux);
+    uint64_t aux1, aux2;
+    aux1 = bit >> 8; //One square forward
+    if (bit & ~RANK_8 && aux1 & ~allPieces) {
+        move.to = bitToij(aux1);
         pieceLegalMoves.insert(move);
     }
-    aux = bit >> 16; //Two squares forward
-    if (aux & ~allPieces && bit & 0x00ff000000000000) {
-        move.to = bitToij(aux);
+    aux2 = bit >> 16; //Two squares forward
+    if (bit & RANK_2 && aux1 & ~allPieces && aux2 & ~allPieces) {
+        move.to = bitToij(aux2);
         pieceLegalMoves.insert(move);
     }
-    aux = bit >> 9; //Capture right
-    if (aux & blackPieces) {
-        move.to = bitToij(aux);
-        pieceLegalMoves.insert(move);
+    aux1 = bit >> 9; //Capture right
+    if (bit & ~H_FILE && bit & ~RANK_8) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
+            move.to = bitToij(aux1);
+            pieceLegalMoves.insert(move);
+        }
     }
-    aux = bit >> 7; //Capture light
-    if (aux & blackPieces) {
-        move.to = bitToij(aux);
-        pieceLegalMoves.insert(move);
+    aux1 = bit >> 7; //Capture left
+    if (bit & ~A_FILE && bit & ~RANK_8) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
+            move.to = bitToij(aux1);
+            pieceLegalMoves.insert(move);
+        }
     }
 }
 
 
-void Board::getBlackPawnLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+void Board::getBlackPawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     PieceMove move;
+    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *oponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
+    uint64_t aux1, aux2;
     move.from = bitToij(bit);
-    uint64_t aux;
-    aux = bit << 8; //One square forward
-    if (aux & ~allPieces) {
-        move.to = bitToij(aux);
+    aux1 = bit << 8; //One square forward
+    if (bit & ~RANK_1 && aux1 & ~allPieces) {
+        move.to = bitToij(aux1);
         pieceLegalMoves.insert(move);
     }
-    aux = bit << 16; //Two squares forward
-    if (aux & ~allPieces && bit & 0x000000000000ff00) {
-        move.to = bitToij(aux);
+    aux2 = bit << 16; //Two squares forward
+    if (bit & RANK_7 && aux1 & ~allPieces && aux2 & ~allPieces) {
+        move.to = bitToij(aux2);
         pieceLegalMoves.insert(move);
     }
-    aux = bit << 9; //Capture right
-    if (aux & whitePieces) {
-        move.to = bitToij(aux);
-        pieceLegalMoves.insert(move);
+    aux1 = bit << 7; //Capture right
+    if (bit & ~H_FILE && bit & ~RANK_1) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
+            move.to = bitToij(aux1);
+            pieceLegalMoves.insert(move);
+        }
     }
-    aux = bit << 7; //Capture light
-    if (aux & whitePieces) {
-        move.to = bitToij(aux);
-        pieceLegalMoves.insert(move);
+    aux1 = bit << 9; //Capture left
+    if (bit & ~A_FILE && bit & ~RANK_1) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
+            move.to = bitToij(aux1);
+            pieceLegalMoves.insert(move);
+        }
     }
 }
 
-void Board::getBishopLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+//POSSIBLE OPTIMITZATION: use more bitmaps instead of ij coordinates
+void Board::getBishopMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     PieceMove move;
     move.from = bitToij(bit);
-    uint64_t *targetBitmap = (bit & whitePieces) ? &whitePieces : &blackPieces;
-    uint64_t aux;
-    //move up-right
-    aux = bit;
-    while (aux & ~H_FILE or aux & ~RANK_8) {
-        aux = aux >> 9;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
+    uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
+    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *oponentTargetedeSquares = (moveTurn == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
+    uint64_t *oponentKing = (bit & whitePieces) ? &blackKing : &blackPieces;
+    uint64_t *oponentPinned = (bit & whitePieces) ? &blackPinnedSquares : &whitePinnedSquares;
+    uint64_t pinned;
+    int piecesFound;
+
+    const int I_MOVE[4] = {1, 1, -1, -1};
+    const int J_MOVE[4] = {-1, 1, -1, 1};
+    for (int i = 0; i < 4; ++i) {
+        piecesFound = 0;
+        int newI = move.from.i;
+        int newJ = move.from.j;
+        while (piecesFound < 2) {
+            newI += I_MOVE[i];
+            newJ += J_MOVE[i];
+            uint64_t aux;
+            if (newI < 0 || newI > 7 || newJ < 0 || newJ > 7) 
+                break;
+            
+            ijToBit(newI, newJ, aux);
+            if (piecesFound == 0) *oponentTargetedeSquares |= aux;
+
+            if (aux & ~*myPieces) {
+                if (piecesFound == 0) {
+                    move.to = bitToij(aux);
+                    pieceLegalMoves.insert(move);
+                    if (aux & *oponentPieces) {
+                        pinned = aux;
+                        ++piecesFound;
+                    }
+                }
+                else if (aux & *oponentKing)
+                    *oponentPinned |= pinned;
+            }
+            else break;
         }
-        if (aux & allPieces) break;
-    }
-    //move up-left
-    aux = bit;
-    while (aux & ~A_FILE or aux & ~RANK_8) {
-        aux = aux >> 7;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
-        }
-        if (aux & allPieces) break;
-    }
-    //move down-right
-    aux = bit;
-    while (aux & ~H_FILE or aux & ~RANK_1) {
-        aux = aux << 7;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
-        }
-        if (aux & allPieces) break;
-    }
-    //move down-left
-    aux = bit;
-    while (aux & ~A_FILE or aux & ~RANK_1) {
-        aux = aux << 9;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
-        }
-        if (aux & allPieces) break;
     }
 }
 
-void Board::getKnightLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+void Board::getKnightMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     PieceMove move;
     move.from = bitToij(bit);
-    uint64_t *targetBitmap = (bit & whitePieces) ? &whitePieces : &blackPieces;
+    uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
+    uint64_t *oponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
     uint64_t aux;
-    //move 2 up, 1 right
+
     const int I_MOVE[8] = {2, 1, -1, -2, -2, -1, 1, 2};
     const int J_MOVE[8] = {1, 2, 2, 1, -1, -2, -2, -1};
     for (int i = 0; i < 8; ++i) {
         int newI = move.from.i + I_MOVE[i];
         int newJ = move.from.j + J_MOVE[i];
-        if (newI >= 0 and newI < 8 and newJ >= 0 and newJ < 8) {
+        if (newI >= 0 && newI < 8 && newJ >= 0 && newJ < 8) {
             ijToBit(newI, newJ, aux);
-            if (aux & ~*targetBitmap) {
+            *oponentTargetedeSquares |= aux;
+            if (aux & ~*myPieces) {          
                 move.to = bitToij(aux);
-                std::cout << "Move to " << move.to.i << " " << move.to.j << "\n";
                 pieceLegalMoves.insert(move);
             }
         }
     }
 }
 
-void Board::getRookLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+//POSSIBLE OPTIMITZATION: use more bitmaps instead of ij coordinates
+void Board::getRookMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     PieceMove move;
     move.from = bitToij(bit);
-    uint64_t *targetBitmap = (bit & whitePieces) ? &whitePieces : &blackPieces;
-    uint64_t aux;
-    //move up
-    aux = bit;
-    while (aux & ~RANK_8) {
-        aux = aux >> 8;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
+    uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
+    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *oponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
+    uint64_t *oponentKing = (bit & whitePieces) ? &blackKing : &blackPieces;
+    uint64_t *oponentPinned = (bit & whitePieces) ? &blackPinnedSquares : &whitePinnedSquares;
+    uint64_t pinned;
+    int piecesFound;
+
+    const int I_MOVE[4] = {1, 0, -1, 0};
+    const int J_MOVE[4] = {0, 1, 0, -1};
+    for (int i = 0; i < 4; ++i) {
+        piecesFound = 0;
+        int newI = move.from.i;
+        int newJ = move.from.j;
+        while (piecesFound < 2) {
+            newI += I_MOVE[i];
+            newJ += J_MOVE[i];
+            uint64_t aux;
+            if (newI < 0 || newI > 7 || newJ < 0 || newJ > 7) 
+                break;
+            
+            ijToBit(newI, newJ, aux);
+            if (piecesFound == 0) *oponentTargetedeSquares = *oponentTargetedeSquares | aux;
+
+            if (aux & ~*myPieces) {
+                if (piecesFound == 0) {
+                    move.to = bitToij(aux);
+                    pieceLegalMoves.insert(move);
+                    if (aux & *oponentPieces) {
+                        pinned = aux;
+                        ++piecesFound;
+                    }
+                }
+                else if (aux & *oponentKing)
+                    *oponentPinned |= pinned;
+            }
+            else break;
         }
-        if (aux & allPieces) break;
-    }
-    //move down
-    aux = bit;
-    while (aux & ~RANK_1) {
-        aux = aux << 8;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
-        }
-        if (aux & allPieces) break;
-    }
-    //move right
-    aux = bit;
-    while (aux & ~H_FILE) {
-        aux = aux >> 1;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
-        }
-        if (aux & allPieces) break;
-    }
-    //move left
-    aux = bit;
-    while (aux & ~A_FILE) {
-        aux = aux << 1;
-        if (aux & ~*targetBitmap) {
-            move.to = bitToij(aux);
-            pieceLegalMoves.insert(move);
-        }
-        if (aux & allPieces) break;
     }
 }
 
-void Board::getQueenLegalMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+void Board::getQueenMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     //Queen moves are the combination of rook and bishop moves
-    getRookLegalMoves(bit, pieceLegalMoves);
-    getBishopLegalMoves(bit, pieceLegalMoves);
+    getRookMoves(bit, pieceLegalMoves);
+    getBishopMoves(bit, pieceLegalMoves);
+}
+
+void Board::getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
+    PieceMove move;
+    move.from = bitToij(bit);
+    uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
+    uint64_t *myTargetedSquares = (bit & whitePieces) ? &whiteTargetedSquares : &blackTargetedSquares;
+    uint64_t *oponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
+    uint64_t aux;
+    const int I_MOVE[8] = {1, 1, 1, 0, -1, -1, -1, 0};
+    const int J_MOVE[8] = {-1, 0, 1, 1, 1, 0, -1, -1};
+    for (int i = 0; i < 8; ++i) {
+        int newI = move.from.i + I_MOVE[i];
+        int newJ = move.from.j + J_MOVE[i];
+        if (newI >= 0 and newI < 8 and newJ >= 0 and newJ < 8) {
+            ijToBit(newI, newJ, aux);
+            *oponentTargetedeSquares |= aux;
+            if (aux & ~*myPieces && aux & ~*myTargetedSquares) {          
+                move.to = bitToij(aux);
+                pieceLegalMoves.insert(move);
+            }
+        }
+    }
 }

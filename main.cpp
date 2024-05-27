@@ -23,9 +23,7 @@ int main(int argc, char* argv[]) {
         
         if (myApp.isPieceMoveAvailable()) {
             lastPieceMove = myApp.getMove();
-            std::set<PieceMove> legalMoves = board.getLegalMoves();
-            if (legalMoves.find(lastPieceMove) != legalMoves.end())
-                board.movePiece(lastPieceMove);
+            board.movePiece(lastPieceMove);
         }
         board.printBoardApp(&myApp);
     }
