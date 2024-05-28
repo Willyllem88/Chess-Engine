@@ -12,12 +12,15 @@ void Board::setDefaulValues() {
 
     allPieces = 0xffff00000000ffff;
     enPassant = 0;
+    castleBitmap = 0x2200000000000022;
+    //FIX: sort this values by each color
     whitePieces = 0xffff000000000000;
     whiteTargetedSquares = 0; //Squares targeted by white pieces
     whitePinnedSquares = 0;
     blackPieces = 0x000000000000ffff;
     blackTargetedSquares = 0;
     blackPinnedSquares = 0;
+    
     //FIX: more values to be set
 
     whitePawn = 0x00ff000000000000;
@@ -46,6 +49,8 @@ void Board::movePiece(PieceMove& move) {
     
     //If the moves is a pown that mvoes two squares, it updates the board info in order to let en passant.
     updateEnPassant(move);
+
+    updateEnCastle(move);
 
     makeAMove(move);
 
@@ -147,6 +152,33 @@ void Board::updateEnPassant(PieceMove& move) {
         enPassant = aux << 8; 
 }
 
+void Board::updateEnCastle(PieceMove& move) {
+    uint64_t fromBit;
+    ijToBit(move.from.i, move.from.j, fromBit);
+    PieceType p = bitToPieceType(fromBit);
+    switch(p) {
+        case WHITE_KING:
+            castleBitmap = castleBitmap & ~0x2200000000000000;
+            break;
+        case BLACK_KING:
+            castleBitmap = castleBitmap & ~0x0000000000000022;
+            break;
+        case WHITE_ROOK:
+            if (fromBit == 0x0100000000000000)
+                castleBitmap = castleBitmap & ~0x0200000000000000;
+            else if (fromBit == 0x8000000000000000)
+                castleBitmap = castleBitmap & ~0x2000000000000000;
+            break;
+        case BLACK_ROOK:
+            if (fromBit == 0x0000000000000001)
+                castleBitmap = castleBitmap & ~0x0000000000000002;
+            else if (fromBit == 0x0000000000000080)
+                castleBitmap = castleBitmap & ~0x0000000000000020;
+            break;
+        default:;
+    }
+}
+
 void Board::manageCheck(std::set<PieceMove> &legalMoves) {
     uint64_t *myKing = (moveTurn == WHITE) ? &whiteKing : &blackKing;
     uint64_t *myTargetedSquares = (moveTurn == WHITE) ? &whiteTargetedSquares : &blackTargetedSquares;
@@ -214,20 +246,59 @@ void Board::makeAMove(PieceMove& move) {
     //Modifies the bitmaps in order to materialize the move
     if (toPieceBitmap != nullptr)
         removePiece(*toPieceBitmap, toBit);
-    //Take en passant logic
-    else if ((*fromPieceBitmap & whitePawn) && (move.from.j != move.to.j)) {
-        uint64_t aux = toBit << 8;
-        removePiece(blackPawn, aux);
-    }
-    else if (*fromPieceBitmap & blackPawn && move.from.j != move.to.j) {
-        uint64_t aux = toBit >> 8;
-        removePiece(whitePawn, aux);
-    }
+    else {
+        //Detects and manages the en passant move
+        if ((*fromPieceBitmap & whitePawn) && (move.from.j != move.to.j)) {
+            uint64_t aux = toBit << 8;
+            removePiece(blackPawn, aux);
+        }
+        else if (*fromPieceBitmap & blackPawn && move.from.j != move.to.j) {
+            uint64_t aux = toBit >> 8;
+            removePiece(whitePawn, aux);
+        }
+
+        //Detects if a castle move is being done, if so, it will move the rook
+        manageCastleMove(fromPieceBitmap, move);
+
+        //Detects if promoted, and makes the needed changes to the bitmaps
+        //...
+    }    
 
     //Add the piece to its new location
     addPiece(*fromPieceBitmap, toBit);
     //Remove the piece from it last location
     removePiece(*fromPieceBitmap, fromBit);
+}
+
+void Board::manageCastleMove(uint64_t *fromPieceBitmap, PieceMove& move) {
+    if (*fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 6) {
+        uint64_t rookFrom = 0x0100000000000000;
+        uint64_t rookTo = 0x0400000000000000;
+        addPiece(whiteRook, rookTo);
+        removePiece(whiteRook, rookFrom);
+        castleBitmap = castleBitmap & ~0x2200000000000000;
+    }
+    else if (*fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 2) {
+        uint64_t rookFrom = 0x8000000000000000;
+        uint64_t rookTo = 0x1000000000000000;
+        addPiece(whiteRook, rookTo);
+        removePiece(whiteRook, rookFrom);
+        castleBitmap = castleBitmap & ~0x220000000000000;
+    }
+    else if (*fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 6) {
+        uint64_t rookFrom = 0x0000000000000001;
+        uint64_t rookTo = 0x0000000000000004;
+        addPiece(blackRook, rookTo);
+        removePiece(blackRook, rookFrom);
+        castleBitmap = castleBitmap & ~0x0000000000000022;
+    }
+    else if (*fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 2) {
+        uint64_t rookFrom = 0x0000000000000080;
+        uint64_t rookTo = 0x0000000000000010;
+        addPiece(blackRook, rookTo);
+        removePiece(blackRook, rookFrom);
+        castleBitmap = castleBitmap & ~0x0000000000000022;
+    }
 }
 
 void Board::removePiece(uint64_t& targetBitMap, uint64_t& bit) {

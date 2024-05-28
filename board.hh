@@ -33,6 +33,8 @@ private:
 
     void updateEnPassant(PieceMove& move);
 
+    void updateEnCastle(PieceMove& move);
+
     //Detects if I'm checked. If so, eliminates eliminates those moves that don't free me from check.
     void manageCheck(std::set<PieceMove> &legalMoves);
 
@@ -46,6 +48,10 @@ private:
 
     //It will add the bit to the targetBitMap.
     void addPiece(uint64_t& targetBitMap, uint64_t& bit);
+
+    void manageCastleMove(uint64_t *fromPieceBitmap, PieceMove& move);
+
+
 
     //It will return the moves of the pieces, all moves, even those that put the king in check.
     //  Aditionaly, the <white|black>TargetedSquares bitmaps will be filled.
@@ -80,6 +86,7 @@ private:
     //Bitmaps: seeing from whites view the MSB (most significant bit) will be located in (a-1), and the LSB in (h-8)
     uint64_t allPieces;
     uint64_t enPassant;
+    uint64_t castleBitmap;
 
     //White pieces
     uint64_t whitePawn;

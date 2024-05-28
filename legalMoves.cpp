@@ -71,7 +71,6 @@ void Board::getBlackPawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMove
     }
 }
 
-//POSSIBLE OPTIMITZATION: use more bitmaps instead of ij coordinates
 void Board::getBishopMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     PieceMove move;
     move.from = bitToij(bit);
@@ -139,7 +138,6 @@ void Board::getKnightMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) 
     }
 }
 
-//POSSIBLE OPTIMITZATION: use more bitmaps instead of ij coordinates
 void Board::getRookMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
     PieceMove move;
     move.from = bitToij(bit);
@@ -209,6 +207,48 @@ void Board::getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
                 move.to = bitToij(aux);
                 pieceLegalMoves.insert(move);
             }
+        }
+    }
+
+    //Calculate castle moves
+    if (bit & whitePieces) {
+        //WHITE: castle king side (short castle)
+        if (castleBitmap & 0x0200000000000000 && 
+            whiteRook &0x0100000000000000 && 
+            (allPieces & 0x0600000000000000) == 0 
+            && (whiteTargetedSquares & 0x0e00000000000000) == 0) {
+                move.to = {std::make_pair(7, 6)};
+                pieceLegalMoves.insert(move);
+                std::cout << "WHITE: Kingside castle" << std::endl;
+        }
+        //WHITE: castle queen side (long castle)
+        if (castleBitmap & 0x2000000000000000 && 
+            whiteRook &0x8000000000000000 && 
+            (allPieces & 0x7000000000000000) == 0 
+            && (whiteTargetedSquares & 0x3800000000000000) == 0) {
+                move.to = {std::make_pair(7, 2)};
+                pieceLegalMoves.insert(move);
+                std::cout << "WHITE: Queenside castle" << std::endl;
+        }
+    }
+    if (bit & blackPieces) {
+        //BLACK: castle king side (short castle)
+        if (castleBitmap & 0x0000000000000002 && 
+            blackRook &0x0000000000000001 && 
+            (allPieces & 0x0000000000000006) == 0 
+            && (blackTargetedSquares & 0x000000000000000e) == 0) {
+                move.to = {std::make_pair(0, 6)};
+                pieceLegalMoves.insert(move);
+                std::cout << "BLACK: Kingside castle" << std::endl;
+        }
+        //BLACK: castle queen side (long castle)
+        if (castleBitmap & 0x0000000000000020 && 
+            blackRook &0x0000000000000080 && 
+            (allPieces & 0x0000000000000070) == 0 
+            && (blackTargetedSquares & 0x0000000000000038) == 0) {
+                move.to = {std::make_pair(0, 2)};
+                pieceLegalMoves.insert(move);
+                std::cout << "BLACK: Queenside castle" << std::endl;
         }
     }
 }

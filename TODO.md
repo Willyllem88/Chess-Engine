@@ -11,9 +11,9 @@ Here I will list the pending tasks. Just to not forget those ideas that might be
 ## FIX SHORT TERM
 
 * It will render only when a move its done.
-* Provide castle logic
 * Provide promote logic (think how to do it)
 
 # FIX LONG TERM
 
-* Improve the GUI, adding sound (easy) and visualize the movement (hard, i think) 
+* Test it with real chess data, in order to find possible errors. A function that reads chess moves in ascii and playis it in the board.
+* Improve the GUI, adding sound (easy) and visualize the movement (hard, i think)
