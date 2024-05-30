@@ -39,6 +39,7 @@ void Board::setDefaulValues() {
 }
 
 void Board::movePiece(PieceMove& move) {
+    std::cout << "*********** " << pieceToString(move.promoteTo) << "\n";
     //FIX: where do i put the pinned bitmap to 0;
     //Checks if the move is legal
     if (legalMoves.find(move) == legalMoves.end()) {
@@ -77,10 +78,10 @@ void Board::calculateLegalMoves() {
     eliminatePinnedCheckMoves(legalMoves);
 
     //FIX: Manage stalemate
-    std::cout << "_______________________________all legal moves_______________________________\n";
+    /*std::cout << "_______________________________all legal moves_______________________________\n";
     for (auto move : legalMoves) {
         std::cout << "    Legal move from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << " --> " << pieceToString(move.promoteTo)<< "\n";
-    }
+    }*/
 
 
 }
@@ -399,6 +400,6 @@ void Board::bitBoardToMatrix(PieceMatrix& b) {
 void Board::printBoardApp(MyApp* a) {
     PieceMatrix pm (8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
-    a->render(pm);
+    a->printBoard(pm);
     return;
 }

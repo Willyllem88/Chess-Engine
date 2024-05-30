@@ -23,7 +23,7 @@ class MyApp{
         bool handleEvents();
 
         //Renders the board and the pieces
-        void render(PieceMatrix& pm);
+        void printBoard(PieceMatrix& pm);
 
         //Frees the textures
         void free();
@@ -33,8 +33,15 @@ class MyApp{
         bool pressed;
         bool pieceMoveAvailable;
         MouseMove lastMouseMove;
+        MousePos promotionClickPos;
         PieceMove lastPieceMove;
-        void MousePosMoveToPieceMove(MouseMove& move);        
+
+        bool promotionPending;
+        PieceColor promotionColor;
+        PieceType mousePosToPromotionOption(MousePos& pos);
+
+        PieceMatrix pieceMatrix;
+        void mouseMoveToPieceMove(MouseMove& move);        
 
         //__WINDOW__
         int TILE_SIZE = 80;
@@ -65,6 +72,8 @@ class MyApp{
         SDL_Texture* mBlackQueenTexture;
         SDL_Texture* mBlackKingTexture;
 
+        void renderBoard();
+        void displayPromotionOptions(PieceColor color);
         bool loadMedia();
         SDL_Texture* loadTexture(const std::string &path);
 };

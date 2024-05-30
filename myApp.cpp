@@ -2,7 +2,9 @@
 
 MyApp::MyApp() {
     pieceMoveAvailable = false;
+    promotionPending = false;
     pressed = false;
+    pieceMatrix = std::vector(8, std::vector(8, NONE));
 
     mWhitePawnTexture = nullptr; 
     mWhiteBishopTexture = nullptr;
@@ -69,19 +71,24 @@ bool MyApp::handleEvents() {
         //Handle mouse click
         else if (e.type == SDL_MOUSEBUTTONDOWN) {
             pressed = true;
-            lastMouseMove.from = MousePos(e.button.x, e.button.y);
             SDL_GetMouseState(&lastMouseMove.from.x, &lastMouseMove.from.y);
-            //std::cout << "Mouse button pressed at (" << lastMouseMove.from.x << ", " << lastMouseMove.from.y << ")\n";
+            if (promotionPending)
+                lastPieceMove.promoteTo = mousePosToPromotionOption(lastMouseMove.from);
         }
         //Handle mouse release
         else if (e.type == SDL_MOUSEBUTTONUP && pressed) {
             pressed = false;
-            lastMouseMove.to = MousePos(e.button.x, e.button.y);
-            SDL_GetMouseState(&lastMouseMove.to.x, &lastMouseMove.to.y);
-            //std::cout << "Mouse button released at (" << lastMouseMove.to.x << ", " << lastMouseMove.to.y << ")\n";
-            MousePosMoveToPieceMove(lastMouseMove);
-            //INFO: No need to check if the move is valid, since the user can only move the pieces inside the board
-            pieceMoveAvailable = true;
+            if (!promotionPending) {
+                SDL_GetMouseState(&lastMouseMove.to.x, &lastMouseMove.to.y);
+                mouseMoveToPieceMove(lastMouseMove);
+                //mouseMoveToPieceMove will set pieceMoveAvailable to true if the move is a promotion
+                if (!promotionPending)
+                    pieceMoveAvailable = true;
+            }
+            else if (lastPieceMove.promoteTo != NONE){
+                promotionPending = false;
+                pieceMoveAvailable = true;
+            }
         }
         else if (e.type == SDL_WINDOWEVENT) {
             if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
@@ -92,10 +99,23 @@ bool MyApp::handleEvents() {
     return true;
 }
 
-void MyApp::render(PieceMatrix& pm) {
-    SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-    SDL_RenderClear(renderer);
+PieceType MyApp::mousePosToPromotionOption(MousePos& pos) {
+    if (pos.x > A8_x + 3 * TILE_SIZE && pos.x < A8_x + 4 * TILE_SIZE) {
+        if (pos.y > A8_y + 3 * TILE_SIZE && pos.y < A8_y + 4 * TILE_SIZE)
+            return (promotionColor == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
+        else if (pos.y > A8_y + 4 * TILE_SIZE && pos.y < A8_y + 5 * TILE_SIZE)
+            return (promotionColor == WHITE) ? WHITE_ROOK : BLACK_ROOK;
+    } 
+    else if (pos.x > A8_x + 4 * TILE_SIZE && pos.x < A8_x + 5 * TILE_SIZE) {
+        if (pos.y > A8_y + 3 * TILE_SIZE && pos.y < A8_y + 4 * TILE_SIZE)
+            return (promotionColor == WHITE) ? WHITE_KNIGHT : BLACK_KNIGHT;
+        else if (pos.y > A8_y + 4 * TILE_SIZE && pos.y < A8_y + 5 * TILE_SIZE)
+            return (promotionColor == WHITE) ? WHITE_BISHOP : BLACK_BISHOP;
+    }
+    return NONE;
+}
 
+void MyApp::renderBoard() {
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             SDL_Rect fillRect = { j * TILE_SIZE + A8_x, i * TILE_SIZE + A8_y, TILE_SIZE, TILE_SIZE };
@@ -108,8 +128,7 @@ void MyApp::render(PieceMatrix& pm) {
             SDL_RenderFillRect(renderer, &fillRect);
             
             //Print pieces
-            //std::cout << pieceToString(pm[i][j]) << std::endl;
-            switch (pm[i][j]) {
+            switch (pieceMatrix[i][j]) {
                 case WHITE_PAWN:
                     SDL_RenderCopy(renderer, mWhitePawnTexture, nullptr, &fillRect);
                     break;
@@ -128,7 +147,6 @@ void MyApp::render(PieceMatrix& pm) {
                 case WHITE_KING:
                     SDL_RenderCopy(renderer, mWhiteKingTexture, nullptr, &fillRect);
                     break;
-
                 case BLACK_PAWN:
                     SDL_RenderCopy(renderer, mBlackPawnTexture, nullptr, &fillRect);
                     break;
@@ -152,33 +170,83 @@ void MyApp::render(PieceMatrix& pm) {
             }
         }
     }
+}
+
+void MyApp::printBoard(PieceMatrix& pm) {
+    pieceMatrix = pm;
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    renderBoard();
+    if (promotionPending)
+        displayPromotionOptions(promotionColor);
 
     SDL_RenderPresent(renderer);
 }
 
-void MyApp::free() {
-    if (mWhitePawnTexture != nullptr) {
-        SDL_DestroyTexture(mWhitePawnTexture);
-        mWhitePawnTexture = nullptr;
-    }
-
-    if (mBlackPawnTexture != nullptr) {
-        SDL_DestroyTexture(mBlackPawnTexture);
-        mBlackPawnTexture = nullptr;
-    }
-    //FOR ALL PIECES
-
-    SDL_DestroyRenderer(renderer);
-    renderer = nullptr;
-    SDL_DestroyWindow(window);
-    window = nullptr;
-    SDL_Quit();
-}
-
-void MyApp::MousePosMoveToPieceMove(MouseMove& move) {
+void MyApp::mouseMoveToPieceMove(MouseMove& move) {
     //Convert MousePos to PieceMove
     lastPieceMove.from = PiecePos((move.from.y - A8_y)/TILE_SIZE, (move.from.x - A8_x)/TILE_SIZE);
     lastPieceMove.to = PiecePos((move.to.y - A8_y)/TILE_SIZE, (move.to.x - A8_x)/TILE_SIZE);
+    //if the move is a promotion, the user will have to click on the piece to promote to
+    if (pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == WHITE_PAWN && lastPieceMove.to.i == 0) {
+        promotionColor = WHITE;
+        promotionPending = true;
+    }
+    else if (pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == BLACK_PAWN && lastPieceMove.to.i == 7) {
+        promotionColor = BLACK;
+        promotionPending = true;
+    }
+    else
+        promotionPending = false;
+
+}
+
+void MyApp::displayPromotionOptions(PieceColor color) {
+    //Display a 3x3 square for the background of the promotion options
+    SDL_Rect fillRect = { 5*TILE_SIZE/2 + A8_x, 5*TILE_SIZE/2 + A8_y, 3*TILE_SIZE, 3*TILE_SIZE };
+    SDL_SetRenderDrawColor(renderer, 175, 175, 175, 255);
+    SDL_RenderFillRect(renderer, &fillRect);
+
+    //Pints each piece in the promotion options
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            fillRect = { j * TILE_SIZE + A8_x + 3 * TILE_SIZE, i * TILE_SIZE + A8_y + 3 * TILE_SIZE, TILE_SIZE, TILE_SIZE };
+            if (color == WHITE) {
+                switch (i * 2 + j) {
+                    case 0:
+                        SDL_RenderCopy(renderer, mWhiteQueenTexture, nullptr, &fillRect);
+                        break;
+                    case 1:
+                        SDL_RenderCopy(renderer, mWhiteKnightTexture, nullptr, &fillRect);
+                        break;
+                    case 2:
+                        SDL_RenderCopy(renderer, mWhiteRookTexture, nullptr, &fillRect);
+                        break;
+                    case 3:
+                        SDL_RenderCopy(renderer, mWhiteBishopTexture, nullptr, &fillRect);
+                        break;
+                }
+            }
+            else {
+                switch (i * 2 + j) {
+                    case 0:
+                        SDL_RenderCopy(renderer, mBlackQueenTexture, nullptr, &fillRect);
+                        break;
+                    case 1:
+                        SDL_RenderCopy(renderer, mBlackKnightTexture, nullptr, &fillRect);
+                        break;
+                    case 2:
+                        SDL_RenderCopy(renderer, mBlackRookTexture, nullptr, &fillRect);
+                        break;
+                    case 3:
+                        SDL_RenderCopy(renderer, mBlackBishopTexture, nullptr, &fillRect);
+                        break;
+                }
+            }
+        }
+    }
 }
 
 void MyApp::resizeWindow(int newWidth, int newHeight) {
@@ -233,4 +301,49 @@ SDL_Texture* MyApp::loadTexture(const std::string &path) {
         SDL_FreeSurface(loadedSurface);
     }
     return newTexture;
+}
+
+void MyApp::free() {
+    if (mWhitePawnTexture != nullptr) {
+        SDL_DestroyTexture(mWhitePawnTexture);
+        mWhitePawnTexture = nullptr;}
+    if (mBlackPawnTexture != nullptr) {
+        SDL_DestroyTexture(mBlackPawnTexture);
+        mBlackPawnTexture = nullptr;}
+    if (mWhiteBishopTexture != nullptr) {
+        SDL_DestroyTexture(mWhiteBishopTexture);
+        mWhiteBishopTexture = nullptr;}
+    if (mBlackBishopTexture != nullptr) {
+        SDL_DestroyTexture(mBlackBishopTexture);
+        mBlackBishopTexture = nullptr;}
+    if (mWhiteKnightTexture != nullptr) {
+        SDL_DestroyTexture(mWhiteKnightTexture);
+        mWhiteKnightTexture = nullptr;}
+    if (mBlackKnightTexture != nullptr) {
+        SDL_DestroyTexture(mBlackKnightTexture);
+        mBlackKnightTexture = nullptr;}
+    if (mWhiteRookTexture != nullptr) {
+        SDL_DestroyTexture(mWhiteRookTexture);
+        mWhiteRookTexture = nullptr;}
+    if (mBlackRookTexture != nullptr) {
+        SDL_DestroyTexture(mBlackRookTexture);
+        mBlackRookTexture = nullptr;}
+    if (mWhiteQueenTexture != nullptr) {
+        SDL_DestroyTexture(mWhiteQueenTexture);
+        mWhiteQueenTexture = nullptr;}
+    if (mBlackQueenTexture != nullptr) {
+        SDL_DestroyTexture(mBlackQueenTexture);
+        mBlackQueenTexture = nullptr;}
+    if (mWhiteKingTexture != nullptr) {
+        SDL_DestroyTexture(mWhiteKingTexture);
+        mWhiteKingTexture = nullptr;}
+    if (mBlackKingTexture != nullptr) {
+        SDL_DestroyTexture(mBlackKingTexture);
+        mBlackKingTexture = nullptr;}
+
+    SDL_DestroyRenderer(renderer);
+    renderer = nullptr;
+    SDL_DestroyWindow(window);
+    window = nullptr;
+    SDL_Quit();
 }
