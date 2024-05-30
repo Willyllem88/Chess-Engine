@@ -70,15 +70,18 @@ struct PiecePos {
 
 struct PieceMove {
     PiecePos from, to;
+    //If the move is a promotion, this will be the piece to promote to. If not, it will be NONE
+    PieceType promoteTo;
 
-    inline PieceMove() : from(PiecePos(0, 0)), to(PiecePos(0, 0)) { };
-    inline PieceMove(PiecePos f, PiecePos t) : from(f), to(t) { };
+    inline PieceMove() : from(PiecePos(0, 0)), to(PiecePos(0, 0)), promoteTo(NONE) { };
+    inline PieceMove(PiecePos f, PiecePos t) : from(f), to(t), promoteTo(NONE) { };
 
     bool operator<(const PieceMove& other) const {
         if (from.i != other.from.i) return from.i < other.from.i;
         if (from.j != other.from.j) return from.j < other.from.j;
         if (to.i != other.to.i) return to.i < other.to.i;
-        return to.j < other.to.j;
+        if (to.j != other.to.j) return to.j < other.to.j;
+        return promoteTo < other.promoteTo;
     }
 };
 

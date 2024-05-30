@@ -75,6 +75,14 @@ void Board::calculateLegalMoves() {
     }
     //Eliminates those moves that put the king into check
     eliminatePinnedCheckMoves(legalMoves);
+
+    //FIX: Manage stalemate
+    std::cout << "_______________________________all legal moves_______________________________\n";
+    for (auto move : legalMoves) {
+        std::cout << "    Legal move from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << " --> " << pieceToString(move.promoteTo)<< "\n";
+    }
+
+
 }
 
 void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {
