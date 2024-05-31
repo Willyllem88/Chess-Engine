@@ -7,10 +7,10 @@ Here I will list the pending tasks. Just to not forget those ideas that might be
 * Give some information when executing without arguments
 * Handle all arguments
 * The ENGINE
+* A function that translates chess algebraic notation to ijMove
 
 ## FIX SHORT TERM
 
-* Manage stalemate
 * It will render only when a move its done.
 
 # FIX LONG TERM

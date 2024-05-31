@@ -51,7 +51,7 @@ private:
 
     void manageCastleMove(uint64_t *fromPieceBitmap, PieceMove& move);
 
-
+    void registerState();
 
     //It will return the moves of the pieces, all moves, even those that put the king in check.
     //  Aditionaly, the <white|black>TargetedSquares bitmaps will be filled.
@@ -83,6 +83,7 @@ private:
     void bitBoardToMatrix(PieceMatrix& b);
 
     PieceColor moveTurn;
+    unsigned int moveCounter;
     std::set<PieceMove> legalMoves;
 
     //Bitmaps: seeing from whites view the MSB (most significant bit) will be located in (a-1), and the LSB in (h-8)
@@ -113,6 +114,10 @@ private:
     uint64_t blackPieces;
     uint64_t blackTargetedSquares; //Squares targeted by white pieces
     uint64_t blackPinnedSquares;
+
+    //Log of the boardState
+    std::map<BoardState, int> boardStateLog;
+    bool threefoldRepetition;
 
     //Board information bitmaps, static constexpr because they are constant and will be used in the whole program.
     static constexpr uint64_t A_FILE = 0x8080808080808080;

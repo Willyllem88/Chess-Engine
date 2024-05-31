@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 #include <iomanip>
 
 //This will only be used when displaying the info of the board
@@ -82,6 +83,20 @@ struct PieceMove {
         if (to.i != other.to.i) return to.i < other.to.i;
         if (to.j != other.to.j) return to.j < other.to.j;
         return promoteTo < other.promoteTo;
+    }
+};
+
+struct BoardState{
+    PieceMatrix pieceMatrix;
+    uint64_t enPassant;
+    uint64_t castleRights;
+
+    inline BoardState(PieceMatrix pm, uint64_t ep, uint64_t castleRights) : pieceMatrix(pm), enPassant(ep), castleRights(castleRights) { };
+
+    bool operator<(const BoardState& other) const {
+        if (pieceMatrix != other.pieceMatrix) return pieceMatrix < other.pieceMatrix;
+        if (enPassant != other.enPassant) return enPassant < other.enPassant;
+        return castleRights < other.castleRights;
     }
 };
 

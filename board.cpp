@@ -34,10 +34,12 @@ void Board::setDefaulValues() {
     blackRook = 0x0000000000000081;
     blackQueen = 0x0000000000000010;
     blackKing = 0x0000000000000008;
+
+    threefoldRepetition = false;
+    moveCounter = 0;
 }
 
 void Board::movePiece(PieceMove& move) {
-    std::cout << "*********** " << pieceToString(move.promoteTo) << "\n";
     //Checks if the move is legal
     if (legalMoves.find(move) == legalMoves.end()) {
         std::cout << "    Invalid Move!\n";
@@ -52,15 +54,17 @@ void Board::movePiece(PieceMove& move) {
 
     makeAMove(move);
 
+    if (moveCounter > 0) registerState();
+
+    if (threefoldRepetition) std::cout << "\n\n\n\n -------Threefold repetition\n";
+
     //Given the move, update the legal moves set
     calculateLegalMoves();
 
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
+    ++moveCounter;
 
     calculateLegalMoves();
-    for (auto move : legalMoves) {
-        std::cout << "    Legal move from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << " --> " << pieceToString(move.promoteTo)<< "\n";
-    }
 }
 
 void Board::calculateLegalMoves() {
@@ -68,22 +72,22 @@ void Board::calculateLegalMoves() {
     getAllPiecesMoves(legalMoves);
     //Detects if I'm checked. If so, eliminates eliminates those moves that don't free me from check
     manageCheck(legalMoves);
-    if (legalMoves.empty()) {
-        std::cout <<    "_____________________________________\n" <<
-                        "_____________CHECKMATED______________\n" <<
-                        "_____________________________________\n";
-        //FIX: Manage checkmate
-    }
     //Eliminates those moves that put the king into check
     eliminatePinnedCheckMoves(legalMoves);
-
-    //FIX: Manage stalemate
-    /*std::cout << "_______________________________all legal moves_______________________________\n";
-    for (auto move : legalMoves) {
-        std::cout << "    Legal move from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << " --> " << pieceToString(move.promoteTo)<< "\n";
-    }*/
-
-
+    //If there are no legal moves, it will print the result
+    if (legalMoves.empty()) {
+        std::cout << "No legal moves\n";
+        if (whiteKing & whiteTargetedSquares || blackKing & blackTargetedSquares)
+            std::cout <<    "======================================\n" <<
+                            "* *  *  *  *  CHECKMATED  *  *  *  * *\n" <<
+                            "======================================\n" <<
+                            "- The winner is: " << ((moveTurn == WHITE) ? "BLACK" : "WHITE") << "\n";
+        else 
+            std::cout <<    "======================================\n" <<
+                            "*  *  *  *     STALEMATE    *  *  *  *\n" <<
+                            "======================================n" <<
+                            "- The game is a draw\n";
+    }
 }
 
 void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {
@@ -431,6 +435,25 @@ void Board::bitBoardToMatrix(PieceMatrix& b) {
             aux = aux >> 1;
         }
     }
+}
+
+void Board::registerState() {
+    PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
+    bitBoardToMatrix(pm);
+    BoardState bs(pm, enPassant, castleBitmap);
+    ++boardStateLog[bs];
+    if (boardStateLog[bs] == 3)
+        threefoldRepetition = true;
+    /*for (auto it = boardStateLog.begin(); it != boardStateLog.end(); ++it) {
+        std::cout << "  <-------------->  " << it->second << " \n";
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                std::cout << pieceToString(it->first.pieceMatrix[i][j]) << " ";
+            }
+            std::cout << "\n";
+        }
+        std::cout << "\n";
+    }*/
 }
 
 void Board::printBoardApp(MyApp* a) {
