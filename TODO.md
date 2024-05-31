@@ -12,7 +12,6 @@ Here I will list the pending tasks. Just to not forget those ideas that might be
 
 * Manage stalemate
 * It will render only when a move its done.
-* Finish promote logic. When promoting with a take and BLACKPROMOTION also. Move MyApp::getMove() should handle promotion with a GUI.
 
 # FIX LONG TERM
 

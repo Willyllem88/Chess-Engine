@@ -13,15 +13,13 @@ void Board::setDefaulValues() {
     allPieces = 0xffff00000000ffff;
     enPassant = 0;
     castleBitmap = 0x2200000000000022;
-    //FIX: sort this values by each color
+    
     whitePieces = 0xffff000000000000;
     whiteTargetedSquares = 0; //Squares targeted by white pieces
     whitePinnedSquares = 0;
     blackPieces = 0x000000000000ffff;
     blackTargetedSquares = 0;
     blackPinnedSquares = 0;
-    
-    //FIX: more values to be set
 
     whitePawn = 0x00ff000000000000;
     whiteBishop = 0x2400000000000000;
@@ -40,7 +38,6 @@ void Board::setDefaulValues() {
 
 void Board::movePiece(PieceMove& move) {
     std::cout << "*********** " << pieceToString(move.promoteTo) << "\n";
-    //FIX: where do i put the pinned bitmap to 0;
     //Checks if the move is legal
     if (legalMoves.find(move) == legalMoves.end()) {
         std::cout << "    Invalid Move!\n";
@@ -61,6 +58,9 @@ void Board::movePiece(PieceMove& move) {
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
 
     calculateLegalMoves();
+    for (auto move : legalMoves) {
+        std::cout << "    Legal move from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << " --> " << pieceToString(move.promoteTo)<< "\n";
+    }
 }
 
 void Board::calculateLegalMoves() {
@@ -251,7 +251,17 @@ void Board::makeAMove(PieceMove& move) {
     ijToBit(move.to.i, move.to.j, toBit);
     fromPieceBitmap = bitToPieceBitMap(fromBit);
     toPieceBitmap = bitToPieceBitMap(toBit);
+    //If the move is a promotion, it will change the piece
+    if (move.promoteTo != NONE) {
+        if (toPieceBitmap != nullptr)
+            removePiece(*toPieceBitmap, toBit);
+        uint64_t *promoteToBotmap = pieceTypeToBitmap(move.promoteTo);
+        addPiece(*promoteToBotmap, toBit);
+        removePiece(*fromPieceBitmap, fromBit);
+        return;
+    }
 
+    toPieceBitmap = bitToPieceBitMap(toBit);
     //Modifies the bitmaps in order to materialize the move
     if (toPieceBitmap != nullptr)
         removePiece(*toPieceBitmap, toBit);
@@ -265,14 +275,9 @@ void Board::makeAMove(PieceMove& move) {
             uint64_t aux = toBit >> 8;
             removePiece(whitePawn, aux);
         }
-
         //Detects if a castle move is being done, if so, it will move the rook
         manageCastleMove(fromPieceBitmap, move);
-
-        //Detects if promoted, and makes the needed changes to the bitmaps
-        //...
     }    
-
     //Add the piece to its new location
     addPiece(*fromPieceBitmap, toBit);
     //Remove the piece from it last location
@@ -341,6 +346,37 @@ std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t& bit) {
 void Board::ijToBit(int i, int j, uint64_t& bit) {
     bit = 0x8000000000000000;
     bit = bit >> (8 * (7-i) + j);
+}
+
+uint64_t* Board::pieceTypeToBitmap(PieceType pt) {
+    switch(pt) {
+        case WHITE_PAWN:
+            return &whitePawn;
+        case WHITE_BISHOP:
+            return &whiteBishop;
+        case WHITE_KNIGHT:
+            return &whiteKnight;
+        case WHITE_ROOK:
+            return &whiteRook;
+        case WHITE_QUEEN:
+            return &whiteQueen;
+        case WHITE_KING:
+            return &whiteKing;
+        case BLACK_PAWN:
+            return &blackPawn;
+        case BLACK_BISHOP:
+            return &blackBishop;
+        case BLACK_KNIGHT:
+            return &blackKnight;
+        case BLACK_ROOK:
+            return &blackRook;
+        case BLACK_QUEEN:
+            return &blackQueen;
+        case BLACK_KING:
+            return &blackKing;
+        default:
+            return nullptr;
+    }
 }
 
 uint64_t* Board::bitToPieceBitMap(uint64_t bit) {

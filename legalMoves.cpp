@@ -38,12 +38,9 @@ void Board::getWhitePawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMove
         move.to = bitToij(aux1);
         if (aux1 & ~RANK_8)
             pieceLegalMoves.insert(move);
-        else {
-            //Promotion
-            std::cout << "WHITE_PAWN Promotion" << std::endl;
-            std::cout << "Promotion: " << move.from.i << " " << move.from.j << " to " << move.to.i << " " << move.to.j << std::endl;
+        //Promotion
+        else
             promoteWhitePawn(pieceLegalMoves, move);
-        }
     }
     aux2 = bit >> 16; //Two squares forward
     if (bit & RANK_2 && aux1 & ~allPieces && aux2 & ~allPieces) {
@@ -51,19 +48,33 @@ void Board::getWhitePawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMove
         pieceLegalMoves.insert(move);
     }
     aux1 = bit >> 9; //Capture right
-    if (bit & ~H_FILE && bit & ~RANK_8) {
-        *oponentTargetedeSquares |= aux1;
-        if (aux1 & (*oponentPieces | enPassant)) {
+    if (bit & ~H_FILE) {
+        if (aux1 & ~RANK_8) {
+            *oponentTargetedeSquares |= aux1;
+            if (aux1 & (*oponentPieces | enPassant)) {
+                move.to = bitToij(aux1);
+                pieceLegalMoves.insert(move);
+            }
+        }
+        //Promotion
+        else if (aux1 & *oponentPieces) {
             move.to = bitToij(aux1);
-            pieceLegalMoves.insert(move);
+            promoteWhitePawn(pieceLegalMoves, move);
         }
     }
     aux1 = bit >> 7; //Capture left
-    if (bit & ~A_FILE && bit & ~RANK_8) {
-        *oponentTargetedeSquares |= aux1;
-        if (aux1 & (*oponentPieces | enPassant)) {
+    if (bit & ~A_FILE) {
+        if (aux1 & ~RANK_8) {
+            *oponentTargetedeSquares |= aux1;
+            if (aux1 & (*oponentPieces | enPassant)) {
+                move.to = bitToij(aux1);
+                pieceLegalMoves.insert(move);
+            }
+        }
+        //Promotion
+        else if (aux1 & *oponentPieces) {
             move.to = bitToij(aux1);
-            pieceLegalMoves.insert(move);
+            promoteWhitePawn(pieceLegalMoves, move);
         }
     }
 }
@@ -76,22 +87,13 @@ void Board::getBlackPawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMove
     uint64_t aux1, aux2;
     move.from = bitToij(bit);
     aux1 = bit << 8; //One square forward
-    if (bit & ~RANK_1 && aux1 & ~allPieces) {
+    if (aux1 & ~allPieces) {
         move.to = bitToij(aux1);
         if (aux1 & ~RANK_1)
             pieceLegalMoves.insert(move);
-        else {
-            //Promotion
-            std::cout << "BLACK_PAWN Promotion" << std::endl;
-            move.promoteTo = BLACK_QUEEN;
-            pieceLegalMoves.insert(move);
-            move.promoteTo = BLACK_ROOK;
-            pieceLegalMoves.insert(move);
-            move.promoteTo = BLACK_BISHOP;
-            pieceLegalMoves.insert(move);
-            move.promoteTo = BLACK_KNIGHT;
-            pieceLegalMoves.insert(move);
-        }
+        //Promotion
+        else
+            promoteBlackPawn(pieceLegalMoves, move);
     }
     aux2 = bit << 16; //Two squares forward
     if (bit & RANK_7 && aux1 & ~allPieces && aux2 & ~allPieces) {
@@ -99,19 +101,33 @@ void Board::getBlackPawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMove
         pieceLegalMoves.insert(move);
     }
     aux1 = bit << 7; //Capture right
-    if (bit & ~H_FILE && bit & ~RANK_1) {
-        *oponentTargetedeSquares |= aux1;
-        if (aux1 & (*oponentPieces | enPassant)) {
+    if (bit & ~H_FILE) {
+        if (aux1 & ~RANK_1) {
+            *oponentTargetedeSquares |= aux1;
+            if (aux1 & (*oponentPieces | enPassant)) {
+                move.to = bitToij(aux1);
+                pieceLegalMoves.insert(move);
+            }
+        }
+        //Promotion
+        else if (aux1 & *oponentPieces) {
             move.to = bitToij(aux1);
-            pieceLegalMoves.insert(move);
+            promoteBlackPawn(pieceLegalMoves, move);
         }
     }
     aux1 = bit << 9; //Capture left
-    if (bit & ~A_FILE && bit & ~RANK_1) {
-        *oponentTargetedeSquares |= aux1;
-        if (aux1 & (*oponentPieces | enPassant)) {
+    if (bit & ~A_FILE) {
+        if (aux1 & ~RANK_1) {
+            *oponentTargetedeSquares |= aux1;
+            if (aux1 & (*oponentPieces | enPassant)) {
+                move.to = bitToij(aux1);
+                pieceLegalMoves.insert(move);
+            }
+        }
+        //Promotion
+        else if (aux1 & *oponentPieces) {
             move.to = bitToij(aux1);
-            pieceLegalMoves.insert(move);
+            promoteBlackPawn(pieceLegalMoves, move);
         }
     }
 }
@@ -264,7 +280,6 @@ void Board::getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
             && (whiteTargetedSquares & 0x0e00000000000000) == 0) {
                 move.to = {std::make_pair(7, 6)};
                 pieceLegalMoves.insert(move);
-                std::cout << "WHITE: Kingside castle" << std::endl;
         }
         //WHITE: castle queen side (long castle)
         if (castleBitmap & 0x2000000000000000 && 
@@ -273,7 +288,6 @@ void Board::getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
             && (whiteTargetedSquares & 0x3800000000000000) == 0) {
                 move.to = {std::make_pair(7, 2)};
                 pieceLegalMoves.insert(move);
-                std::cout << "WHITE: Queenside castle" << std::endl;
         }
     }
     if (bit & blackPieces) {
@@ -284,7 +298,6 @@ void Board::getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
             && (blackTargetedSquares & 0x000000000000000e) == 0) {
                 move.to = {std::make_pair(0, 6)};
                 pieceLegalMoves.insert(move);
-                std::cout << "BLACK: Kingside castle" << std::endl;
         }
         //BLACK: castle queen side (long castle)
         if (castleBitmap & 0x0000000000000020 && 
@@ -293,7 +306,6 @@ void Board::getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
             && (blackTargetedSquares & 0x0000000000000038) == 0) {
                 move.to = {std::make_pair(0, 2)};
                 pieceLegalMoves.insert(move);
-                std::cout << "BLACK: Queenside castle" << std::endl;
         }
     }
 }

@@ -70,6 +70,7 @@ bool MyApp::handleEvents() {
         }
         //Handle mouse click
         else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            lastPieceMove.promoteTo = NONE;
             pressed = true;
             SDL_GetMouseState(&lastMouseMove.from.x, &lastMouseMove.from.y);
             if (promotionPending)

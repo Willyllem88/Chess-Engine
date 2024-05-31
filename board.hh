@@ -69,6 +69,8 @@ private:
     //It will convert the x and y to a bit.
     void ijToBit(int i, int j, uint64_t& bit);
 
+    uint64_t* pieceTypeToBitmap(PieceType pt);
+
     //It will return the pieceType of the bit.
     //Also, it will return the pieceBitMap of the piece.
     uint64_t* bitToPieceBitMap(uint64_t bit);
