@@ -158,11 +158,21 @@ void Board::updateEnPassant(PieceMove& move) {
     ijToBit(move.from.i, move.from.j, aux);
     PieceType p = bitToPieceType(aux);
     //White takes black pawn through en passant
-    if (p == WHITE_PAWN && (move.from.i-move.to.i) == 2)
-        enPassant = aux >> 8;
+    if (p == WHITE_PAWN && (move.from.i-move.to.i) == 2) {
+        //If there is an opponent pawn that can take my en passant opportunity
+        if (aux & ~H_FILE && (aux >> 17) & blackPawn)
+            enPassant = aux >> 8;
+        if (aux & ~A_FILE && (aux >> 15) & blackPawn)
+            enPassant = aux >> 8;
+    }   
     //Black takes white pawn through en passant
-    else if (p == BLACK_PAWN && (move.to.i-move.from.i) == 2)
-        enPassant = aux << 8; 
+    else if (p == BLACK_PAWN && (move.to.i-move.from.i) == 2) {
+        //If there is an opponent pawn that can take my en passant opportunity
+        if (aux & ~H_FILE && (aux << 15) & whitePawn)
+            enPassant = aux << 8;
+        if (aux & ~A_FILE && (aux << 17) & whitePawn)
+            enPassant = aux << 8;  
+    }      
 }
 
 void Board::updateEnCastle(PieceMove& move) {
