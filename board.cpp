@@ -68,6 +68,9 @@ void Board::movePiece(PieceMove& move) {
 }
 
 void Board::calculateLegalMoves() {
+    //FIX: ONLY FOR TESTING
+    auto start = std::chrono::high_resolution_clock::now();
+
     //Updates the set with all the moves
     getAllPiecesMoves(legalMoves);
     //Detects if I'm checked. If so, eliminates eliminates those moves that don't free me from check
@@ -88,6 +91,12 @@ void Board::calculateLegalMoves() {
                             "======================================n" <<
                             "- The game is a draw\n";
     }
+
+    //FIX: ONLY FOR TESTING
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n";
+    std::cout << "  - Number of legal moves: " << legalMoves.size() << "\n";
 }
 
 void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {

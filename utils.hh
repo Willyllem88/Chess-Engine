@@ -2,7 +2,7 @@
 #define STRUCTS_HH
 
 #include <unistd.h>
-#include <cstdint>
+#include <chrono>
 #include <iostream>
 #include <string>
 #include <vector>
