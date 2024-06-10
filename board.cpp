@@ -67,6 +67,7 @@ void Board::movePiece(PieceMove& move) {
     calculateLegalMoves();
 
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
+    app->setMoveTurn(moveTurn);
     ++moveCounter;
 
     calculateLegalMoves();

@@ -20,6 +20,8 @@ class MyApp{
         //Pre: pieceMoveAvailable() == true
         PieceMove getMove();
 
+        void setMoveTurn(PieceColor color);
+
         bool handleEvents();
 
         //Renders the board and the pieces

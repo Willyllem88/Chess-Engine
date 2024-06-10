@@ -62,6 +62,10 @@ PieceMove MyApp::getMove() {
     return lastPieceMove;
 }
 
+void MyApp::setMoveTurn(PieceColor color) {
+    moveTurn = color;
+}
+
 bool MyApp::handleEvents() {
     while (SDL_PollEvent(&e) != 0) {
         //Handle QUIT
@@ -192,11 +196,11 @@ void MyApp::mouseMoveToPieceMove(MouseMove& move) {
     lastPieceMove.to = PiecePos((move.to.y - A8_y)/TILE_SIZE, (move.to.x - A8_x)/TILE_SIZE);
     //if the move is a promotion, the user will have to click on the piece to promote to
     //FIX: has to detect which turn it is. It now shows the promotion options for both players even though it's not their turn
-    if (pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == WHITE_PAWN && lastPieceMove.from.i == 1 && lastPieceMove.to.i == 0) {
+    if (moveTurn == WHITE && pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == WHITE_PAWN && lastPieceMove.from.i == 1 && lastPieceMove.to.i == 0) {
         promotionColor = WHITE;
         promotionPending = true;
     }
-    else if (pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == BLACK_PAWN && lastPieceMove.from.i == 6 && lastPieceMove.to.i == 7) {
+    else if (moveTurn == BLACK && pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == BLACK_PAWN && lastPieceMove.from.i == 6 && lastPieceMove.to.i == 7) {
         promotionColor = BLACK;
         promotionPending = true;
     }
