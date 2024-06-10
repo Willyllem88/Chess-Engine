@@ -36,6 +36,8 @@ class MyApp{
         MousePos promotionClickPos;
         PieceMove lastPieceMove;
 
+        PieceColor moveTurn;
+
         bool promotionPending;
         PieceColor promotionColor;
         PieceType mousePosToPromotionOption(MousePos& pos);

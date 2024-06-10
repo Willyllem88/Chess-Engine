@@ -1,8 +1,9 @@
 #include "board.hh"
 
-Board::Board() {
+Board::Board(MyApp* a) {
     setDefaulValues();
     calculateLegalMoves();
+    this->app = a;
 }
 
 Board::~Board() { }
@@ -447,12 +448,14 @@ PieceType Board::bitToPieceType(uint64_t bit) {
 }
 
 void Board::bitBoardToMatrix(PieceMatrix& b) {
-    uint64_t aux = 0x8000000000000000;
-    for (int i = 7; i >= 0; --i) {
+    uint64_t aux = 0x0000000000000001;
+    for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             b[i][j] = bitToPieceType(aux);
-            aux = aux >> 1;
+            std::cout << pieceToString(b[i][j]) << " ";
+            aux = aux << 1;
         }
+        std::cout << "\n";
     }
 }
 
@@ -463,21 +466,11 @@ void Board::registerState() {
     ++boardStateLog[bs];
     if (boardStateLog[bs] == 3)
         threefoldRepetition = true;
-    /*for (auto it = boardStateLog.begin(); it != boardStateLog.end(); ++it) {
-        std::cout << "  <-------------->  " << it->second << " \n";
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                std::cout << pieceToString(it->first.pieceMatrix[i][j]) << " ";
-            }
-            std::cout << "\n";
-        }
-        std::cout << "\n";
-    }*/
 }
 
-void Board::printBoardApp(MyApp* a) {
+void Board::printBoardApp() {
     PieceMatrix pm (8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
-    a->printBoard(pm);
+    app->printBoard(pm);
     return;
 }

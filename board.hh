@@ -9,7 +9,8 @@
 
 class Board {
 public:
-    Board();
+    //It will create a board with the pieces in the initial position. An instance of MyApp is needed to print the board.
+    Board(MyApp* a);
 
     ~Board();
 
@@ -24,7 +25,7 @@ public:
     void getPieceMatrix(PieceMatrix& b);
 
     //It will print the board, through the app
-    void printBoardApp(MyApp* a);
+    void printBoardApp();
 
 private:
     void calculateLegalMoves();
@@ -71,8 +72,7 @@ private:
 
     uint64_t* pieceTypeToBitmap(PieceType pt);
 
-    //It will return the pieceType of the bit.
-    //Also, it will return the pieceBitMap of the piece.
+    //It will return the pieceBitMap of the piece.
     uint64_t* bitToPieceBitMap(uint64_t bit);
 
     //It will return the pieceType of the bit.
@@ -81,6 +81,8 @@ private:
     // Given an 8x8 matrix, it fills it with the pieceType of each cell, if there is no piece, pieceType = NONE.
     //  The returned matrix will be filled from the white player's view. PieceMatrix[0][0] = a-7, PieceMatrix[7][7] = h-0
     void bitBoardToMatrix(PieceMatrix& b);
+    
+    MyApp* app;
 
     PieceColor moveTurn;
     unsigned int moveCounter;

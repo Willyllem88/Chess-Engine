@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
     //IT MIGHT BE AN IF STATEMENT HERE
     // Inicialize the board
     MyApp myApp;
-    Board board;
+    Board board(&myApp);
 
     if (!myApp.init())
         return 1;
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
             lastPieceMove = myApp.getMove();
             board.movePiece(lastPieceMove);
         }
-        board.printBoardApp(&myApp);
+        board.printBoardApp();
     }
 
     myApp.free();
