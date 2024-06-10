@@ -452,11 +452,11 @@ PieceType Board::bitToPieceType(uint64_t bit) {
 }
 
 void Board::bitBoardToMatrix(PieceMatrix& b) {
-    uint64_t aux = 0x0000000000000001;
-    for (int i = 0; i < 8; ++i) {
+    uint64_t aux = 0x8000000000000000;
+    for (int i = 7; i >= 0; --i) {
         for (int j = 0; j < 8; ++j) {
             b[i][j] = bitToPieceType(aux);
-            aux = aux << 1;
+            aux = aux >> 1;
         }
     }
 }

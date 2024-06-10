@@ -8,7 +8,7 @@ CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20
 LDFLAGS = -lSDL2 -lSDL2_image
 
 #Source files
-SRC = main.cpp myApp.cpp board.cpp utils.cpp legalMoves.cpp chessEngine.hh
+SRC = main.cpp myApp.cpp board.cpp utils.cpp legalMoves.cpp
 
 #Header files
 HEADERS = myApp.hh board.hh utils.hh chessEngine.hh
