@@ -11,7 +11,7 @@ Here I will list the pending tasks. Just to not forget those ideas that might be
 
 ## FIX SHORT TERM
 
-* If a pawn is dragged to the back rank the promote window pops up, even if the pawn is too far to promote. Although the move counts as invalid, it should be fixed.
+* If a pawn is dragged to the back rank the promote window pops up, even if the pawn is too far to promote. Although the move counts as invalid, it should be fixed. Still issues when trying to promote and is not the promotion turn. Might change some parts of the code in order to do it.
 * It will render only when a move its done.
 
 # FIX LONG TERM
