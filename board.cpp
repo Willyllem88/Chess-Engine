@@ -57,7 +57,11 @@ void Board::movePiece(PieceMove& move) {
 
     if (moveCounter > 0) registerState();
 
-    if (threefoldRepetition) std::cout << "\n\n\n\n -------Threefold repetition\n";
+    if (threefoldRepetition)
+        std::cout << "======================================\n" <<
+                     "*  *  *  THREEFOLD REPETITION  *  *  *\n" <<
+                     "======================================\n" <<
+                     "- The game is a draw\n";
 
     //Given the move, update the legal moves set
     calculateLegalMoves();
@@ -452,10 +456,8 @@ void Board::bitBoardToMatrix(PieceMatrix& b) {
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             b[i][j] = bitToPieceType(aux);
-            std::cout << pieceToString(b[i][j]) << " ";
             aux = aux << 1;
         }
-        std::cout << "\n";
     }
 }
 
