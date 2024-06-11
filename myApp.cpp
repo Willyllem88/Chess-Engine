@@ -101,6 +101,13 @@ bool MyApp::handleEvents() {
             }
         }
     }
+
+    std::string str;
+    if (readStringFromConsole(str)) {
+        std::cout << "String read: " << str << std::endl;
+        //lastPieceMove = stringToPieceMove(str, moveTurn, pieceMatrix);
+        //pieceMoveAvailable = true;
+    }
     return true;
 }
 

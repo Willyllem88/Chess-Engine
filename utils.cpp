@@ -59,3 +59,28 @@ std::string pieceColorToString(PieceColor p) {
     if (p == WHITE) return "White";
     else return "Black";
 }
+
+bool readStringFromConsole(std::string& str) {
+    fd_set set;
+    struct timeval timeout;
+
+    FD_ZERO(&set);
+    FD_SET(STDIN_FILENO, &set);
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    int rv = select(STDIN_FILENO + 1, &set, NULL, NULL, &timeout);
+    if(rv == -1) {
+        perror("select"); // Error occurred in select()
+        return false;
+    } else if(rv == 0) {
+        return false; // No data to read
+    } else {
+        char ch;
+        while (read(STDIN_FILENO, &ch, 1) == 1 && !isspace(ch)) {
+            str += ch;
+        }
+        return true;
+    }
+}

@@ -2,13 +2,16 @@
 #define STRUCTS_HH
 
 #include <unistd.h>
+#include <sys/select.h>
+#include <ctype.h>
+
 #include <chrono>
 #include <iostream>
+#include <iomanip>
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
-#include <map>
-#include <iomanip>
 
 //This will only be used when displaying the info of the board
 enum PieceType{
@@ -99,5 +102,8 @@ struct BoardState{
         return castleRights < other.castleRights;
     }
 };
+
+//It will return true or false depending on if the user has entered a string, and it will store the string in the str variable
+bool readStringFromConsole(std::string& str);
 
 #endif

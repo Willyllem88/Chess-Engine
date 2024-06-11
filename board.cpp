@@ -43,10 +43,10 @@ void Board::setDefaulValues() {
 void Board::movePiece(PieceMove& move) {
     //Checks if the move is legal
     if (legalMoves.find(move) == legalMoves.end()) {
-        std::cout << "    Invalid Move!\n";
+        std::cout << "Invalid Move!\n";
         return;
     }
-    std::cout << "    Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
+    std::cout << "Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
     
     //If the moves is a pown that mvoes two squares, it updates the board info in order to let en passant.
     updateEnPassant(move);
@@ -85,7 +85,7 @@ void Board::calculateLegalMoves() {
     eliminatePinnedCheckMoves(legalMoves);
     //If there are no legal moves, it will print the result
     if (legalMoves.empty()) {
-        std::cout << "No legal moves\n";
+        std::cout << "There are no legal moves\n";
         if (whiteKing & whiteTargetedSquares || blackKing & blackTargetedSquares)
             std::cout <<    "======================================\n" <<
                             "* *  *  *  *  CHECKMATED  *  *  *  * *\n" <<
@@ -101,8 +101,8 @@ void Board::calculateLegalMoves() {
     //FIX: ONLY FOR TESTING
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
-    std::cout << "Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n";
-    std::cout << "  - Number of legal moves: " << legalMoves.size() << "\n";
+    std::cout << "  [INFO] Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n";
+    std::cout << "  [INFO] Number of legal moves: " << legalMoves.size() << "\n";
 }
 
 void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {
