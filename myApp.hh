@@ -12,12 +12,22 @@ class MyApp{
         MyApp() {}
         virtual ~MyApp() {}
 
+        PieceMove getMove();
+
         virtual bool init() = 0;
         virtual bool isPieceMoveAvailable() = 0;
-        virtual PieceMove getMove() = 0;
         virtual void setMoveTurn([[maybe_unused]] PieceColor color) = 0;
         virtual bool handleEvents() = 0;
         virtual void printBoard([[maybe_unused]] PieceMatrix& pm) = 0;
+    
+    protected:
+        PieceMove lastPieceMove;
+        bool pieceMoveAvailable;
+        PieceColor moveTurn;
+};
+
+class ConsoleApp : public MyApp {
+    public:
 };
 
 class GUIApp : public MyApp {
@@ -27,19 +37,14 @@ class GUIApp : public MyApp {
 
         bool init() override;
         bool isPieceMoveAvailable() override;
-        PieceMove getMove() override;
         void setMoveTurn(PieceColor color) override;
         bool handleEvents() override;
         void printBoard(PieceMatrix& pm) override;
         
     private:
         bool pressed;
-        bool pieceMoveAvailable;
         MouseMove lastMouseMove;
         MousePos promotionClickPos;
-        PieceMove lastPieceMove;
-
-        PieceColor moveTurn;
         
         bool promotionPending;
         PieceColor promotionColor;
@@ -78,9 +83,6 @@ class GUIApp : public MyApp {
         void displayPromotionOptions(PieceColor color);
         bool loadMedia();
         SDL_Texture* loadTexture(const std::string &path);
-};
-
-class ConsoleApp : public MyApp {
 };
 
 #endif

@@ -1,5 +1,10 @@
 #include "myApp.hh"
 
+PieceMove MyApp::getMove() {
+    pieceMoveAvailable = false;
+    return lastPieceMove;
+}
+
 GUIApp::GUIApp() {
     pieceMoveAvailable = false;
     promotionPending = false;
@@ -73,11 +78,6 @@ bool GUIApp::isPieceMoveAvailable() {
     return pieceMoveAvailable;
 }
 
-PieceMove GUIApp::getMove() {
-    pieceMoveAvailable = false;
-    return lastPieceMove;
-}
-
 void GUIApp::setMoveTurn(PieceColor color) {
     moveTurn = color;
 }
@@ -121,8 +121,8 @@ bool GUIApp::handleEvents() {
     std::string str;
     if (readStringFromConsole(str)) {
         std::cout << "String read: " << str << std::endl;
-        //lastPieceMove = stringToPieceMove(str, moveTurn, pieceMatrix);
-        //pieceMoveAvailable = true;
+        lastPieceMove = algebraicToPieceMove(str, pieceMatrix, moveTurn);
+        pieceMoveAvailable = true;
     }
     return true;
 }

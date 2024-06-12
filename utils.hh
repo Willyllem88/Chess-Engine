@@ -106,4 +106,6 @@ struct BoardState{
 //It will return true or false depending on if the user has entered a string, and it will store the string in the str variable
 bool readStringFromConsole(std::string& str);
 
+PieceMove algebraicToPieceMove(std::string& str, PieceMatrix& pm, PieceColor turn);
+
 #endif
