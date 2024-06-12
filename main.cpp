@@ -4,10 +4,10 @@
 int main(int argc, char* argv[]) {
     //IT MIGHT BE AN IF STATEMENT HERE
     // Inicialize the board
-    MyApp myApp;
-    Board board(&myApp);
+    MyApp* myApp = new GUIApp();
+    Board board(myApp);
 
-    if (!myApp.init())
+    if (!myApp->init())
         return 1;
 
 
@@ -18,16 +18,16 @@ int main(int argc, char* argv[]) {
 
     PieceMove lastPieceMove;
     while (1) {
-        if (!myApp.handleEvents())
+        if (!myApp->handleEvents())
             break;
         
-        if (myApp.isPieceMoveAvailable()) {
-            lastPieceMove = myApp.getMove();
+        if (myApp->isPieceMoveAvailable()) {
+            lastPieceMove = myApp->getMove();
             board.movePiece(lastPieceMove);
         }
         board.printBoardApp();
     }
 
-    myApp.free();
+    delete myApp;
     return 0;
 }

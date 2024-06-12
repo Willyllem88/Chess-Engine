@@ -1,6 +1,6 @@
 #include "myApp.hh"
 
-MyApp::MyApp() {
+GUIApp::GUIApp() {
     pieceMoveAvailable = false;
     promotionPending = false;
     pressed = false;
@@ -21,11 +21,27 @@ MyApp::MyApp() {
     mBlackKingTexture = nullptr;    
 }
 
-MyApp::~MyApp() {
-    free();
+GUIApp::~GUIApp() {
+    SDL_DestroyTexture(mWhitePawnTexture);
+    SDL_DestroyTexture(mWhiteBishopTexture);
+    SDL_DestroyTexture(mWhiteKnightTexture);
+    SDL_DestroyTexture(mWhiteRookTexture);
+    SDL_DestroyTexture(mWhiteQueenTexture);
+    SDL_DestroyTexture(mWhiteKingTexture);
+    SDL_DestroyTexture(mBlackPawnTexture);
+    SDL_DestroyTexture(mBlackBishopTexture);
+    SDL_DestroyTexture(mBlackKnightTexture);
+    SDL_DestroyTexture(mBlackRookTexture);
+    SDL_DestroyTexture(mBlackQueenTexture);
+    SDL_DestroyTexture(mBlackKingTexture);
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    
+    SDL_Quit();
 }
 
-bool MyApp::init() {
+bool GUIApp::init() {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -53,20 +69,20 @@ bool MyApp::init() {
     return true;
 }
 
-bool MyApp::isPieceMoveAvailable() {
+bool GUIApp::isPieceMoveAvailable() {
     return pieceMoveAvailable;
 }
 
-PieceMove MyApp::getMove() {
+PieceMove GUIApp::getMove() {
     pieceMoveAvailable = false;
     return lastPieceMove;
 }
 
-void MyApp::setMoveTurn(PieceColor color) {
+void GUIApp::setMoveTurn(PieceColor color) {
     moveTurn = color;
 }
 
-bool MyApp::handleEvents() {
+bool GUIApp::handleEvents() {
     while (SDL_PollEvent(&e) != 0) {
         //Handle QUIT
         if (e.type == SDL_QUIT) {
@@ -111,7 +127,7 @@ bool MyApp::handleEvents() {
     return true;
 }
 
-PieceType MyApp::mousePosToPromotionOption(MousePos& pos) {
+PieceType GUIApp::mousePosToPromotionOption(MousePos& pos) {
     if (pos.x > A8_x + 3 * TILE_SIZE && pos.x < A8_x + 4 * TILE_SIZE) {
         if (pos.y > A8_y + 3 * TILE_SIZE && pos.y < A8_y + 4 * TILE_SIZE)
             return (promotionColor == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
@@ -127,7 +143,7 @@ PieceType MyApp::mousePosToPromotionOption(MousePos& pos) {
     return NONE;
 }
 
-void MyApp::renderBoard() {
+void GUIApp::renderBoard() {
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
             SDL_Rect fillRect = { j * TILE_SIZE + A8_x, i * TILE_SIZE + A8_y, TILE_SIZE, TILE_SIZE };
@@ -184,7 +200,7 @@ void MyApp::renderBoard() {
     }
 }
 
-void MyApp::printBoard(PieceMatrix& pm) {
+void GUIApp::printBoard(PieceMatrix& pm) {
     pieceMatrix = pm;
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -197,7 +213,7 @@ void MyApp::printBoard(PieceMatrix& pm) {
     SDL_RenderPresent(renderer);
 }
 
-void MyApp::mouseMoveToPieceMove(MouseMove& move) {
+void GUIApp::mouseMoveToPieceMove(MouseMove& move) {
     //Convert MousePos to PieceMove
     lastPieceMove.from = PiecePos((move.from.y - A8_y)/TILE_SIZE, (move.from.x - A8_x)/TILE_SIZE);
     lastPieceMove.to = PiecePos((move.to.y - A8_y)/TILE_SIZE, (move.to.x - A8_x)/TILE_SIZE);
@@ -216,7 +232,7 @@ void MyApp::mouseMoveToPieceMove(MouseMove& move) {
 
 }
 
-void MyApp::displayPromotionOptions(PieceColor color) {
+void GUIApp::displayPromotionOptions(PieceColor color) {
     //Display a 3x3 square for the background of the promotion options
     SDL_Rect fillRect = { 5*TILE_SIZE/2 + A8_x, 5*TILE_SIZE/2 + A8_y, 3*TILE_SIZE, 3*TILE_SIZE };
     SDL_SetRenderDrawColor(renderer, 175, 175, 175, 255);
@@ -262,7 +278,7 @@ void MyApp::displayPromotionOptions(PieceColor color) {
     }
 }
 
-void MyApp::resizeWindow(int newWidth, int newHeight) {
+void GUIApp::resizeWindow(int newWidth, int newHeight) {
     this->SCREEN_WIDTH = newWidth;
     this->SCREEN_HEIGHT = newHeight;
     TILE_SIZE = std::min(SCREEN_WIDTH, SCREEN_HEIGHT) / 8;
@@ -271,7 +287,7 @@ void MyApp::resizeWindow(int newWidth, int newHeight) {
     // Adjust TILE_SIZE based on new dimensions, if necessary
 }
 
-bool MyApp::loadMedia() {
+bool GUIApp::loadMedia() {
     mWhitePawnTexture = loadTexture("./img/whitePawn.png");
     if (mWhitePawnTexture == nullptr) return false;
     mWhiteBishopTexture = loadTexture("./img/whiteBishop.png");
@@ -301,7 +317,7 @@ bool MyApp::loadMedia() {
     return true;
 }
 
-SDL_Texture* MyApp::loadTexture(const std::string &path) {
+SDL_Texture* GUIApp::loadTexture(const std::string &path) {
     SDL_Texture* newTexture = nullptr;
     SDL_Surface* loadedSurface = IMG_Load(path.c_str());
     if (loadedSurface == nullptr) {
@@ -314,49 +330,4 @@ SDL_Texture* MyApp::loadTexture(const std::string &path) {
         SDL_FreeSurface(loadedSurface);
     }
     return newTexture;
-}
-
-void MyApp::free() {
-    if (mWhitePawnTexture != nullptr) {
-        SDL_DestroyTexture(mWhitePawnTexture);
-        mWhitePawnTexture = nullptr;}
-    if (mBlackPawnTexture != nullptr) {
-        SDL_DestroyTexture(mBlackPawnTexture);
-        mBlackPawnTexture = nullptr;}
-    if (mWhiteBishopTexture != nullptr) {
-        SDL_DestroyTexture(mWhiteBishopTexture);
-        mWhiteBishopTexture = nullptr;}
-    if (mBlackBishopTexture != nullptr) {
-        SDL_DestroyTexture(mBlackBishopTexture);
-        mBlackBishopTexture = nullptr;}
-    if (mWhiteKnightTexture != nullptr) {
-        SDL_DestroyTexture(mWhiteKnightTexture);
-        mWhiteKnightTexture = nullptr;}
-    if (mBlackKnightTexture != nullptr) {
-        SDL_DestroyTexture(mBlackKnightTexture);
-        mBlackKnightTexture = nullptr;}
-    if (mWhiteRookTexture != nullptr) {
-        SDL_DestroyTexture(mWhiteRookTexture);
-        mWhiteRookTexture = nullptr;}
-    if (mBlackRookTexture != nullptr) {
-        SDL_DestroyTexture(mBlackRookTexture);
-        mBlackRookTexture = nullptr;}
-    if (mWhiteQueenTexture != nullptr) {
-        SDL_DestroyTexture(mWhiteQueenTexture);
-        mWhiteQueenTexture = nullptr;}
-    if (mBlackQueenTexture != nullptr) {
-        SDL_DestroyTexture(mBlackQueenTexture);
-        mBlackQueenTexture = nullptr;}
-    if (mWhiteKingTexture != nullptr) {
-        SDL_DestroyTexture(mWhiteKingTexture);
-        mWhiteKingTexture = nullptr;}
-    if (mBlackKingTexture != nullptr) {
-        SDL_DestroyTexture(mBlackKingTexture);
-        mBlackKingTexture = nullptr;}
-
-    SDL_DestroyRenderer(renderer);
-    renderer = nullptr;
-    SDL_DestroyWindow(window);
-    window = nullptr;
-    SDL_Quit();
 }

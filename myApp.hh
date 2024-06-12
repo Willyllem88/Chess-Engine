@@ -6,32 +6,33 @@
 
 #include "utils.hh"
 
+
 class MyApp{
     public:
-        MyApp();
-        ~MyApp();
+        MyApp() {}
+        virtual ~MyApp() {}
 
-        bool init();
+        virtual bool init() = 0;
+        virtual bool isPieceMoveAvailable() = 0;
+        virtual PieceMove getMove() = 0;
+        virtual void setMoveTurn([[maybe_unused]] PieceColor color) = 0;
+        virtual bool handleEvents() = 0;
+        virtual void printBoard([[maybe_unused]] PieceMatrix& pm) = 0;
+};
 
-        //Asks if the user has made a move
-        bool isPieceMoveAvailable();
+class GUIApp : public MyApp {
+    public:
+        GUIApp();
+        ~GUIApp() override;
 
-        //Gets the move made by the user
-        //Pre: pieceMoveAvailable() == true
-        PieceMove getMove();
-
-        void setMoveTurn(PieceColor color);
-
-        bool handleEvents();
-
-        //Renders the board and the pieces
-        void printBoard(PieceMatrix& pm);
-
-        //Frees the textures
-        void free();
+        bool init() override;
+        bool isPieceMoveAvailable() override;
+        PieceMove getMove() override;
+        void setMoveTurn(PieceColor color) override;
+        bool handleEvents() override;
+        void printBoard(PieceMatrix& pm) override;
         
     private:
-        //used to detect mouse slides.
         bool pressed;
         bool pieceMoveAvailable;
         MouseMove lastMouseMove;
@@ -39,7 +40,7 @@ class MyApp{
         PieceMove lastPieceMove;
 
         PieceColor moveTurn;
-
+        
         bool promotionPending;
         PieceColor promotionColor;
         PieceType mousePosToPromotionOption(MousePos& pos);
@@ -47,7 +48,6 @@ class MyApp{
         PieceMatrix pieceMatrix;
         void mouseMoveToPieceMove(MouseMove& move);        
 
-        //__WINDOW__
         int TILE_SIZE = 80;
         int SCREEN_WIDTH = 640;
         int SCREEN_HEIGHT = 640;
@@ -61,14 +61,12 @@ class MyApp{
         SDL_Event e;
         
 
-        //__MODELS_: textures for the pieces
         SDL_Texture* mWhitePawnTexture;
         SDL_Texture* mWhiteBishopTexture;
         SDL_Texture* mWhiteKnightTexture;
         SDL_Texture* mWhiteRookTexture;
         SDL_Texture* mWhiteQueenTexture;
         SDL_Texture* mWhiteKingTexture;
-
         SDL_Texture* mBlackPawnTexture;
         SDL_Texture* mBlackBishopTexture;
         SDL_Texture* mBlackKnightTexture;
@@ -80,6 +78,9 @@ class MyApp{
         void displayPromotionOptions(PieceColor color);
         bool loadMedia();
         SDL_Texture* loadTexture(const std::string &path);
+};
+
+class ConsoleApp : public MyApp {
 };
 
 #endif
