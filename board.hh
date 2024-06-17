@@ -9,89 +9,38 @@
 
 class Board {
 public:
-    //It will create a board with the pieces in the initial position. An instance of MyApp is needed to print the board.
+    //  Creates a board with the pieces in the initial position. An instance of MyApp is needed to print the board.
     Board(MyApp* a);
 
     ~Board();
 
-    //It'll set the pieces in the initial position.
+    //  Sets the board to the initial position.
     void setDefaulValues();
 
-    //It'll move the piece in the board.
+    //  Makes a move in the board, updating all bitmaps and variables accordingly.
     void movePiece(PieceMove& move);
 
-    //Pre: b must be a PieceMatrix size 8x8.
-    //Post: b will contain all de pieces in a matrix.
-    void getPieceMatrix(PieceMatrix& b);
-
-    //It will print the board, through the app
+    //  Prints the board through the app passed in the constructor.
     void printBoardApp();
 
 private:
-    void calculateLegalMoves();
-    void getAllPiecesMoves(std::set<PieceMove>& pieceLegalMoves);
-    void getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
+    MyApp* app; //The app that will print the board
 
-    void updateEnPassant(PieceMove& move);
+    PieceColor moveTurn; //The color of the player that will move next
+    unsigned int moveCounter; //The number of moves that have been made
+    std::set<PieceMove> legalMoves; //The set of legal moves for the current player
 
-    void updateEnCastle(PieceMove& move);
+    //Log of the boardState
+    std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
+    bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
 
-    //Detects if I'm checked. If so, eliminates eliminates those moves that don't free me from check.
-    void manageCheck(std::set<PieceMove> &legalMoves);
 
-    //It will eliminate, based on the moveTurn, those moves that put in check the king from the set.
-    void eliminatePinnedCheckMoves(std::set<PieceMove> &legalMoves);
+    //BITMAPS INFORMATION: The board is represented by bitmaps, each bit represents a square in the board. From the white player's view, the MSB (most significant bit) is a-1, and the LSB is h-8.
 
-    void makeAMove(PieceMove& move);
-
-    //It will remove the bit from the targetBitMap.
-    void removePiece(uint64_t& targetBitMap, uint64_t& bit);
-
-    //It will add the bit to the targetBitMap.
-    void addPiece(uint64_t& targetBitMap, uint64_t& bit);
-
-    void manageCastleMove(uint64_t *fromPieceBitmap, PieceMove& move);
-
-    void registerState();
-
-    //It will return the moves of the pieces, all moves, even those that put the king in check.
-    //  Aditionaly, the <white|black>TargetedSquares bitmaps will be filled.
-    void getWhitePawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getBlackPawnMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getBishopMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getKnightMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getRookMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getQueenMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    void getKingMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves);
-    
-    //Given a bit in a uint64_t, it where it is located through (i, j) coordinates
-    std::pair<uint16_t, uint16_t> bitToij(uint64_t& bit);
-
-    //It will convert the x and y to a bit.
-    void ijToBit(int i, int j, uint64_t& bit);
-
-    uint64_t* pieceTypeToBitmap(PieceType pt);
-
-    //It will return the pieceBitMap of the piece.
-    uint64_t* bitToPieceBitMap(uint64_t bit);
-
-    //It will return the pieceType of the bit.
-    PieceType bitToPieceType(uint64_t bit);
-
-    // Given an 8x8 matrix, it fills it with the pieceType of each cell, if there is no piece, pieceType = NONE.
-    //  The returned matrix will be filled from the white player's view. PieceMatrix[0][0] = a-7, PieceMatrix[7][7] = h-0
-    void bitBoardToMatrix(PieceMatrix& b);
-    
-    MyApp* app;
-
-    PieceColor moveTurn;
-    unsigned int moveCounter;
-    std::set<PieceMove> legalMoves;
-
-    //Bitmaps: seeing from whites view the MSB (most significant bit) will be located in (a-1), and the LSB in (h-8)
+    //All pieces
     uint64_t allPieces;
-    uint64_t enPassant;
-    uint64_t castleBitmap;
+    uint64_t enPassant; //If a pawn moves two squares forward and the opponent can capture it through en passant, this bitmap will have the information of the square where the pawn can be captured.
+    uint64_t castleBitmap; //Has the information of where the king can castle, if the king or the rook moves, the bitmap is updated.
 
     //White pieces
     uint64_t whitePawn;
@@ -103,7 +52,7 @@ private:
 
     uint64_t whitePieces;
     uint64_t whiteTargetedSquares; //Squares targeted by black pieces
-    uint64_t whitePinnedSquares;
+    uint64_t whitePinnedSquares; //Squares that are pinned by black pieces
     
     //Black pieces
     uint64_t blackPawn;
@@ -115,13 +64,87 @@ private:
 
     uint64_t blackPieces;
     uint64_t blackTargetedSquares; //Squares targeted by white pieces
-    uint64_t blackPinnedSquares;
+    uint64_t blackPinnedSquares; //Squares that are pinned by white pieces
 
-    //Log of the boardState
-    std::map<BoardState, int> boardStateLog;
-    bool threefoldRepetition;
 
-    //Board information bitmaps, static constexpr because they are constant and will be used in the whole program.
+    //LEGAL MOVES CALCULATION related functions
+
+    //  Updates the legalMoves set with all possible moves for the current player's turn.
+    void calculateLegalMoves();
+
+    //  Fills the pieceMoves set with all moves of all pieces, including those that may put the king in check.
+    void getAllPiecesMoves(std::set<PieceMove>& pieceMoves);
+
+    //  Adds all legal moves of the piece represented by 'bit' to the pieceMoves set.
+    void getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceMoves);
+
+    //  Updates the enPassant bitmap if the move involves a pawn moving two squares forward.
+    void updateEnPassant(PieceMove& move);
+
+    //  Updates the castleBitmap based on the move. If the move disables castling, the bitmap is updated accordingly.
+    void updateCastle(PieceMove& move);
+
+    //  Checks if the current player (moveTurn) is in check. If so, eliminates moves that do not free the king from check.
+    void manageCheck(std::set<PieceMove> &pieceMoves);
+
+    //  Eliminates moves from pieceMoves that would leave the king in check after the move.
+    void eliminatePinnedCheckMoves(std::set<PieceMove> &pieceMoves);
+
+    //  Gets all legal moves of the piece represented by 'bit' and adds them to the pieceLegalMoves set.
+    void getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
+    void getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
+    void getBishopMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
+    void getKnightMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
+    void getRookMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
+    void getQueenMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
+    void getKingMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
+    void promoteWhitePawn(std::set<PieceMove>& pieceMoves, PieceMove& move);
+    void promoteBlackPawn(std::set<PieceMove>& pieceMoves, PieceMove& move);
+
+
+    //MAKING A MOVE related functions
+    
+    //  Makes the move in the board, updating all bitmaps and variables accordingly.
+    void makeAMove(const PieceMove& move);
+
+    //  Removes the bit from the targetBitMap.
+    void removePiece(uint64_t& targetBitMap, uint64_t bit);
+
+    //  Adds the bit to the targetBitMap.
+    void addPiece(uint64_t& targetBitMap, uint64_t bit);
+
+    //  Detects if a castle move is being done, if so, it will move the rook.
+    void manageCastleMove(uint64_t fromPieceBitmap, const PieceMove& move);
+
+    //  Adds to boardStateLog the current board state.
+    void registerState();
+
+
+    //BITMAPS related functions
+    
+    //  Given a bit in a uint64_t, it where it is located through (i, j) coordinates
+    std::pair<uint16_t, uint16_t> bitToij(uint64_t bit) const;
+
+    //  Convert the (i, j) coordinates to a bit in a uint64_t
+    void ijToBit(int i, int j, uint64_t& bit) const;
+
+    //  Returns a pointer to the bitmap of the pieceType. 'nullptr' if the pieceType is NONE.
+    uint64_t* pieceTypeToBitmap(PieceType pt);
+
+    //  Returns a pointer to the bitmap of the piece located in the bit.
+    uint64_t* bitToPieceBitMap(uint64_t bit);
+
+    //  Returns the pieceType of the piece located in the bit.
+    PieceType bitToPieceType(uint64_t bit) const;
+
+    //  Given an 8x8 matrix, it fills it with the pieceType of each cell, if there is no piece, pieceType = NONE.
+    //  The returned matrix will be filled from the white player's view. PieceMatrix[0][0] = a-7, PieceMatrix[7][7] = h-0
+    void bitBoardToMatrix(PieceMatrix& b) const;
+
+
+    //EXTRA BOARD INFORMATION BITMAPS
+
+    //  Board information bitmaps, static constexpr because they are constant and will be used in the whole program.
     static constexpr uint64_t A_FILE = 0x8080808080808080;
     static constexpr uint64_t B_FILE = 0x4040404040404040;
     static constexpr uint64_t C_FILE = 0x2020202020202020;

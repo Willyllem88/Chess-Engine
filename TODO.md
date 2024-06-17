@@ -8,7 +8,8 @@ Here I will list the pending tasks. Just to not forget those ideas that might be
 * Handle all arguments
 * A function that translates chess algebraic notation to ijMove
 * The ENGINE
-* Comment the .hh files
+* Comment the .hh files, maybe also in de cpp files
+* Include const at those parameters passed by reference, also const in those functions that do not change anything from the object.
 
 ## FIX SHORT TERM
 

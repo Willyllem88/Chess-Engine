@@ -1,37 +1,40 @@
-#Compiler
+# Compiler
 CXX = g++
 
-#Flags for the C++ compiler
-CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20
+# Flags for the C++ compiler
+CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20 -O2
 
-#Flags for the SDL2 library
+# Flags for the SDL2 library
 LDFLAGS = -lSDL2 -lSDL2_image
 
-#Source files
+# Source files
 SRC = main.cpp myApp.cpp board.cpp utils.cpp legalMoves.cpp
 
-#Header files
-HEADERS = myApp.hh board.hh utils.hh chessEngine.hh
+# Header files
+HEADERS = myApp.hh board.hh utils.hh
 
-#Object files
+# Object files
 OBJ = $(SRC:.cpp=.o)
 
-#Executable name
+# Executable name
 EXEC = engine
 
 
 
-#Default target
+# Default target
 all: $(EXEC)
 
-#Linking
+# Linking
 $(EXEC): $(OBJ)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
 
-#Compilation
-%.o: %.cpp $(HEADERS)
+# Compilation
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-#Cleaning
+# Rebuild objects if headers change
+$(OBJ): $(HEADERS)
+
+# Cleaning
 clean:
 	rm -f $(OBJ) $(EXEC)

@@ -12,15 +12,15 @@ void Board::setDefaulValues() {
     moveTurn = WHITE;
 
     allPieces = 0xffff00000000ffff;
-    enPassant = 0;
+    enPassant = 0x0000000000000000;
     castleBitmap = 0x2200000000000022;
     
     whitePieces = 0xffff000000000000;
-    whiteTargetedSquares = 0; //Squares targeted by white pieces
-    whitePinnedSquares = 0;
+    whiteTargetedSquares = 0x0000000000000000;
+    whitePinnedSquares = 0x0000000000000000;
     blackPieces = 0x000000000000ffff;
-    blackTargetedSquares = 0;
-    blackPinnedSquares = 0;
+    blackTargetedSquares = 0x0000000000000000;
+    blackPinnedSquares = 0x0000000000000000;
 
     whitePawn = 0x00ff000000000000;
     whiteBishop = 0x2400000000000000;
@@ -48,11 +48,13 @@ void Board::movePiece(PieceMove& move) {
     }
     std::cout << "Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
     
-    //If the moves is a pown that mvoes two squares, it updates the board info in order to let en passant.
+    //If the moves is a pown that moves two squares, it updates the board info in order to let en passant
     updateEnPassant(move);
 
-    updateEnCastle(move);
+    //If the move is a castle move, it will move the rook
+    updateCastle(move);
 
+    //Makes the move
     makeAMove(move);
 
     if (moveCounter > 0) registerState();
@@ -63,13 +65,15 @@ void Board::movePiece(PieceMove& move) {
                      "======================================\n" <<
                      "- The game is a draw\n";
 
-    //Given the move, update the legal moves set
+    //Calculates the legal moves of the current player in order to update the targeted squares after the move
     calculateLegalMoves();
 
+    //Toggles the turn
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
     app->setMoveTurn(moveTurn);
     ++moveCounter;
 
+    //Calculates the legal moves of the opponent
     calculateLegalMoves();
 }
 
@@ -190,7 +194,7 @@ void Board::updateEnPassant(PieceMove& move) {
     }      
 }
 
-void Board::updateEnCastle(PieceMove& move) {
+void Board::updateCastle(PieceMove& move) {
     uint64_t fromBit;
     ijToBit(move.from.i, move.from.j, fromBit);
     PieceType p = bitToPieceType(fromBit);
@@ -273,7 +277,7 @@ void Board::eliminatePinnedCheckMoves(std::set<PieceMove> &legalMoves) {
     }
 }
 
-void Board::makeAMove(PieceMove& move) {
+void Board::makeAMove(const PieceMove& move) {
     uint64_t fromBit, toBit;
     uint64_t *fromPieceBitmap, *toPieceBitmap;
     ijToBit(move.from.i, move.from.j, fromBit);
@@ -305,7 +309,7 @@ void Board::makeAMove(PieceMove& move) {
             removePiece(whitePawn, aux);
         }
         //Detects if a castle move is being done, if so, it will move the rook
-        manageCastleMove(fromPieceBitmap, move);
+        manageCastleMove(*fromPieceBitmap, move);
     }    
     //Add the piece to its new location
     addPiece(*fromPieceBitmap, toBit);
@@ -313,29 +317,29 @@ void Board::makeAMove(PieceMove& move) {
     removePiece(*fromPieceBitmap, fromBit);
 }
 
-void Board::manageCastleMove(uint64_t *fromPieceBitmap, PieceMove& move) {
-    if (*fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 6) {
+void Board::manageCastleMove(uint64_t fromPieceBitmap, const PieceMove& move) {
+    if (fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 6) {
         uint64_t rookFrom = 0x0100000000000000;
         uint64_t rookTo = 0x0400000000000000;
         addPiece(whiteRook, rookTo);
         removePiece(whiteRook, rookFrom);
         castleBitmap = castleBitmap & ~0x2200000000000000;
     }
-    else if (*fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 2) {
+    else if (fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 2) {
         uint64_t rookFrom = 0x8000000000000000;
         uint64_t rookTo = 0x1000000000000000;
         addPiece(whiteRook, rookTo);
         removePiece(whiteRook, rookFrom);
         castleBitmap = castleBitmap & ~0x220000000000000;
     }
-    else if (*fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 6) {
+    else if (fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 6) {
         uint64_t rookFrom = 0x0000000000000001;
         uint64_t rookTo = 0x0000000000000004;
         addPiece(blackRook, rookTo);
         removePiece(blackRook, rookFrom);
         castleBitmap = castleBitmap & ~0x0000000000000022;
     }
-    else if (*fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 2) {
+    else if (fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 2) {
         uint64_t rookFrom = 0x0000000000000080;
         uint64_t rookTo = 0x0000000000000010;
         addPiece(blackRook, rookTo);
@@ -344,7 +348,7 @@ void Board::manageCastleMove(uint64_t *fromPieceBitmap, PieceMove& move) {
     }
 }
 
-void Board::removePiece(uint64_t& targetBitMap, uint64_t& bit) {
+void Board::removePiece(uint64_t& targetBitMap, uint64_t bit) {
     allPieces = allPieces & ~bit;
     if (targetBitMap & whitePieces)
         whitePieces = whitePieces & ~bit;
@@ -353,7 +357,7 @@ void Board::removePiece(uint64_t& targetBitMap, uint64_t& bit) {
     targetBitMap = targetBitMap & ~bit;
 }
 
-void Board::addPiece(uint64_t& targetBitMap, uint64_t& bit) {
+void Board::addPiece(uint64_t& targetBitMap, uint64_t bit) {
     allPieces = allPieces | bit;
     if (targetBitMap & whitePieces) 
         whitePieces = whitePieces | bit;
@@ -362,17 +366,13 @@ void Board::addPiece(uint64_t& targetBitMap, uint64_t& bit) {
     targetBitMap = targetBitMap | bit;
 }
 
-void Board::getPieceMatrix(PieceMatrix& b) {
-    Board::bitBoardToMatrix(b);
-}
-
-std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t& bit) {
+std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t bit) const {
     //This creepy function is a hardware instruction that retruns the number of leading zeros
     int x = __builtin_clzll(bit);
     return std::make_pair(7 - x/8, x%8);    
 }
 
-void Board::ijToBit(int i, int j, uint64_t& bit) {
+void Board::ijToBit(int i, int j, uint64_t& bit) const {
     bit = 0x8000000000000000;
     bit = bit >> (8 * (7-i) + j);
 }
@@ -430,7 +430,7 @@ uint64_t* Board::bitToPieceBitMap(uint64_t bit) {
     return nullptr;
 }
 
-PieceType Board::bitToPieceType(uint64_t bit) {
+PieceType Board::bitToPieceType(uint64_t bit) const {
     if (bit & allPieces) { //If there is a piece
         if(bit & whitePieces) { //If it's a white piece
             if (bit & whitePawn) return WHITE_PAWN;
@@ -452,7 +452,7 @@ PieceType Board::bitToPieceType(uint64_t bit) {
     return NONE;
 }
 
-void Board::bitBoardToMatrix(PieceMatrix& b) {
+void Board::bitBoardToMatrix(PieceMatrix& b) const {
     uint64_t aux = 0x8000000000000000;
     for (int i = 7; i >= 0; --i) {
         for (int j = 0; j < 8; ++j) {
