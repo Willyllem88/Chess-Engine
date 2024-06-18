@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <iomanip>
 #include <map>
 #include <set>
@@ -106,6 +107,7 @@ struct BoardState{
 //It will return true or false depending on if the user has entered a string, and it will store the string in the str variable
 bool readStringFromConsole(std::string& str);
 
-PieceMove algebraicToPieceMove(std::string& str, PieceMatrix& pm, PieceColor turn);
+//Returns the pieceMove represented by the algebraic notation string. The funciton will nead the legalMoves set to check if the move is legal, the PieceMatrix to check the current state of the board, and the turn of the player that is making the move.
+PieceMove algebraicToPieceMove(std::string& str, const std::set<PieceMove>& legalMoves, const PieceMatrix& pm, PieceColor turn);
 
 #endif

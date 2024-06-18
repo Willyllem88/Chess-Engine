@@ -1,8 +1,13 @@
 #include "myApp.hh"
+#include "board.hh"
 
 PieceMove MyApp::getMove() {
     pieceMoveAvailable = false;
     return lastPieceMove;
+}
+
+void MyApp::setBoard(std::shared_ptr<Board> b) {
+    this->board = b;
 }
 
 GUIApp::GUIApp() {
@@ -27,6 +32,7 @@ GUIApp::GUIApp() {
 }
 
 GUIApp::~GUIApp() {
+    std::cout << "Destroying GUIApp\n";
     SDL_DestroyTexture(mWhitePawnTexture);
     SDL_DestroyTexture(mWhiteBishopTexture);
     SDL_DestroyTexture(mWhiteKnightTexture);
@@ -121,7 +127,9 @@ bool GUIApp::handleEvents() {
     std::string str;
     if (readStringFromConsole(str)) {
         std::cout << "String read: " << str << std::endl;
-        lastPieceMove = algebraicToPieceMove(str, pieceMatrix, moveTurn);
+
+        std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
+        lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
         pieceMoveAvailable = true;
     }
     return true;

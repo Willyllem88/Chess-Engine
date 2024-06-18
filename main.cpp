@@ -2,10 +2,10 @@
 #include "myApp.hh"
 
 int main(int argc, char* argv[]) {
-    //IT MIGHT BE AN IF STATEMENT HERE
-    // Inicialize the board
-    MyApp* myApp = new GUIApp();
-    Board board(myApp);
+    // Inicialization of the app and the board
+    std::shared_ptr<MyApp> myApp = std::make_shared<GUIApp>();
+    std::shared_ptr<Board> board = std::make_shared<Board>(myApp);
+    myApp->setBoard(board);
 
     if (!myApp->init())
         return 1;
@@ -23,11 +23,10 @@ int main(int argc, char* argv[]) {
         
         if (myApp->isPieceMoveAvailable()) {
             lastPieceMove = myApp->getMove();
-            board.movePiece(lastPieceMove);
+            board->movePiece(lastPieceMove);
         }
-        board.printBoardApp();
+        board->printBoardApp();
     }
 
-    delete myApp;
     return 0;
 }

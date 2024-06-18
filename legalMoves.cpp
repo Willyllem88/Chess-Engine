@@ -79,7 +79,6 @@ void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     }
 }
 
-
 void Board::getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     PieceMove move;
     uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;

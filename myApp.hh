@@ -4,8 +4,11 @@
 #include </usr/include/SDL2/SDL.h>
 #include </usr/include/SDL2/SDL_image.h>
 
+#include <memory>
+
 #include "utils.hh"
 
+class Board;
 
 class MyApp{
     public:
@@ -14,6 +17,8 @@ class MyApp{
 
         PieceMove getMove();
 
+        void setBoard(std::shared_ptr<Board> b);
+
         virtual bool init() = 0;
         virtual bool isPieceMoveAvailable() = 0;
         virtual void setMoveTurn([[maybe_unused]] PieceColor color) = 0;
@@ -21,6 +26,8 @@ class MyApp{
         virtual void printBoard([[maybe_unused]] PieceMatrix& pm) = 0;
     
     protected:
+        std::shared_ptr<Board> board;
+
         PieceMove lastPieceMove;
         bool pieceMoveAvailable;
         PieceColor moveTurn;

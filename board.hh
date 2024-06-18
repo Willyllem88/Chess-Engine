@@ -4,13 +4,14 @@
 #include </usr/include/SDL2/SDL.h>
 #include </usr/include/SDL2/SDL_image.h>
 
-#include "myApp.hh"
 #include "utils.hh"
+
+class MyApp;
 
 class Board {
 public:
     //  Creates a board with the pieces in the initial position. An instance of MyApp is needed to print the board.
-    Board(MyApp* a);
+    Board(std::shared_ptr<MyApp> a);
 
     ~Board();
 
@@ -20,62 +21,52 @@ public:
     //  Makes a move in the board, updating all bitmaps and variables accordingly.
     void movePiece(PieceMove& move);
 
+    //  Returns all the legal moves for the current player's turn.
+    const std::set<PieceMove>& getCurrentLegalMoves(); //FIX: maybe return a const reference
+
     //  Prints the board through the app passed in the constructor.
     void printBoardApp();
 
 private:
-    MyApp* app; //The app that will print the board
+    std::shared_ptr<MyApp> app; //The app that will print the board
 
     PieceColor moveTurn; //The color of the player that will move next
     unsigned int moveCounter; //The number of moves that have been made
     std::set<PieceMove> legalMoves; //The set of legal moves for the current player
 
-    //Log of the boardState
+    //  Log of the boardState
     std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
     bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
 
 
     //BITMAPS INFORMATION: The board is represented by bitmaps, each bit represents a square in the board. From the white player's view, the MSB (most significant bit) is a-1, and the LSB is h-8.
 
-    //All pieces
+    //  All pieces
     uint64_t allPieces;
     uint64_t enPassant; //If a pawn moves two squares forward and the opponent can capture it through en passant, this bitmap will have the information of the square where the pawn can be captured.
     uint64_t castleBitmap; //Has the information of where the king can castle, if the king or the rook moves, the bitmap is updated.
-
-    //White pieces
-    uint64_t whitePawn;
-    uint64_t whiteBishop;
-    uint64_t whiteKnight;
-    uint64_t whiteRook;
-    uint64_t whiteQueen;
-    uint64_t whiteKing;
-
-    uint64_t whitePieces;
-    uint64_t whiteTargetedSquares; //Squares targeted by black pieces
-    uint64_t whitePinnedSquares; //Squares that are pinned by black pieces
     
-    //Black pieces
-    uint64_t blackPawn;
-    uint64_t blackBishop;
-    uint64_t blackKnight;
-    uint64_t blackRook;
-    uint64_t blackQueen;
-    uint64_t blackKing;
+    //  (white/black)TargetedSquares: Squares targeted by the opponent's pieces
+    //  (white/black)PinnedSquares: Squares that are pinned by the opponent's pieces
 
-    uint64_t blackPieces;
-    uint64_t blackTargetedSquares; //Squares targeted by white pieces
-    uint64_t blackPinnedSquares; //Squares that are pinned by white pieces
+    //  White pieces
+    uint64_t whitePawn, whiteBishop, whiteKnight, whiteRook, whiteQueen, whiteKing;
+    uint64_t whitePieces, whiteTargetedSquares, whitePinnedSquares;
+    
+    //  Black pieces
+    uint64_t blackPawn, blackBishop, blackKnight, blackRook, blackQueen, blackKing;
+    uint64_t blackPieces, blackTargetedSquares, blackPinnedSquares;
 
 
     //LEGAL MOVES CALCULATION related functions
 
-    //  Updates the legalMoves set with all possible moves for the current player's turn.
+    //  Updates the legalMoves set with all possible moves for the current player's turn. It also updtes the opponent's targetedSquares and pinnedSquares bitmaps.
     void calculateLegalMoves();
 
-    //  Fills the pieceMoves set with all moves of all pieces, including those that may put the king in check.
+    //  Fills the pieceMoves set with all moves of all pieces, including those that may put the king in check. Updates the opponent's targetedSquares and pinnedSquares bitmaps.
     void getAllPiecesMoves(std::set<PieceMove>& pieceMoves);
 
-    //  Adds all legal moves of the piece represented by 'bit' to the pieceMoves set.
+    //  Adds all legal moves of the piece represented by 'bit' to the pieceMoves set. Updates the opponent's targetedSquares and pinnedSquares bitmaps.
     void getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceMoves);
 
     //  Updates the enPassant bitmap if the move involves a pawn moving two squares forward.
@@ -90,7 +81,7 @@ private:
     //  Eliminates moves from pieceMoves that would leave the king in check after the move.
     void eliminatePinnedCheckMoves(std::set<PieceMove> &pieceMoves);
 
-    //  Gets all legal moves of the piece represented by 'bit' and adds them to the pieceLegalMoves set.
+    //  Gets all legal moves of the piece represented by 'bit' and adds them to the pieceLegalMoves set. These functions also update the opponent's targetedSquares and pinnedSquares bitmaps.
     void getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
     void getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
     void getBishopMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
@@ -132,7 +123,7 @@ private:
     uint64_t* pieceTypeToBitmap(PieceType pt);
 
     //  Returns a pointer to the bitmap of the piece located in the bit.
-    uint64_t* bitToPieceBitMap(uint64_t bit);
+    uint64_t* bitToPieceBitmap(uint64_t bit);
 
     //  Returns the pieceType of the piece located in the bit.
     PieceType bitToPieceType(uint64_t bit) const;

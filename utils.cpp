@@ -85,12 +85,13 @@ bool readStringFromConsole(std::string& str) {
     }
 }
 
-PieceMove algebraicToPieceMove(std::string& str, PieceMatrix& pm, PieceColor turn) {
-    std::cout << "Algebraic to piece move" << std::endl;
+PieceMove algebraicToPieceMove(std::string& str, const std::set<PieceMove>& legalMoves, const PieceMatrix& pm, PieceColor turn) {
     PieceMove move, errorMove;
     errorMove = PieceMove(PiecePos(0, 0), PiecePos(0, 0)); //This is the error move
     errorMove.promoteTo = NONE;
     move.promoteTo = NONE;
+
+    //Checks for short castling
     if (str == "O-O") {
         if (turn == WHITE) {
             move.from = PiecePos(7, 4);
@@ -100,7 +101,8 @@ PieceMove algebraicToPieceMove(std::string& str, PieceMatrix& pm, PieceColor tur
             move.to = PiecePos(0, 6);
         }
         return move;
-    } 
+    }
+    //Checks for long castling
     else if (str == "O-O-O") {
         if (turn == WHITE) {
             move.from = PiecePos(7, 4);
@@ -112,32 +114,23 @@ PieceMove algebraicToPieceMove(std::string& str, PieceMatrix& pm, PieceColor tur
         return move;
     }
 
-    //INFO: (explain it later) FIX
+    //Explaination: the string will be read from right to left
 
-        //FIX: pop unwanted characters
+    //Checks if the string represents a promotion
     int it = str.size() - 1;
     if (str[it] == 'Q' || str[it] == 'R' || str[it] == 'B' || str[it] == 'N') {
-        switch (str[it]) {
-            case 'Q':
-                move.promoteTo = (turn == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
-                break;
-            case 'R':
-                move.promoteTo = (turn == WHITE) ? WHITE_ROOK : BLACK_ROOK;
-                break;
-            case 'B':
-                move.promoteTo = (turn == WHITE) ? WHITE_BISHOP : BLACK_BISHOP;
-                break;
-            case 'N':
-                move.promoteTo = (turn == WHITE) ? WHITE_KNIGHT : BLACK_KNIGHT;
-                break;
-        }
+        if (str[it] == 'Q') move.promoteTo = (turn == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
+        else if (str[it] == 'R') move.promoteTo = (turn == WHITE) ? WHITE_ROOK : BLACK_ROOK;
+        else if (str[it] == 'B') move.promoteTo = (turn == WHITE) ? WHITE_BISHOP : BLACK_BISHOP;
+        else if (str[it] == 'N') move.promoteTo = (turn == WHITE) ? WHITE_KNIGHT : BLACK_KNIGHT;
         --it;
         if (str[it] != '=') return errorMove;
         --it;
     }
+    
     //Gets the destination square
-    if (str[it] >= '0' && str[it] <= '8') {
-        move.to.i = 8 - (str[it] - '0');
+    if (str[it] >= '1' && str[it] <= '8') {
+        move.to.i = 7 - (str[it] - '1');
         --it;
     } 
     else return errorMove;
@@ -146,14 +139,72 @@ PieceMove algebraicToPieceMove(std::string& str, PieceMatrix& pm, PieceColor tur
         --it;
     } 
     else return errorMove;
+
     //Examines if takes
     if (str[it] == 'x') {
         --it;
     }
 
-    //Have in mind, pawns take is written: [origin file]x[destination file][destination rank]
-    std::cout << "PAWN MOVE" << std::endl;
-    std::cout << "Move.to: " << move.to.i << " " << move.to.j << std::endl;
+    PieceType movedPieceType = NONE;
+    char file = '0', rank = '0';
 
-    
+    if (it == -1)
+        movedPieceType = (turn == WHITE) ? WHITE_PAWN : BLACK_PAWN;
+    else {
+        //Checks for unambiguous move information (file, rank or both)
+        if (str[it] >= '1' && str[it] <= '8') {
+            rank = str[it];
+            --it;
+            if (str[it] >= 'a' && str[it] <= 'h') {
+                file = str[it];
+                --it;
+            } 
+        }
+        else if (str[it] >= 'a' && str[it] <= 'h') {
+            file = str[it];
+            --it;
+        }
+
+        //Gets the piece type
+        if (it == -1) {
+            movedPieceType = (turn == WHITE) ? WHITE_PAWN : BLACK_PAWN;
+        }
+        else if (it == 0) {
+            if (str[it] == 'K') movedPieceType = (turn == WHITE) ? WHITE_KING : BLACK_KING;
+            else if (str[it] == 'Q') movedPieceType = (turn == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
+            else if (str[it] == 'R') movedPieceType = (turn == WHITE) ? WHITE_ROOK : BLACK_ROOK;
+            else if (str[it] == 'B') movedPieceType = (turn == WHITE) ? WHITE_BISHOP : BLACK_BISHOP;
+            else if (str[it] == 'N') movedPieceType = (turn == WHITE) ? WHITE_KNIGHT : BLACK_KNIGHT;
+            else return errorMove;
+        }
+        else return errorMove;
+    }
+
+    bool found = false;
+
+    //For each legal move, we will check if it satisfies the conditions
+    for (auto it : legalMoves) {
+        if (it.to == move.to && it.promoteTo == move.promoteTo) {
+            //If the move is ambiguous, it will check the file and rank
+            if (file != '0' && it.from.j != file - 'a') continue;
+            if (rank != '0' && it.from.i != 7 - (rank - '1')) continue;
+
+            //We will check if the piece is the same
+            if (pm[it.from.i][it.from.j] != movedPieceType) continue;
+
+            //If we find two moves that satisfy the conditions, we will return an error
+            if (found) {
+                std::cout << "Ambiguous move!" << std::endl;
+                return errorMove;
+            }
+
+            move.from.i = it.from.i;
+            move.from.j = it.from.j;
+            found = true;
+        }
+    }
+
+    if (!found) return errorMove;
+
+    return move;
 }
