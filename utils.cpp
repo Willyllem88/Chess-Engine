@@ -115,9 +115,13 @@ PieceMove algebraicToPieceMove(std::string& str, const std::set<PieceMove>& lega
     }
 
     //Explaination: the string will be read from right to left
+    int it = str.size() - 1;
+
+    //Iterate through the + and # characters
+    if (str[it] == '+' || str[it] == '#')
+        --it;
 
     //Checks if the string represents a promotion
-    int it = str.size() - 1;
     if (str[it] == 'Q' || str[it] == 'R' || str[it] == 'B' || str[it] == 'N') {
         if (str[it] == 'Q') move.promoteTo = (turn == WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
         else if (str[it] == 'R') move.promoteTo = (turn == WHITE) ? WHITE_ROOK : BLACK_ROOK;
@@ -194,7 +198,7 @@ PieceMove algebraicToPieceMove(std::string& str, const std::set<PieceMove>& lega
 
             //If we find two moves that satisfy the conditions, we will return an error
             if (found) {
-                std::cout << "Ambiguous move!" << std::endl;
+                std::cout << "[ERROR] Ambiguous move!" << std::endl;
                 return errorMove;
             }
 

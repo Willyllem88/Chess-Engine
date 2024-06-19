@@ -6,9 +6,7 @@ Board::Board(std::shared_ptr<MyApp> a) {
     this->app = a;
 }
 
-Board::~Board() { 
-    std::cout << "Destorying Board\n";
-}
+Board::~Board() { }
 
 void Board::setDefaulValues() {
     moveTurn = WHITE;
@@ -48,10 +46,10 @@ void Board::setDefaulValues() {
 void Board::movePiece(PieceMove& move) {
     //Checks if the move is legal
     if (legalMoves.find(move) == legalMoves.end()) {
-        std::cout << "Invalid Move!\n";
+        std::cout << "[ERROR] Invalid Move!\n";
         return;
     }
-    std::cout << "Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
+    std::cout << "[INFO] Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
     
     //If the moves is a pown that moves two squares, it updates the board info in order to let en passant
     updateEnPassant(move);
@@ -109,7 +107,7 @@ void Board::calculateLegalMoves() {
 
     //If there are no legal moves, it will print the result
     if (legalMoves.empty()) {
-        std::cout << "There are no legal moves\n";
+        std::cout << "[INFO] There are no legal moves\n";
         if (whiteKing & whiteTargetedSquares || blackKing & blackTargetedSquares)
             std::cout <<    "======================================\n" <<
                             "* *  *  *  *  CHECKMATED  *  *  *  * *\n" <<

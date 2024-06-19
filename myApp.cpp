@@ -32,7 +32,6 @@ GUIApp::GUIApp() {
 }
 
 GUIApp::~GUIApp() {
-    std::cout << "Destroying GUIApp\n";
     SDL_DestroyTexture(mWhitePawnTexture);
     SDL_DestroyTexture(mWhiteBishopTexture);
     SDL_DestroyTexture(mWhiteKnightTexture);
@@ -126,8 +125,6 @@ bool GUIApp::handleEvents() {
 
     std::string str;
     if (readStringFromConsole(str)) {
-        std::cout << "String read: " << str << std::endl;
-
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
         lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
         pieceMoveAvailable = true;

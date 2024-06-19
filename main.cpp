@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
         std::cout << argv[i] << std::endl; //DELETE, just for testing
     }
 
+    board->printBoardApp();
     PieceMove lastPieceMove;
     while (1) {
         if (!myApp->handleEvents())
@@ -24,8 +25,9 @@ int main(int argc, char* argv[]) {
         if (myApp->isPieceMoveAvailable()) {
             lastPieceMove = myApp->getMove();
             board->movePiece(lastPieceMove);
+            board->printBoardApp();
+            //SDL_Delay(100);
         }
-        board->printBoardApp();
     }
 
     return 0;
