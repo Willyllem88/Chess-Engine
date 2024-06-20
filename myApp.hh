@@ -12,29 +12,53 @@ class Board;
 
 class MyApp{
     public:
-        MyApp() {}
+        //  Creates a MyApp object
+        MyApp();
+
         virtual ~MyApp() {}
 
+        //  Returns the last piece move made by the player
         PieceMove getMove();
 
+        //  Sets the board to the app
         void setBoard(std::shared_ptr<Board> b);
 
+        //  Sets the move turn to the color passed as argument
+        void setMoveTurn(PieceColor color);
+
+        //  Initializes the app
         virtual bool init() = 0;
+
+        //  Returns true if a piece move is available
         virtual bool isPieceMoveAvailable() = 0;
-        virtual void setMoveTurn([[maybe_unused]] PieceColor color) = 0;
+
+        //  Handles the events of the app
         virtual bool handleEvents() = 0;
+
+        //  Prints the board
         virtual void printBoard([[maybe_unused]] PieceMatrix& pm) = 0;
     
     protected:
-        std::shared_ptr<Board> board;
+        std::shared_ptr<Board> board; //The board that the app will interact with
 
-        PieceMove lastPieceMove;
-        bool pieceMoveAvailable;
-        PieceColor moveTurn;
+        PieceMatrix pieceMatrix; //The matrix that represents the board
+        PieceMove lastPieceMove; //The last piece move made by the player
+        bool pieceMoveAvailable; //True if a piece move is available, false otherwise
+        PieceColor moveTurn; //The color of the player that will move next
 };
 
 class ConsoleApp : public MyApp {
     public:
+        ConsoleApp();
+        ~ConsoleApp() override;
+
+        bool init() override;
+        bool isPieceMoveAvailable() override;
+        bool handleEvents() override;
+        void printBoard(PieceMatrix& pm) override;
+    
+    private:
+        PieceColor prevMoveTurn; //The color of the player that moved last
 };
 
 class GUIApp : public MyApp {
@@ -44,35 +68,38 @@ class GUIApp : public MyApp {
 
         bool init() override;
         bool isPieceMoveAvailable() override;
-        void setMoveTurn(PieceColor color) override;
         bool handleEvents() override;
         void printBoard(PieceMatrix& pm) override;
         
     private:
-        bool pressed;
-        MouseMove lastMouseMove;
-        MousePos promotionClickPos;
+        //MOUSE DRAGGING INFORMATION
+
+        bool pressed; //True if the mouse is currently pressed, false otherwise
+        MouseMove lastMouseMove; //The last mouse move made by the player
+        MousePos promotionClickPos; //The position of the click that will determine the promotion piece
         
-        bool promotionPending;
-        PieceColor promotionColor;
-        PieceType mousePosToPromotionOption(MousePos& pos);
 
-        PieceMatrix pieceMatrix;
-        void mouseMoveToPieceMove(MouseMove& move);        
+        //PROMOTION INFORMATION
 
+        bool promotionPending; //True if the user has to choose wich piece to promote to, false otherwise
+        PieceColor promotionColor; //The color of the player that will promote
+        
+
+        //SDL INFORMATION
+
+        //The dimensions and position of the board
         int TILE_SIZE = 80;
         int SCREEN_WIDTH = 640;
         int SCREEN_HEIGHT = 640;
-        int A8_x = 0; //The coordinates of the A8 square, in pixels
-        int A8_y = 0; 
-        void resizeWindow(int width, int height);
+        int A8_x = 0; //The coordinates of the top-right corner of the board (a8 square)
+        int A8_y = 0;    
 
+        //The window and renderer and the event
         SDL_Window* window;
         SDL_Renderer* renderer;
-
         SDL_Event e;
-        
 
+        //The textures of the pieces
         SDL_Texture* mWhitePawnTexture;
         SDL_Texture* mWhiteBishopTexture;
         SDL_Texture* mWhiteKnightTexture;
@@ -86,9 +113,25 @@ class GUIApp : public MyApp {
         SDL_Texture* mBlackQueenTexture;
         SDL_Texture* mBlackKingTexture;
 
+        //Translates the mouse move to a piece move
+        void mouseMoveToPieceMove(MouseMove& move);
+
+        //Translates the mouse position to a piece type when promotiong
+        PieceType mousePosToPromotionOption(MousePos& pos);
+
+        //Modifies some values of the window when resizing it, in order to keep the board centered and not deformed
+        void resizeWindow(int width, int height);
+
+        //Renders the board
         void renderBoard();
+
+        //Displays the four promotion options
         void displayPromotionOptions(PieceColor color);
+
+        //Loads all the media
         bool loadMedia();
+
+        //Loads a single piece texture
         SDL_Texture* loadTexture(const std::string &path);
 };
 

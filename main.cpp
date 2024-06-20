@@ -81,16 +81,20 @@ int main(int argc, char* argv[]) {
     //Default options for the game
     std::string whitePlayerName = "PLAYER";
     std::string blackPlayerName = "PLAYER";
-    bool displayGUIApp = false;
+    bool displayGUIApp = true;
     int engineTimeSpan = 0;
 
-    // Inicialization of the app and the board
-    std::shared_ptr<MyApp> myApp = std::make_shared<GUIApp>();
-    std::shared_ptr<Board> myBoard = std::make_shared<Board>(myApp);
-    myApp->setBoard(myBoard);
+    std::shared_ptr<MyApp> myApp;
+    std::shared_ptr<Board> myBoard;
 
     //Handles the command line arguments
     processCommandLine(argc, argv, whitePlayerName, blackPlayerName, displayGUIApp, engineTimeSpan);
+
+    // Inicialization of the app and the board
+    if (displayGUIApp) myApp = std::make_shared<GUIApp>();
+    else myApp = std::make_shared<ConsoleApp>();
+    myBoard = std::make_shared<Board>(myApp);
+    myApp->setBoard(myBoard);
 
     //Loads both players
     std::unique_ptr<Player> whitePlayer, blackPlayer;

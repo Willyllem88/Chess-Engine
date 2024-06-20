@@ -24,5 +24,9 @@ bool EngineV1::canMove() {
 
 PieceMove EngineV1::getMove() {
     std::set<PieceMove> s = board->getCurrentLegalMoves();
-    return *s.begin();
+    //Random move
+    int random = rand() % s.size();
+    auto it = s.begin();
+    std::advance(it, random);
+    return *it;
 }

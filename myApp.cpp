@@ -1,6 +1,12 @@
 #include "myApp.hh"
 #include "board.hh"
 
+MyApp::MyApp() {
+    pieceMoveAvailable = false;
+    pieceMatrix = std::vector(8, std::vector(8, NONE));
+    moveTurn = WHITE;
+}
+
 PieceMove MyApp::getMove() {
     pieceMoveAvailable = false;
     return lastPieceMove;
@@ -8,6 +14,54 @@ PieceMove MyApp::getMove() {
 
 void MyApp::setBoard(std::shared_ptr<Board> b) {
     this->board = b;
+}
+
+void MyApp::setMoveTurn(PieceColor color) {
+    moveTurn = color;
+}
+
+ConsoleApp::ConsoleApp() {
+    pieceMoveAvailable = false;
+    prevMoveTurn = BLACK;
+    pieceMatrix = std::vector(8, std::vector(8, NONE));
+}
+
+ConsoleApp::~ConsoleApp() {}
+
+bool ConsoleApp::init() {
+    return true;
+}
+
+bool ConsoleApp::isPieceMoveAvailable() {
+    return pieceMoveAvailable;
+}
+
+bool ConsoleApp::handleEvents() {
+    std::string str;
+    if (readStringFromConsole(str)) {
+        std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
+        lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
+        pieceMoveAvailable = true;
+    }
+    return true;
+}
+
+void ConsoleApp::printBoard(PieceMatrix& pm) {
+    if (moveTurn == prevMoveTurn) return;
+
+    pieceMatrix = pm;
+    char pieceChar[] = {'P', 'B', 'N', 'R', 'Q', 'K', 'p', 'b', 'n', 'r', 'q', 'k', ' '};
+    for (int i = 0; i < 8; ++i) {
+        std::cout << "  +---+---+---+---+---+---+---+---+\n";
+        std:: cout << 8-i << std::flush;
+        for (int j = 0; j < 8; ++j)
+            std::cout << "| " << pieceChar[pm[i][j]] << " " << std::flush;
+        std::cout << "|\n";
+    }
+    std::cout << "  +---+---+---+---+---+---+---+---+\n";
+    std::cout << "    a   b   c   d   e   f   g   h  \n\n";
+
+    prevMoveTurn = moveTurn;
 }
 
 GUIApp::GUIApp() {
@@ -28,7 +82,7 @@ GUIApp::GUIApp() {
     mBlackKnightTexture = nullptr;
     mBlackRookTexture = nullptr;
     mBlackQueenTexture = nullptr;
-    mBlackKingTexture = nullptr;    
+    mBlackKingTexture = nullptr; 
 }
 
 GUIApp::~GUIApp() {
@@ -81,10 +135,6 @@ bool GUIApp::init() {
 
 bool GUIApp::isPieceMoveAvailable() {
     return pieceMoveAvailable;
-}
-
-void GUIApp::setMoveTurn(PieceColor color) {
-    moveTurn = color;
 }
 
 bool GUIApp::handleEvents() {
