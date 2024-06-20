@@ -91,7 +91,7 @@ bool GUIApp::handleEvents() {
     while (SDL_PollEvent(&e) != 0) {
         //Handle QUIT
         if (e.type == SDL_QUIT) {
-            return false; // SOMETHING ELSE HERE
+            return false;
         }
         //Handle mouse click
         else if (e.type == SDL_MOUSEBUTTONDOWN) {
@@ -286,10 +286,10 @@ void GUIApp::displayPromotionOptions(PieceColor color) {
 void GUIApp::resizeWindow(int newWidth, int newHeight) {
     this->SCREEN_WIDTH = newWidth;
     this->SCREEN_HEIGHT = newHeight;
+    //The board will be centered in the window
     TILE_SIZE = std::min(SCREEN_WIDTH, SCREEN_HEIGHT) / 8;
     A8_x = (SCREEN_WIDTH - 8 * TILE_SIZE) / 2;
     A8_y = (SCREEN_HEIGHT - 8 * TILE_SIZE) / 2;
-    // Adjust TILE_SIZE based on new dimensions, if necessary
 }
 
 bool GUIApp::loadMedia() {

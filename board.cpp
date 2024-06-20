@@ -43,6 +43,10 @@ void Board::setDefaulValues() {
     calculateLegalMoves();
 }
 
+PieceColor Board::getMoveTurn() {
+    return moveTurn;
+}
+
 void Board::movePiece(PieceMove& move) {
     //Checks if the move is legal
     if (legalMoves.find(move) == legalMoves.end()) {
@@ -92,9 +96,8 @@ void Board::printBoardApp() {
     return;
 }
 
-void Board::calculateLegalMoves() {
-    //FIX: ONLY FOR TESTING
-    auto start = std::chrono::high_resolution_clock::now();
+void Board::calculateLegalMoves() { 
+    auto start = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
 
     //Updates the set with all the moves
     getAllPiecesMoves(legalMoves);
@@ -120,11 +123,11 @@ void Board::calculateLegalMoves() {
                             "- The game is a draw\n";
     }
 
-    //FIX: ONLY FOR TESTING
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end - start;
-    std::cout << "  [INFO] Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n";
-    std::cout << "  [INFO] Number of legal moves: " << legalMoves.size() << "\n";
+    
+    auto end = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
+    std::chrono::duration<double> elapsed = end - start; //DELETE: ONLY FOR TESTING
+    std::cout << "  [INFO] Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n"; //DELETE: ONLY FOR TESTING
+    std::cout << "  [INFO] Number of legal moves: " << legalMoves.size() << "\n"; //DELETE: ONLY FOR TESTING
 }
 
 void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {

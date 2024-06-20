@@ -18,6 +18,9 @@ public:
     //  Sets the board to the initial position.
     void setDefaulValues();
 
+    //  Gets the pieceColor of the player that will move next.
+    PieceColor getMoveTurn();
+
     //  Makes a move in the board, updating all bitmaps and variables accordingly.
     void movePiece(PieceMove& move);
 

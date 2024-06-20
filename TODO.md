@@ -13,7 +13,6 @@ Here I will list the pending tasks. Just to not forget those ideas that might be
 
 ## FIX SHORT TERM
 
-* It will render only when a move its done.
 
 # FIX LONG TERM
 

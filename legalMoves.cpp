@@ -2,30 +2,6 @@
 
 #include "board.hh"
 
-void Board::promoteWhitePawn(std::set<PieceMove>& pieceMoves, PieceMove& move) {
-    move.promoteTo = WHITE_QUEEN;
-    pieceMoves.insert(move);
-    move.promoteTo = WHITE_ROOK;
-    pieceMoves.insert(move);
-    move.promoteTo = WHITE_BISHOP;
-    pieceMoves.insert(move);
-    move.promoteTo = WHITE_KNIGHT;
-    pieceMoves.insert(move);
-    move.promoteTo = NONE;
-}
-
-void Board::promoteBlackPawn(std::set<PieceMove>& pieceMoves, PieceMove& move) {
-    move.promoteTo = BLACK_QUEEN;
-    pieceMoves.insert(move);
-    move.promoteTo = BLACK_ROOK;
-    pieceMoves.insert(move);
-    move.promoteTo = BLACK_BISHOP;
-    pieceMoves.insert(move);
-    move.promoteTo = BLACK_KNIGHT;
-    pieceMoves.insert(move);
-    move.promoteTo = NONE;
-}
-
 void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     PieceMove move;
     uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
@@ -49,32 +25,24 @@ void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     }
     aux1 = bit >> 9; //Capture right
     if (bit & ~H_FILE) {
-        if (aux1 & ~RANK_8) {
-            *oponentTargetedeSquares |= aux1;
-            if (aux1 & (*oponentPieces | enPassant)) {
-                move.to = bitToij(aux1);
-                pieceMoves.insert(move);
-            }
-        }
-        //Promotion
-        else if (aux1 & *oponentPieces) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
             move.to = bitToij(aux1);
-            promoteWhitePawn(pieceMoves, move);
+            pieceMoves.insert(move);
+            //Promotion
+            if (aux1 & RANK_8)
+                promoteBlackPawn(pieceMoves, move);
         }
     }
     aux1 = bit >> 7; //Capture left
     if (bit & ~A_FILE) {
-        if (aux1 & ~RANK_8) {
-            *oponentTargetedeSquares |= aux1;
-            if (aux1 & (*oponentPieces | enPassant)) {
-                move.to = bitToij(aux1);
-                pieceMoves.insert(move);
-            }
-        }
-        //Promotion
-        else if (aux1 & *oponentPieces) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
             move.to = bitToij(aux1);
-            promoteWhitePawn(pieceMoves, move);
+            pieceMoves.insert(move);
+            //Promotion
+            if (aux1 & RANK_8)
+                promoteWhitePawn(pieceMoves, move);
         }
     }
 }
@@ -101,32 +69,24 @@ void Board::getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     }
     aux1 = bit << 7; //Capture right
     if (bit & ~H_FILE) {
-        if (aux1 & ~RANK_1) {
-            *oponentTargetedeSquares |= aux1;
-            if (aux1 & (*oponentPieces | enPassant)) {
-                move.to = bitToij(aux1);
-                pieceMoves.insert(move);
-            }
-        }
-        //Promotion
-        else if (aux1 & *oponentPieces) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
             move.to = bitToij(aux1);
-            promoteBlackPawn(pieceMoves, move);
+            pieceMoves.insert(move);
+            //Promotion
+            if (aux1 & RANK_1)
+                promoteBlackPawn(pieceMoves, move);
         }
     }
     aux1 = bit << 9; //Capture left
     if (bit & ~A_FILE) {
-        if (aux1 & ~RANK_1) {
-            *oponentTargetedeSquares |= aux1;
-            if (aux1 & (*oponentPieces | enPassant)) {
-                move.to = bitToij(aux1);
-                pieceMoves.insert(move);
-            }
-        }
-        //Promotion
-        else if (aux1 & *oponentPieces) {
+        *oponentTargetedeSquares |= aux1;
+        if (aux1 & (*oponentPieces | enPassant)) {
             move.to = bitToij(aux1);
-            promoteBlackPawn(pieceMoves, move);
+            pieceMoves.insert(move);
+            //Promotion
+            if (aux1 & RANK_1)
+                promoteBlackPawn(pieceMoves, move);
         }
     }
 }
@@ -219,6 +179,7 @@ void Board::getRookMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
             newI += I_MOVE[i];
             newJ += J_MOVE[i];
             uint64_t aux;
+
             if (newI < 0 || newI > 7 || newJ < 0 || newJ > 7) 
                 break;
             
@@ -307,4 +268,28 @@ void Board::getKingMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
                 pieceMoves.insert(move);
         }
     }
+}
+
+void Board::promoteWhitePawn(std::set<PieceMove>& pieceMoves, PieceMove& move) {
+    move.promoteTo = WHITE_QUEEN;
+    pieceMoves.insert(move);
+    move.promoteTo = WHITE_ROOK;
+    pieceMoves.insert(move);
+    move.promoteTo = WHITE_BISHOP;
+    pieceMoves.insert(move);
+    move.promoteTo = WHITE_KNIGHT;
+    pieceMoves.insert(move);
+    move.promoteTo = NONE;
+}
+
+void Board::promoteBlackPawn(std::set<PieceMove>& pieceMoves, PieceMove& move) {
+    move.promoteTo = BLACK_QUEEN;
+    pieceMoves.insert(move);
+    move.promoteTo = BLACK_ROOK;
+    pieceMoves.insert(move);
+    move.promoteTo = BLACK_BISHOP;
+    pieceMoves.insert(move);
+    move.promoteTo = BLACK_KNIGHT;
+    pieceMoves.insert(move);
+    move.promoteTo = NONE;
 }

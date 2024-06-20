@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include <ctype.h>
+#include <getopt.h>
 
 #include <chrono>
 #include <iostream>
@@ -80,6 +81,7 @@ struct PieceMove {
 
     inline PieceMove() : from(PiecePos(0, 0)), to(PiecePos(0, 0)), promoteTo(NONE) { };
     inline PieceMove(PiecePos f, PiecePos t) : from(f), to(t), promoteTo(NONE) { };
+    inline PieceMove(uint16_t fi, uint16_t fj, uint16_t ti, uint16_t tj) : from(PiecePos(fi, fj)), to(PiecePos(ti, tj)), promoteTo(NONE) { };
 
     bool operator<(const PieceMove& other) const {
         if (from.i != other.from.i) return from.i < other.from.i;
