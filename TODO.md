@@ -5,8 +5,7 @@ Here I will list the pending tasks. Just to not forget those ideas that might be
 ## TO DO
 
 * Give some information when executing without arguments
-* Handle all arguments
-* A function that translates ijMove to chess algebraic notation
+* PieceMoveToAlgebraic could write also # and + if is checkmate or check.
 * The ENGINE
 * Comment the .hh files, maybe also in de cpp files
 * Include const at those parameters passed by reference, also const in those functions that do not change anything from the object.

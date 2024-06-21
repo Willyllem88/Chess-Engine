@@ -31,7 +31,7 @@ void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
             pieceMoves.insert(move);
             //Promotion
             if (aux1 & RANK_8)
-                promoteBlackPawn(pieceMoves, move);
+                promoteWhitePawn(pieceMoves, move);
         }
     }
     aux1 = bit >> 7; //Capture left

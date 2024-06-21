@@ -49,11 +49,16 @@ PieceColor Board::getMoveTurn() {
 
 void Board::movePiece(PieceMove& move) {
     //Checks if the move is legal
+    //FIX: cout the PieceMove move
+    std::cout << "[INFO] Move: " << move.from.i << " " << move.from.j << " " << move.to.i << " " << move.to.j << " - " << pieceToString(move.promoteTo) << "\n";
     if (legalMoves.find(move) == legalMoves.end()) {
         std::cout << "[ERROR] Invalid Move!\n";
         return;
     }
-    std::cout << "[INFO] Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
+    //std::cout << "[INFO] Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
+    PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
+    bitBoardToMatrix(pm);
+    std::cout << "[INFO] Move: " << pieceMoveToAlgebraic(move, pm, legalMoves) << "\n";
     
     //If the moves is a pown that moves two squares, it updates the board info in order to let en passant
     updateEnPassant(move);
@@ -126,8 +131,8 @@ void Board::calculateLegalMoves() {
     
     auto end = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
     std::chrono::duration<double> elapsed = end - start; //DELETE: ONLY FOR TESTING
-    std::cout << "  [INFO] Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n"; //DELETE: ONLY FOR TESTING
-    std::cout << "  [INFO] Number of legal moves: " << legalMoves.size() << "\n"; //DELETE: ONLY FOR TESTING
+    //std::cout << "  [INFO] Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n"; //DELETE: ONLY FOR TESTING
+    //std::cout << "  [INFO] Number of legal moves: " << legalMoves.size() << "\n"; //DELETE: ONLY FOR TESTING
 }
 
 void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {

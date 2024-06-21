@@ -212,3 +212,52 @@ PieceMove algebraicToPieceMove(std::string& str, const std::set<PieceMove>& lega
 
     return move;
 }
+
+std::string pieceMoveToAlgebraic(const PieceMove& move, const PieceMatrix& pm, const std::set<PieceMove>& legalMoves) {
+    PieceType pt = pm[move.from.i][move.from.j];
+    std::string str = "";
+    if (pt == WHITE_KING || pt == BLACK_KING) {
+        if (move.from.j == 4 && move.to.j == 6) return "O-O";
+        if (move.from.j == 4 && move.to.j == 2) return "O-O-O";
+        str += 'K';
+    }
+    else if (pt == WHITE_PAWN || pt == BLACK_PAWN) {
+        if (move.from.j != move.to.j) {
+            str += (char)('a' + move.from.j);
+            str += 'x';
+        }
+        str += (char)('a' + move.to.j);
+        str += (char)('1' + 7 - move.to.i);
+        if (move.promoteTo != NONE) {
+            str += '=';
+            if (move.promoteTo == WHITE_QUEEN || move.promoteTo == BLACK_QUEEN) str += 'Q';
+            else if (move.promoteTo == WHITE_ROOK || move.promoteTo == BLACK_ROOK) str += 'R';
+            else if (move.promoteTo == WHITE_BISHOP || move.promoteTo == BLACK_BISHOP) str += 'B';
+            else if (move.promoteTo == WHITE_KNIGHT || move.promoteTo == BLACK_KNIGHT) str += 'N';
+        }
+        return str;
+    }
+    else if (pt == WHITE_QUEEN || pt == BLACK_QUEEN) str += 'Q';
+    else if (pt == WHITE_ROOK || pt == BLACK_ROOK) str += 'R';
+    else if (pt == WHITE_BISHOP || pt == BLACK_BISHOP) str += 'B';
+    else if (pt == WHITE_KNIGHT || pt == BLACK_KNIGHT) str += 'N';
+
+    //Checks for disambiguation
+    std::string file, rank;
+    file = rank = "";
+    for (auto it : legalMoves) {
+        //If the move is ambiguous (same destination square, different origin square, same piece type)
+        if (pm[it.from.i][it.from.j] == pt && it.to == move.to && it.from != move.from) {
+            if (it.from.i == move.from.i) file += (char)('a' + it.from.j);
+            else if (it.from.j == move.from.j) rank += (char)('1' + 7 - it.from.i);
+        }
+    }
+    str += file + rank;
+
+    if (pm[move.to.i][move.to.j] != NONE) str += 'x';
+
+    str += (char)('a' + move.to.j);
+    str += (char)('1' + 7 - move.to.i);
+
+    return str;
+}

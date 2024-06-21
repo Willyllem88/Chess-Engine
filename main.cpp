@@ -75,7 +75,7 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "---------------Guillem's Chess---------------" << std::endl;
+    std::cout << "---------------Guillem's Chess Engine---------------" << std::endl;
     std::cout << "For displaying the usage --help or -h." << std::endl << std::endl;
 
     //Default options for the game
