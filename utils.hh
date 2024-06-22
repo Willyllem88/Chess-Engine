@@ -106,6 +106,14 @@ struct BoardState{
     }
 };
 
+enum BoardResult {
+    PLAYING,
+    WHITE_WINS,
+    BLACK_WINS,
+    STALE_MATE,
+    THREEFOLD_REPETITION,
+};
+
 //It will return true or false depending on if the user has entered a string, and it will store the string in the str variable
 bool readStringFromConsole(std::string& str);
 

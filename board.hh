@@ -21,6 +21,9 @@ public:
     //  Gets the pieceColor of the player that will move next.
     PieceColor getMoveTurn();
 
+    //  Gets the result of the game.
+    BoardResult getBoardResult();
+
     //  Makes a move in the board, updating all bitmaps and variables accordingly.
     void movePiece(PieceMove& move);
 
@@ -29,6 +32,9 @@ public:
 
     //  Prints the board through the app passed in the constructor.
     void printBoardApp();
+
+    //  Prints the result of the game.
+    void printResult();
 
 private:
     std::shared_ptr<MyApp> app; //The app that will print the board
@@ -39,7 +45,11 @@ private:
 
     //  Log of the boardState
     std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
+    std::vector<BoardState> boardStateVector; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
     bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
+
+    //  Board result
+    BoardResult boardResult; //The result of the game, if it is still ongoing, it will be NONE.
 
 
     //BITMAPS INFORMATION: The board is represented by bitmaps, each bit represents a square in the board. From the white player's view, the MSB (most significant bit) is a-1, and the LSB is h-8.
@@ -72,6 +82,10 @@ private:
     //  Adds all legal moves of the piece represented by 'bit' to the pieceMoves set. Updates the opponent's targetedSquares and pinnedSquares bitmaps.
     void getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceMoves);
 
+    void updateTargetedSquares(PieceColor col);
+
+    void getPieceTargetedSquares(uint64_t bit);
+
     //  Updates the enPassant bitmap if the move involves a pawn moving two squares forward.
     void updateEnPassant(PieceMove& move);
 
@@ -95,6 +109,14 @@ private:
     void promoteWhitePawn(std::set<PieceMove>& pieceMoves, PieceMove& move);
     void promoteBlackPawn(std::set<PieceMove>& pieceMoves, PieceMove& move);
 
+    void targetedByWhitePawn(uint64_t bit);
+    void targetedByBlackPawn(uint64_t bit);
+    void targetedByBishop(uint64_t bit);
+    void targetedByKnight(uint64_t bit);
+    void targetedByRook(uint64_t bit);
+    void targetedByQueen(uint64_t bit);
+    void targetedByKing(uint64_t bit);
+
 
     //MAKING A MOVE related functions
     
@@ -105,7 +127,7 @@ private:
     void removePiece(uint64_t& targetBitMap, uint64_t bit);
 
     //  Adds the bit to the targetBitMap.
-    void addPiece(uint64_t& targetBitMap, uint64_t bit);
+    void addPiece(uint64_t& targetBitMap, PieceColor col, uint64_t bit);
 
     //  Detects if a castle move is being done, if so, it will move the rook.
     void manageCastleMove(uint64_t fromPieceBitmap, const PieceMove& move);

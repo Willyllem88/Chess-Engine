@@ -75,6 +75,11 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
 }
 
 int main(int argc, char* argv[]) {
+    //FIX: Just for testing with the engine making random moves
+    time_t seed = time(NULL);
+    std::cout << "SEED: " << seed << std::endl;
+    srand(seed);
+    
     std::cout << "---------------Guillem's Chess Engine---------------" << std::endl;
     std::cout << "For displaying the usage --help or -h." << std::endl << std::endl;
 
@@ -116,13 +121,22 @@ int main(int argc, char* argv[]) {
         if (whitePlayer->canMove() && myBoard->getMoveTurn() == WHITE) {
             move = whitePlayer->getMove();
             myBoard->movePiece(move);
+            if (myBoard->getBoardResult() != PLAYING) break;
         }
 
         if (blackPlayer->canMove() && myBoard->getMoveTurn() == BLACK) {
             move = blackPlayer->getMove();
             myBoard->movePiece(move);
+            if (myBoard->getBoardResult() != PLAYING) break;
         }
     }
+    std::cout << "SEED: " << seed << std::endl;
+    myBoard->printBoardApp();
+    myBoard->printResult();
+    while (1) {
+        if (!myApp->handleEvents()) break;
+    }
+    //myApp->idle();
 
     return 0;
 }

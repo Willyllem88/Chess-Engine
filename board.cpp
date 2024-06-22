@@ -11,6 +11,8 @@ Board::~Board() { }
 void Board::setDefaulValues() {
     moveTurn = WHITE;
 
+    boardResult = PLAYING;
+
     allPieces = 0xffff00000000ffff;
     enPassant = 0x0000000000000000;
     castleBitmap = 0x2200000000000022;
@@ -47,15 +49,18 @@ PieceColor Board::getMoveTurn() {
     return moveTurn;
 }
 
+BoardResult Board::getBoardResult() {
+    return boardResult;
+}
+
 void Board::movePiece(PieceMove& move) {
     //Checks if the move is legal
     //FIX: cout the PieceMove move
-    std::cout << "[INFO] Move: " << move.from.i << " " << move.from.j << " " << move.to.i << " " << move.to.j << " - " << pieceToString(move.promoteTo) << "\n";
     if (legalMoves.find(move) == legalMoves.end()) {
         std::cout << "[ERROR] Invalid Move!\n";
         return;
     }
-    //std::cout << "[INFO] Piece moved from: " << move.from.i << " " << move.from.j << ", to: " << move.to.i << " " << move.to.j << "\n";
+
     PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
     std::cout << "[INFO] Move: " << pieceMoveToAlgebraic(move, pm, legalMoves) << "\n";
@@ -68,17 +73,14 @@ void Board::movePiece(PieceMove& move) {
 
     //Makes the move
     makeAMove(move);
-
+ 
     if (moveCounter > 0) registerState();
 
-    if (threefoldRepetition)
-        std::cout << "======================================\n" <<
-                     "*  *  *  THREEFOLD REPETITION  *  *  *\n" <<
-                     "======================================\n" <<
-                     "- The game is a draw\n";
+    if (threefoldRepetition) boardResult = THREEFOLD_REPETITION;
 
     //Calculates the legal moves of the current player in order to update the targeted squares after the move
-    calculateLegalMoves();
+    //blackTargetedSquares = whiteTargetedSquares = 0// If the following line is calculateKegalMoves(),issues
+    updateTargetedSquares(moveTurn);
 
     //Toggles the turn
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
@@ -101,6 +103,33 @@ void Board::printBoardApp() {
     return;
 }
 
+void Board::printResult() {
+    switch(boardResult) {
+        case WHITE_WINS:
+            std::cout << "======================================\n" <<
+                         "*  *  *  *  * WHITE WINS *  *  *  *  *\n" <<
+                         "======================================\n";
+            break;
+        case BLACK_WINS:
+            std::cout << "======================================\n" <<
+                         "*  *  *  *  * BLACK WINS *  *  *  *  *\n" <<
+                         "======================================\n";
+            break;
+        case STALE_MATE:
+            std::cout << "======================================\n" <<
+                         "*   *  *  *  *  STALEMATE  *  *  *   *\n" <<
+                         "======================================\n";
+            break;
+        case THREEFOLD_REPETITION:
+            std::cout << "======================================\n" <<
+                         "*  *  *  THREEFOLD REPETITION  *  *  *\n" <<
+                         "======================================\n";
+            break;
+        default:;
+    }
+
+}
+
 void Board::calculateLegalMoves() { 
     auto start = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
 
@@ -115,22 +144,16 @@ void Board::calculateLegalMoves() {
 
     //If there are no legal moves, it will print the result
     if (legalMoves.empty()) {
-        std::cout << "[INFO] There are no legal moves\n";
+        updateTargetedSquares(moveTurn);
         if (whiteKing & whiteTargetedSquares || blackKing & blackTargetedSquares)
-            std::cout <<    "======================================\n" <<
-                            "* *  *  *  *  CHECKMATED  *  *  *  * *\n" <<
-                            "======================================\n" <<
-                            "- The winner is: " << ((moveTurn == WHITE) ? "BLACK" : "WHITE") << "\n";
-        else 
-            std::cout <<    "======================================\n" <<
-                            "*  *  *  *     STALEMATE    *  *  *  *\n" <<
-                            "======================================n" <<
-                            "- The game is a draw\n";
+            boardResult = (moveTurn == WHITE) ? BLACK_WINS : WHITE_WINS;
+        else
+            boardResult = STALE_MATE;
     }
 
     
-    auto end = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
-    std::chrono::duration<double> elapsed = end - start; //DELETE: ONLY FOR TESTING
+    //auto end = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
+    //std::chrono::duration<double> elapsed = end - start; //DELETE: ONLY FOR TESTING
     //std::cout << "  [INFO] Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n"; //DELETE: ONLY FOR TESTING
     //std::cout << "  [INFO] Number of legal moves: " << legalMoves.size() << "\n"; //DELETE: ONLY FOR TESTING
 }
@@ -140,9 +163,9 @@ void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {
     legalMoves.clear();
 
     uint64_t *myPieces = (moveTurn == WHITE) ? &whitePieces : &blackPieces;
-    uint64_t *oponentTargetedeSquares = (moveTurn == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
-    uint64_t *oponentPinnedSquares = (moveTurn == WHITE) ? &blackPinnedSquares : &whitePinnedSquares;
-    *oponentTargetedeSquares = 0; *oponentPinnedSquares = 0;
+    //uint64_t *oponentTargetedeSquares = (moveTurn == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
+    //uint64_t *oponentPinnedSquares = (moveTurn == WHITE) ? &blackPinnedSquares : &whitePinnedSquares;
+    //*oponentTargetedeSquares = 0; *oponentPinnedSquares = 0;
 
     //For each piece, it will get their possible moves
     uint64_t bit = 0x8000000000000000;
@@ -194,6 +217,67 @@ void Board::getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
             break;
         case BLACK_KING:
             getKingMoves(bit, pieceLegalMoves);
+            break;
+        default:;
+    }
+}
+
+void Board::updateTargetedSquares(PieceColor col) {
+    uint64_t *myPieces = (col == WHITE) ? &whitePieces : &blackPieces;
+    uint64_t *opponentTargetedSquares = (col == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
+    uint64_t *oponentPinnedSquares = (col == WHITE) ? &blackPinnedSquares : &whitePinnedSquares;    
+    *opponentTargetedSquares = 0;
+    *oponentPinnedSquares = 0;
+
+    uint64_t bit = 0x8000000000000000;
+    for (int i = 0; i < 64; ++i) {
+        if (bit & *myPieces)
+            getPieceTargetedSquares(bit);
+        bit = bit >> 1;
+    }
+}
+
+void Board::getPieceTargetedSquares(uint64_t bit) {
+    PieceType piece;
+    piece = bitToPieceType(bit);
+
+    //Detects the piece type and calls the respective function
+    switch(piece) {
+        case WHITE_PAWN:
+            targetedByWhitePawn(bit);
+            break;
+        case WHITE_BISHOP:
+            targetedByBishop(bit);
+            break;
+        case WHITE_KNIGHT:
+            targetedByKnight(bit);
+            break;
+        case WHITE_ROOK:
+            targetedByRook(bit);
+            break;
+        case WHITE_QUEEN:
+            targetedByQueen(bit);
+            break;
+        case WHITE_KING:
+            targetedByKing(bit);
+            break; 
+        case BLACK_PAWN:
+            targetedByBlackPawn(bit);
+            break;
+        case BLACK_BISHOP:
+            targetedByBishop(bit);
+            break;
+        case BLACK_KNIGHT:
+            targetedByKnight(bit);
+            break;
+        case BLACK_ROOK:
+            targetedByRook(bit);
+            break;
+        case BLACK_QUEEN:
+            targetedByQueen(bit);
+            break;
+        case BLACK_KING:
+            targetedByKing(bit);
             break;
         default:;
     }
@@ -271,7 +355,7 @@ void Board::manageCheck(std::set<PieceMove> &legalMoves) {
         Board baux = *this;
         baux.makeAMove(move);
         baux.moveTurn = (baux.moveTurn == WHITE) ? BLACK : WHITE;
-        baux.getAllPiecesMoves(baux.legalMoves);
+        baux.updateTargetedSquares(baux.moveTurn);
 
         //Check if the move puts the king in danger
         if (fromBit & whitePieces && baux.whiteKing & baux.whiteTargetedSquares)
@@ -300,7 +384,7 @@ void Board::eliminatePinnedCheckMoves(std::set<PieceMove> &legalMoves) {
             Board baux = *this;
             baux.makeAMove(move);
             baux.moveTurn = (baux.moveTurn == WHITE) ? BLACK : WHITE;
-            baux.getAllPiecesMoves(baux.legalMoves);
+            baux.updateTargetedSquares(baux.moveTurn);
 
             //Check if the move puts the king in danger
             if (fromBit & whitePieces && baux.whiteKing & baux.whiteTargetedSquares)
@@ -326,8 +410,8 @@ void Board::makeAMove(const PieceMove& move) {
     if (move.promoteTo != NONE) {
         if (toPieceBitmap != nullptr)
             removePiece(*toPieceBitmap, toBit);
-        uint64_t *promoteToBotmap = pieceTypeToBitmap(move.promoteTo);
-        addPiece(*promoteToBotmap, toBit);
+        uint64_t *promoteToBitmap = pieceTypeToBitmap(move.promoteTo);
+        addPiece(*promoteToBitmap, moveTurn, toBit);
         removePiece(*fromPieceBitmap, fromBit);
         return;
     }
@@ -350,7 +434,7 @@ void Board::makeAMove(const PieceMove& move) {
     }
 
     //Add the piece to its new location
-    addPiece(*fromPieceBitmap, toBit);
+    addPiece(*fromPieceBitmap, moveTurn, toBit);
 
     //Remove the piece from it last location
     removePiece(*fromPieceBitmap, fromBit);
@@ -365,9 +449,9 @@ void Board::removePiece(uint64_t& targetBitMap, uint64_t bit) {
     targetBitMap = targetBitMap & ~bit;
 }
 
-void Board::addPiece(uint64_t& targetBitMap, uint64_t bit) {
+void Board::addPiece(uint64_t& targetBitMap, PieceColor col, uint64_t bit) {
     allPieces = allPieces | bit;
-    if (targetBitMap & whitePieces) 
+    if (col == WHITE) 
         whitePieces = whitePieces | bit;
     else 
         blackPieces = blackPieces | bit;
@@ -379,28 +463,28 @@ void Board::manageCastleMove(uint64_t fromPieceBitmap, const PieceMove& move) {
     if (fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 6) {
         uint64_t rookFrom = 0x0100000000000000;
         uint64_t rookTo = 0x0400000000000000;
-        addPiece(whiteRook, rookTo);
+        addPiece(whiteRook, moveTurn, rookTo);
         removePiece(whiteRook, rookFrom);
         castleBitmap = castleBitmap & ~0x2200000000000000;
     }
     else if (fromPieceBitmap & whiteKing && move.from.j == 4 && move.to.j == 2) {
         uint64_t rookFrom = 0x8000000000000000;
         uint64_t rookTo = 0x1000000000000000;
-        addPiece(whiteRook, rookTo);
+        addPiece(whiteRook, moveTurn, rookTo);
         removePiece(whiteRook, rookFrom);
         castleBitmap = castleBitmap & ~0x220000000000000;
     }
     else if (fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 6) {
         uint64_t rookFrom = 0x0000000000000001;
         uint64_t rookTo = 0x0000000000000004;
-        addPiece(blackRook, rookTo);
+        addPiece(blackRook, moveTurn, rookTo);
         removePiece(blackRook, rookFrom);
         castleBitmap = castleBitmap & ~0x0000000000000022;
     }
     else if (fromPieceBitmap & blackKing && move.from.j == 4 && move.to.j == 2) {
         uint64_t rookFrom = 0x0000000000000080;
         uint64_t rookTo = 0x0000000000000010;
-        addPiece(blackRook, rookTo);
+        addPiece(blackRook, moveTurn, rookTo);
         removePiece(blackRook, rookFrom);
         castleBitmap = castleBitmap & ~0x0000000000000022;
     }
@@ -410,6 +494,7 @@ void Board::registerState() {
     PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
     BoardState bs(pm, enPassant, castleBitmap);
+    boardStateVector.push_back(bs);
     ++boardStateLog[bs];
     if (boardStateLog[bs] == 3)
         threefoldRepetition = true;
