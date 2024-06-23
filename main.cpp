@@ -130,13 +130,13 @@ int main(int argc, char* argv[]) {
             if (myBoard->getBoardResult() != PLAYING) break;
         }
     }
-    std::cout << "SEED: " << seed << std::endl;
-    myBoard->printBoardApp();
-    myBoard->printResult();
-    while (1) {
-        if (!myApp->handleEvents()) break;
+
+    //Check if the game has concluded, then print the result
+    if (myBoard->getBoardResult() != PLAYING) {
+        myBoard->printBoardApp();
+        myBoard->printResult();
+        while (myApp->handleEvents());
     }
-    //myApp->idle();
 
     return 0;
 }

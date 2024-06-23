@@ -55,7 +55,6 @@ BoardResult Board::getBoardResult() {
 
 void Board::movePiece(PieceMove& move) {
     //Checks if the move is legal
-    //FIX: cout the PieceMove move
     if (legalMoves.find(move) == legalMoves.end()) {
         std::cout << "[ERROR] Invalid Move!\n";
         return;
@@ -73,13 +72,13 @@ void Board::movePiece(PieceMove& move) {
 
     //Makes the move
     makeAMove(move);
- 
+    
+    //FIX: add documentation
     if (moveCounter > 0) registerState();
 
     if (threefoldRepetition) boardResult = THREEFOLD_REPETITION;
 
-    //Calculates the legal moves of the current player in order to update the targeted squares after the move
-    //blackTargetedSquares = whiteTargetedSquares = 0// If the following line is calculateKegalMoves(),issues
+    //Update the oponent targeted squares
     updateTargetedSquares(moveTurn);
 
     //Toggles the turn
@@ -130,9 +129,7 @@ void Board::printResult() {
 
 }
 
-void Board::calculateLegalMoves() { 
-    auto start = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
-
+void Board::calculateLegalMoves() {
     //Updates the set with all the moves
     getAllPiecesMoves(legalMoves);
 
@@ -150,12 +147,6 @@ void Board::calculateLegalMoves() {
         else
             boardResult = STALE_MATE;
     }
-
-    
-    //auto end = std::chrono::high_resolution_clock::now(); //DELETE: ONLY FOR TESTING
-    //std::chrono::duration<double> elapsed = end - start; //DELETE: ONLY FOR TESTING
-    //std::cout << "  [INFO] Calculction of all legal moves took: " << elapsed.count()*1000.0f << " ms\n"; //DELETE: ONLY FOR TESTING
-    //std::cout << "  [INFO] Number of legal moves: " << legalMoves.size() << "\n"; //DELETE: ONLY FOR TESTING
 }
 
 void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {
@@ -232,12 +223,12 @@ void Board::updateTargetedSquares(PieceColor col) {
     uint64_t bit = 0x8000000000000000;
     for (int i = 0; i < 64; ++i) {
         if (bit & *myPieces)
-            getPieceTargetedSquares(bit);
+            updatePieceTargetedSquares(bit);
         bit = bit >> 1;
     }
 }
 
-void Board::getPieceTargetedSquares(uint64_t bit) {
+void Board::updatePieceTargetedSquares(uint64_t bit) {
     PieceType piece;
     piece = bitToPieceType(bit);
 
@@ -494,7 +485,6 @@ void Board::registerState() {
     PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
     BoardState bs(pm, enPassant, castleBitmap);
-    boardStateVector.push_back(bs);
     ++boardStateLog[bs];
     if (boardStateLog[bs] == 3)
         threefoldRepetition = true;

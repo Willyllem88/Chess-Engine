@@ -11,6 +11,7 @@ Here I will list the pending tasks and the bugs and issues that should be addres
 
 ## Low Priority
 
+* ManageCheck() function is slow, try to make it faster
 * PieceMoveToAlgebraic could write also # and + if is checkmate or check.
 * Improve the GUI, adding sound (easy) and visualize the movement (hard, i think)
 * In board.hh, boardStateLog increases its size in each turn. It might cause huge delays when duplicating a Board instance.
@@ -19,3 +20,7 @@ Here I will list the pending tasks and the bugs and issues that should be addres
 ## Bugs and issues
 
 * Update targeted bitmap takes too long or maybe it is calculate legal moves. Those before moving a piece.
+
+## Possible optimitzations:
+
+* When calculating the targeted squares, use more bitwise operations

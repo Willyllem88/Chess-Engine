@@ -5,7 +5,7 @@
 void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     PieceMove move;
     move.promoteTo = NONE;
-    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *opponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
     move.from = bitToij(bit);
     //Detect Promotion
     uint64_t aux1, aux2;
@@ -25,7 +25,7 @@ void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     }
     aux1 = bit >> 9; //Capture right
     if (bit & ~H_FILE) {
-        if (aux1 & (*oponentPieces | enPassant)) {
+        if (aux1 & (*opponentPieces | enPassant)) {
             move.to = bitToij(aux1);
             pieceMoves.insert(move);
             //Promotion
@@ -35,7 +35,7 @@ void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     }
     aux1 = bit >> 7; //Capture left
     if (bit & ~A_FILE) {
-        if (aux1 & (*oponentPieces | enPassant)) {
+        if (aux1 & (*opponentPieces | enPassant)) {
             move.to = bitToij(aux1);
             pieceMoves.insert(move);
             //Promotion
@@ -48,7 +48,7 @@ void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
 void Board::getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     PieceMove move;
     move.promoteTo = NONE;
-    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *opponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
     uint64_t aux1, aux2;
     move.from = bitToij(bit);
     aux1 = bit << 8; //One square forward
@@ -67,7 +67,7 @@ void Board::getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     }
     aux1 = bit << 7; //Capture right
     if (bit & ~H_FILE) {
-        if (aux1 & (*oponentPieces | enPassant)) {
+        if (aux1 & (*opponentPieces | enPassant)) {
             move.to = bitToij(aux1);
             pieceMoves.insert(move);
             //Promotion
@@ -77,7 +77,7 @@ void Board::getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     }
     aux1 = bit << 9; //Capture left
     if (bit & ~A_FILE) {
-        if (aux1 & (*oponentPieces | enPassant)) {
+        if (aux1 & (*opponentPieces | enPassant)) {
             move.to = bitToij(aux1);
             pieceMoves.insert(move);
             //Promotion
@@ -92,7 +92,7 @@ void Board::getBishopMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     move.promoteTo = NONE;
     move.from = bitToij(bit);
     uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
-    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *opponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
     bool pieceFound;
 
     const int I_MOVE[4] = {1, 1, -1, -1};
@@ -108,7 +108,7 @@ void Board::getBishopMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
             if (aux & ~*myPieces) {
                 move.to = bitToij(aux);
                 pieceMoves.insert(move);
-                if (aux & *oponentPieces)
+                if (aux & *opponentPieces)
                     pieceFound = true;
             }
             else pieceFound = true;;
@@ -146,7 +146,7 @@ void Board::getRookMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     move.promoteTo = NONE;
     move.from = bitToij(bit);
     uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
-    uint64_t *oponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
+    uint64_t *opponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
     bool pieceFound;
 
     const int I_MOVE[4] = {1, 0, -1, 0};
@@ -162,7 +162,7 @@ void Board::getRookMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
             if (aux & ~*myPieces) {
                 move.to = bitToij(aux);
                 pieceMoves.insert(move);
-                if (aux & *oponentPieces)
+                if (aux & *opponentPieces)
                     pieceFound = true;
             }
             else pieceFound = true;;
@@ -185,7 +185,7 @@ void Board::getKingMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     move.from = bitToij(bit);
     uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
     uint64_t *myTargetedSquares = (bit & whitePieces) ? &whiteTargetedSquares : &blackTargetedSquares;
-    uint64_t *oponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
+    uint64_t *opponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
     uint64_t aux;
     const int I_MOVE[8] = {1, 1, 1, 0, -1, -1, -1, 0};
     const int J_MOVE[8] = {-1, 0, 1, 1, 1, 0, -1, -1};
@@ -194,7 +194,7 @@ void Board::getKingMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
         int newJ = move.from.j + J_MOVE[i];
         if (newI >= 0 and newI < 8 and newJ >= 0 and newJ < 8) {
             ijToBit(newI, newJ, aux);
-            *oponentTargetedeSquares |= aux;
+            *opponentTargetedeSquares |= aux;
             if (aux & ~*myPieces && aux & ~*myTargetedSquares) {          
                 move.to = bitToij(aux);
                 pieceMoves.insert(move);

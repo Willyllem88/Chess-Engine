@@ -45,7 +45,6 @@ private:
 
     //  Log of the boardState
     std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
-    std::vector<BoardState> boardStateVector; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
     bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
 
     //  Board result
@@ -76,15 +75,17 @@ private:
     //  Updates the legalMoves set with all possible moves for the current player's turn. It also updtes the opponent's targetedSquares and pinnedSquares bitmaps.
     void calculateLegalMoves();
 
-    //  Fills the pieceMoves set with all moves of all pieces, including those that may put the king in check. Updates the opponent's targetedSquares and pinnedSquares bitmaps.
+    //  Fills the pieceMoves set with all moves of all pieces, including those that may put the king in check.
     void getAllPiecesMoves(std::set<PieceMove>& pieceMoves);
 
-    //  Adds all legal moves of the piece represented by 'bit' to the pieceMoves set. Updates the opponent's targetedSquares and pinnedSquares bitmaps.
+    //  Adds all legal moves of the piece represented by 'bit' to the pieceMoves set.
     void getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceMoves);
 
-    void updateTargetedSquares(PieceColor col);
+    //  Updates the targetedSquares and pinned bitmap of the opponent of the color passed as argument.
+    void updateTargetedSquares(PieceColor opponentColor);
 
-    void getPieceTargetedSquares(uint64_t bit);
+    //  Updates the targetedSquares and pinned bitmap. Those cells that are targeted by the piece represented by 'bit' are updated.
+    void updatePieceTargetedSquares(uint64_t bit);
 
     //  Updates the enPassant bitmap if the move involves a pawn moving two squares forward.
     void updateEnPassant(PieceMove& move);
@@ -98,7 +99,7 @@ private:
     //  Eliminates moves from pieceMoves that would leave the king in check after the move.
     void eliminatePinnedCheckMoves(std::set<PieceMove> &pieceMoves);
 
-    //  Gets all legal moves of the piece represented by 'bit' and adds them to the pieceLegalMoves set. These functions also update the opponent's targetedSquares and pinnedSquares bitmaps.
+    //  Gets all legal moves of the piece represented by 'bit' and adds them to the pieceLegalMoves set.
     void getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
     void getBlackPawnMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
     void getBishopMoves(uint64_t bit, std::set<PieceMove>& pieceLegalMoves);
@@ -109,6 +110,7 @@ private:
     void promoteWhitePawn(std::set<PieceMove>& pieceMoves, PieceMove& move);
     void promoteBlackPawn(std::set<PieceMove>& pieceMoves, PieceMove& move);
 
+    //  For the piece in located in the bit, it will update the targetedSquares bitmap of the opponent. Also the pinnedSquares bitmap will be updated.
     void targetedByWhitePawn(uint64_t bit);
     void targetedByBlackPawn(uint64_t bit);
     void targetedByBishop(uint64_t bit);
