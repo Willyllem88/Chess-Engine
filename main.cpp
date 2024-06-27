@@ -9,12 +9,15 @@ void manageError(const char* message) {
 
 void usage(const char* programName) {
     std::cout << "Usage: " << programName << " [options]" << std::endl;
+    std::cout << "Play a game of chess with the engine." << std::endl << std::endl;
+    std::cout << "Commands:" << std::endl;
+    std::cout << "    u or undo in the console will undo the last move. More than one undo is supported." << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "    --help, -h: Displays this message." << std::endl;
     std::cout << "    --white, -w <PLAYER | <engine_name>>: Specify who will play with the white pieces." << std::endl;
     std::cout << "    --black, -b <PLAYER | <engine_name>>: Specify who will play with the black pieces." << std::endl;
     std::cout << "    --console-only, -c: The GUI will not be displayed." << std::endl;
-    std::cout << "    --timespan <time>, -t <time>: The time span in seconds for the engine to play a turn." << std::endl;
+    std::cout << "    --timespan <time>, -t <time>: The time span in seconds for the engine to play a turn, can use decimals." << std::endl;
     std::cout << std::endl;
     std::cout << "The default options are:" << std::endl;
     std::cout << "    --white PLAYER, --black PLAYER --timespan 0" << std::endl;
@@ -22,7 +25,7 @@ void usage(const char* programName) {
     exit(0);
 }
 
-void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::string& blackPlayer, bool& displayGUIApp, int& engineTimeSpan) {
+void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::string& blackPlayer, bool& displayGUIApp, std::chrono::milliseconds& engineTimeSpan) {
     if (argc == 1)
         return;
 
@@ -56,7 +59,8 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
                 displayGUIApp = false;
                 break;
             case 't': //Engine time span
-                engineTimeSpan = std::stoi(optarg);
+                //stof
+                engineTimeSpan = std::chrono::milliseconds(int(std::stof(optarg) * 1000));
                 break;
             default: //Invalid option
                 std::cerr << "Invalid option" << std::endl;
@@ -68,7 +72,7 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
     std::cout << "  White player: " << whitePlayer << std::endl;
     std::cout << "  Black player: " << blackPlayer << std::endl;
     std::cout << "  Display GUI: " << (displayGUIApp ? "Yes" : "No") << std::endl;
-    std::cout << "  Engine time span: " << engineTimeSpan << " s" << std::endl;
+    std::cout << "  Engine time span: " << engineTimeSpan.count() << " seconds" << std::endl;
     std::cout << std::endl;
 
     return;
@@ -87,7 +91,7 @@ int main(int argc, char* argv[]) {
     std::string whitePlayerName = "PLAYER";
     std::string blackPlayerName = "PLAYER";
     bool displayGUIApp = true;
-    int engineTimeSpan = 0;
+    std::chrono::milliseconds engineTimeSpan(0);
 
     std::shared_ptr<MyApp> myApp;
     std::shared_ptr<Board> myBoard;
@@ -104,9 +108,9 @@ int main(int argc, char* argv[]) {
     //Loads both players
     std::unique_ptr<Player> whitePlayer, blackPlayer;
     if (whitePlayerName == "PLAYER") whitePlayer = std::make_unique<HumanPlayer>(myApp);
-    else whitePlayer = std::make_unique<EngineV1>(myBoard);
+    else whitePlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
     if (blackPlayerName == "PLAYER") blackPlayer = std::make_unique<HumanPlayer>(myApp);
-    else blackPlayer = std::make_unique<EngineV1>(myBoard);
+    else blackPlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
 
     //Initializes the app, if it fails, the program will exit
     if (!myApp->init())
@@ -118,13 +122,13 @@ int main(int argc, char* argv[]) {
         myBoard->printBoardApp();
         if (!myApp->handleEvents()) break;
 
-        if (whitePlayer->canMove() && myBoard->getMoveTurn() == WHITE) {
+        //Player movement logic
+        if (myBoard->getMoveTurn() == WHITE && whitePlayer->canMove()) {
             move = whitePlayer->getMove();
             myBoard->movePiece(move);
             if (myBoard->getBoardResult() != PLAYING) break;
         }
-
-        if (blackPlayer->canMove() && myBoard->getMoveTurn() == BLACK) {
+        else if (myBoard->getMoveTurn() == BLACK && blackPlayer->canMove()) {
             move = blackPlayer->getMove();
             myBoard->movePiece(move);
             if (myBoard->getBoardResult() != PLAYING) break;

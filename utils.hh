@@ -8,11 +8,12 @@
 
 #include <chrono>
 #include <iostream>
-#include <memory>
 #include <iomanip>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 //This will only be used when displaying the info of the board
@@ -108,8 +109,7 @@ struct BoardState{
 
 enum BoardResult {
     PLAYING,
-    WHITE_WINS,
-    BLACK_WINS,
+    CHECKMATE,
     STALE_MATE,
     THREEFOLD_REPETITION,
 };

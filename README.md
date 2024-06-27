@@ -37,11 +37,17 @@ The executable file will be the `engine` file.
 
 ### Executing options
 
-The default settings will be the player playing through the GUI agains itself.
 The options are specified with -smth format:
 * `-h` or `--help`: a usage message is displayed.
 * `-b <PLAYER | <engine_name>>` or `--black <PLAYER | <engine_name>>`: specify who will play with the white pieces.
 * `-w <PLAYER | <engine_name>>` or `--white <PLAYER | <engine_name>>`: specify who will play with the black pieces.
 * `-c` or `--console-only`: when you just want performance. It will not use some aspects just designed for the GUI. The player will be able to write its moves through the console as well, no visual aid will be given.
-* `-t seconds` or `--timespan seconds`: the time span (in seconds) that the engine will take for making it move after its opponent. 0 seconds if not specified. Useful with using `-e`.
+* `-t seconds` or `--timespan seconds`: the time span (in seconds) that the engine will take for making it move after its opponent. Can handle decimals.
+
+The default values will be --white PLAYER, --black PLAYER --timespan 0.
+
+### Commands
+
+During the execution of the program, the user will be able to write some commands. Those are:
+* `u` or `undo`: will undo the last. User can undo multiple moves until the initial board.
 

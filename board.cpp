@@ -9,8 +9,9 @@ Board::Board(std::shared_ptr<MyApp> a) {
 Board::~Board() { }
 
 void Board::setDefaulValues() {
-    moveTurn = WHITE;
+    boardLogVector.clear();
 
+    moveTurn = WHITE;
     boardResult = PLAYING;
 
     allPieces = 0xffff00000000ffff;
@@ -43,6 +44,8 @@ void Board::setDefaulValues() {
 
     //Calculates the first legal moves
     calculateLegalMoves();
+    
+    boardLogVector.push_back(*this);
 }
 
 PieceColor Board::getMoveTurn() {
@@ -51,6 +54,42 @@ PieceColor Board::getMoveTurn() {
 
 BoardResult Board::getBoardResult() {
     return boardResult;
+}
+
+PieceMatrix Board::getPieceMatrix() {
+    PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
+    bitBoardToMatrix(pm);
+    return pm;
+}
+
+int Board::getPawnsCount(PieceColor col) {
+    if (col == WHITE) return __builtin_popcountll(whitePawn);   
+    else return __builtin_popcountll(blackPawn);       
+}
+
+int Board::getBishopsCount(PieceColor col) {
+    if (col == WHITE) return __builtin_popcountll(whiteBishop);   
+    else return __builtin_popcountll(blackBishop);       
+}
+
+int Board::getKnightsCount(PieceColor col) {
+    if (col == WHITE) return __builtin_popcountll(whiteKnight);   
+    else return __builtin_popcountll(blackKnight);       
+}
+
+int Board::getRooksCount(PieceColor col) {
+    if (col == WHITE) return __builtin_popcountll(whiteRook);   
+    else return __builtin_popcountll(blackRook);       
+}
+
+int Board::getQueensCount(PieceColor col) {
+    if (col == WHITE) return __builtin_popcountll(whiteQueen);   
+    else return __builtin_popcountll(blackQueen);       
+}
+
+int Board::getKingsCount(PieceColor col) {
+    if (col == WHITE) return __builtin_popcountll(whiteKing);   
+    else return __builtin_popcountll(blackKing);       
 }
 
 void Board::movePiece(PieceMove& move) {
@@ -72,11 +111,6 @@ void Board::movePiece(PieceMove& move) {
 
     //Makes the move
     makeAMove(move);
-    
-    //FIX: add documentation
-    if (moveCounter > 0) registerState();
-
-    if (threefoldRepetition) boardResult = THREEFOLD_REPETITION;
 
     //Update the oponent targeted squares
     updateTargetedSquares(moveTurn);
@@ -88,6 +122,48 @@ void Board::movePiece(PieceMove& move) {
 
     //Calculates the legal moves of the opponent
     calculateLegalMoves();
+
+    //FIX: add doc
+    if (moveCounter > 0) registerState();
+
+    if (threefoldRepetition) boardResult = THREEFOLD_REPETITION;
+}
+
+void Board::undoMove() {
+    if (boardLogVector.size() <= 1) return;
+
+    //The back element is the current state, so it will be removed
+    boardLogVector.pop_back();
+
+    Board *newBoard= &boardLogVector.back();
+
+    moveTurn = newBoard->moveTurn;
+    moveCounter = newBoard->moveCounter;
+    legalMoves = newBoard->legalMoves;
+    boardStateLog = newBoard->boardStateLog;
+    threefoldRepetition = newBoard->threefoldRepetition;
+    boardResult = newBoard->boardResult;
+    allPieces = newBoard->allPieces;
+    enPassant = newBoard->enPassant;
+    castleBitmap = newBoard->castleBitmap;
+    whitePieces = newBoard->whitePieces;
+    whiteTargetedSquares = newBoard->whiteTargetedSquares;
+    whitePinnedSquares = newBoard->whitePinnedSquares;
+    blackPieces = newBoard->blackPieces;
+    blackTargetedSquares = newBoard->blackTargetedSquares;
+    blackPinnedSquares = newBoard->blackPinnedSquares;
+    whitePawn = newBoard->whitePawn;
+    whiteBishop = newBoard->whiteBishop;
+    whiteKnight = newBoard->whiteKnight;
+    whiteRook = newBoard->whiteRook;
+    whiteQueen = newBoard->whiteQueen;
+    whiteKing = newBoard->whiteKing;
+    blackPawn = newBoard->blackPawn;
+    blackBishop = newBoard->blackBishop;
+    blackKnight = newBoard->blackKnight;
+    blackRook = newBoard->blackRook;
+    blackQueen = newBoard->blackQueen;
+    blackKing = newBoard->blackKing;
 }
 
 const std::set<PieceMove>& Board::getCurrentLegalMoves() {
@@ -104,15 +180,15 @@ void Board::printBoardApp() {
 
 void Board::printResult() {
     switch(boardResult) {
-        case WHITE_WINS:
-            std::cout << "======================================\n" <<
-                         "*  *  *  *  * WHITE WINS *  *  *  *  *\n" <<
-                         "======================================\n";
-            break;
-        case BLACK_WINS:
-            std::cout << "======================================\n" <<
-                         "*  *  *  *  * BLACK WINS *  *  *  *  *\n" <<
-                         "======================================\n";
+        case CHECKMATE:
+            if (moveTurn == BLACK)
+                std::cout << "======================================\n" <<
+                             "*   *  *  *  *  WHITE WINS  *  *  *   *\n" <<
+                             "======================================\n";
+            else
+                std::cout << "======================================\n" <<
+                             "*   *  *  *  *  BLACK WINS  *  *  *   *\n" <<
+                             "======================================\n"; 
             break;
         case STALE_MATE:
             std::cout << "======================================\n" <<
@@ -143,7 +219,7 @@ void Board::calculateLegalMoves() {
     if (legalMoves.empty()) {
         updateTargetedSquares(moveTurn);
         if (whiteKing & whiteTargetedSquares || blackKing & blackTargetedSquares)
-            boardResult = (moveTurn == WHITE) ? BLACK_WINS : WHITE_WINS;
+            boardResult = CHECKMATE;
         else
             boardResult = STALE_MATE;
     }
@@ -488,6 +564,7 @@ void Board::registerState() {
     ++boardStateLog[bs];
     if (boardStateLog[bs] == 3)
         threefoldRepetition = true;
+    boardLogVector.push_back(*this);
 }
 
 std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t bit) const {

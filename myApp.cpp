@@ -41,7 +41,8 @@ bool ConsoleApp::handleEvents() {
     if (readStringFromConsole(str)) {
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
         lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
-        pieceMoveAvailable = true;
+        if (str == "undo" || str == "u") board->undoMove();
+        else pieceMoveAvailable = true;
     }
     return true;
 }
@@ -166,10 +167,18 @@ bool GUIApp::handleEvents() {
                 pieceMoveAvailable = true;
             }
         }
+        //Handle mouse move
+        else if (e.type == SDL_MOUSEMOTION && pressed) {
+            SDL_GetMouseState(&lastMouseMove.to.x, &lastMouseMove.to.y);
+        }
         else if (e.type == SDL_WINDOWEVENT) {
-            if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 resizeWindow(e.window.data1, e.window.data2);
-            }
+        }
+        //Handles left arrow pressed
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_LEFT) {
+            board->undoMove();
+            std::cout << "HELOOO\n";
         }
     }
 
@@ -177,7 +186,8 @@ bool GUIApp::handleEvents() {
     if (readStringFromConsole(str)) {
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
         lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
-        pieceMoveAvailable = true;
+        if (str == "undo" || str == "u") board->undoMove();
+        else pieceMoveAvailable = true;
     }
     return true;
 }

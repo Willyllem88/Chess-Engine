@@ -24,8 +24,23 @@ public:
     //  Gets the result of the game.
     BoardResult getBoardResult();
 
+    //  Gets the current pieceMatrix of the board.
+    PieceMatrix getPieceMatrix();
+
+    //  Returns the number of pieces of the color passed as argument.
+    int getPawnsCount(PieceColor col);
+    int getBishopsCount(PieceColor col);
+    int getKnightsCount(PieceColor col);
+    int getRooksCount(PieceColor col);
+    int getQueensCount(PieceColor col);
+    int getKingsCount(PieceColor col);
+
+
     //  Makes a move in the board, updating all bitmaps and variables accordingly.
     void movePiece(PieceMove& move);
+
+    //  Undoes a move in the board, updating all bitmaps and variables accordingly.
+    void undoMove();
 
     //  Returns all the legal moves for the current player's turn.
     const std::set<PieceMove>& getCurrentLegalMoves(); //FIX: maybe return a const reference
@@ -46,6 +61,7 @@ private:
     //  Log of the boardState
     std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
     bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
+    std::vector<Board> boardLogVector; //Vector of board states, used to undo moves. FIX: quite inneficient, maybe implement it differently.
 
     //  Board result
     BoardResult boardResult; //The result of the game, if it is still ongoing, it will be NONE.
