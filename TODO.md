@@ -4,6 +4,7 @@ Here I will list the pending tasks and the bugs and issues that should be addres
 
 ## High Priority
 
+* Handle in a optimal way the threefold repetition
 * Test it with real chess data, in order to find possible errors. A function that reads chess moves in ascii and playis it in the board.
 * Comment the .hh files, maybe also in de cpp files
 * The ENGINE
@@ -11,7 +12,6 @@ Here I will list the pending tasks and the bugs and issues that should be addres
 
 ## Low Priority
 
-* ManageCheck() function is slow, try to make it faster
 * PieceMoveToAlgebraic could write also # and + if is checkmate or check.
 * Improve the GUI, adding sound (easy) and visualize the movement (hard, i think)
 * In board.hh, boardStateLog increases its size in each turn. It might cause huge delays when duplicating a Board instance.

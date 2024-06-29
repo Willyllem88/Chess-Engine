@@ -45,6 +45,9 @@ public:
     //  Returns all the legal moves for the current player's turn.
     const std::set<PieceMove>& getCurrentLegalMoves(); //FIX: maybe return a const reference
 
+    //  Prints the last move made.
+    void printLastMove();
+
     //  Prints the board through the app passed in the constructor.
     void printBoardApp();
 
@@ -57,11 +60,11 @@ private:
     PieceColor moveTurn; //The color of the player that will move next
     unsigned int moveCounter; //The number of moves that have been made
     std::set<PieceMove> legalMoves; //The set of legal moves for the current player
+    std::string lastMove; //The last move made
 
     //  Log of the boardState
-    std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
+    //std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
     bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
-    std::vector<Board> boardLogVector; //Vector of board states, used to undo moves. FIX: quite inneficient, maybe implement it differently.
 
     //  Board result
     BoardResult boardResult; //The result of the game, if it is still ongoing, it will be NONE.

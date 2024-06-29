@@ -23,29 +23,24 @@ bool EngineV1::canMove() {
     return true;
 }
 
-int auxvar = -1;
+int numboards; //FIX: only for testing
 
 PieceMove EngineV1::getMove() {
-    if (auxvar < 3) {
-        auxvar++;
-        if (auxvar == 0) return PieceMove(6, 4, 4, 4);
-        if (auxvar == 1) return PieceMove(7, 3, 3, 7);
-        if (auxvar == 2) return PieceMove(7, 5, 4, 2);
-    }
+    numboards = 0; //FIX: only for testing
     std::set<PieceMove> s = board->getCurrentLegalMoves();
-    PieceColor myColor = board->getMoveTurn();
     PieceMove bestMove;
     int bestValue = -INF;
     //Random move
     for (PieceMove move : s) {
-        std::shared_ptr<Board> newBoard = std::make_shared<Board>(*board);
-        newBoard->movePiece(move);
-        /*int tempValue = getBoardScore(myColor, newBoard, 1);
+        board->movePiece(move);
+        int tempValue = -search(MAX_DEPTH - 1, -INF, INF);
         if (tempValue > bestValue) {
             bestValue = tempValue;
             bestMove = move;
-        }*/
+        }
+        board->undoMove();
     }
+    std::cout << "Number of boards: " << numboards << std::endl;
     //FIX: temporal solution
     if (bestValue != -INF) return bestMove;
     else {
@@ -56,9 +51,28 @@ PieceMove EngineV1::getMove() {
     }
 }
 
+int EngineV1::search(int depth, int alpha, int beta) {
+    if (depth == 0) {
+        numboards++; //FIX: only for testing
+        return evaluate();
+    }
+    if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, return -INF
+
+    std::set<PieceMove> s = board->getCurrentLegalMoves();
+    
+    for (PieceMove m : s) {
+        board->movePiece(m);
+        int score = -search(depth - 1, -beta, -alpha);
+        board->undoMove();
+        if (score >= beta) return beta;
+        if (score > alpha) alpha = score;
+    }
+    return alpha;
+}
+
 int EngineV1::evaluate() {
-    int whiteEval = countMaterial(board, WHITE);
-    int blackEval = countMaterial(board, BLACK);
+    int whiteEval = countMaterial(WHITE);
+    int blackEval = countMaterial(BLACK);
 
     int evaluation = whiteEval - blackEval;
 
@@ -66,30 +80,13 @@ int EngineV1::evaluate() {
     return evaluation * perspective;
 }
 
-int EngineV1::search(std::shared_ptr<Board> actualBoard, int depth) {
-    if (depth == 0) return 0;
-    if (actualBoard->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, return -INF
-
-    PieceColor myColor = actualBoard->getMoveTurn();
-    int material = countMaterial(actualBoard, myColor);
-    int value = material;
-    
-    for (PieceMove m : actualBoard->getCurrentLegalMoves()) {
-        std::shared_ptr<Board> newBoard = std::make_shared<Board>(*actualBoard);
-        newBoard->movePiece(m);
-        int tempValue = search(newBoard, depth);
-        value = std::max(value, tempValue);
-    }
-    return value;
-}
-
-int EngineV1::countMaterial(std::shared_ptr<Board> actualBoard, PieceColor myColor) {
+int EngineV1::countMaterial(PieceColor myColor) {
     int material = 0;
-    material += actualBoard->getPawnsCount(myColor) * PAWN_VALUE;
-    material += actualBoard->getBishopsCount(myColor) * BISHOP_VALUE;
-    material += actualBoard->getKnightsCount(myColor) * KNIGHT_VALUE;
-    material += actualBoard->getRooksCount(myColor) * ROOK_VALUE;
-    material += actualBoard->getQueensCount(myColor) * QUEEN_VALUE;
-    material += actualBoard->getKingsCount(myColor) * KING_VALUE;
+    material += board->getPawnsCount(myColor) * PAWN_VALUE;
+    material += board->getBishopsCount(myColor) * BISHOP_VALUE;
+    material += board->getKnightsCount(myColor) * KNIGHT_VALUE;
+    material += board->getRooksCount(myColor) * ROOK_VALUE;
+    material += board->getQueensCount(myColor) * QUEEN_VALUE;
+    material += board->getKingsCount(myColor) * KING_VALUE;
     return material;
 }

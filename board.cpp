@@ -1,6 +1,8 @@
 #include "board.hh"
 #include "myApp.hh"
 
+std::list<Board> boardLogList; //FIX: handle it in its own class
+
 Board::Board(std::shared_ptr<MyApp> a) {
     setDefaulValues();
     this->app = a;
@@ -9,7 +11,7 @@ Board::Board(std::shared_ptr<MyApp> a) {
 Board::~Board() { }
 
 void Board::setDefaulValues() {
-    boardLogVector.clear();
+    boardLogList.clear();
 
     moveTurn = WHITE;
     boardResult = PLAYING;
@@ -45,7 +47,7 @@ void Board::setDefaulValues() {
     //Calculates the first legal moves
     calculateLegalMoves();
     
-    boardLogVector.push_back(*this);
+    boardLogList.push_back(*this);
 }
 
 PieceColor Board::getMoveTurn() {
@@ -101,7 +103,7 @@ void Board::movePiece(PieceMove& move) {
 
     PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
-    std::cout << "[INFO] Move: " << pieceMoveToAlgebraic(move, pm, legalMoves) << "\n";
+    lastMove = pieceMoveToAlgebraic(move, pm, legalMoves);
     
     //If the moves is a pown that moves two squares, it updates the board info in order to let en passant
     updateEnPassant(move);
@@ -130,44 +132,48 @@ void Board::movePiece(PieceMove& move) {
 }
 
 void Board::undoMove() {
-    if (boardLogVector.size() <= 1) return;
+    if (boardLogList.size() <= 1) return;
 
     //The back element is the current state, so it will be removed
-    boardLogVector.pop_back();
+    boardLogList.pop_back();
 
-    Board *newBoard= &boardLogVector.back();
+    Board *prevBoard = &boardLogList.back();
 
-    moveTurn = newBoard->moveTurn;
-    moveCounter = newBoard->moveCounter;
-    legalMoves = newBoard->legalMoves;
-    boardStateLog = newBoard->boardStateLog;
-    threefoldRepetition = newBoard->threefoldRepetition;
-    boardResult = newBoard->boardResult;
-    allPieces = newBoard->allPieces;
-    enPassant = newBoard->enPassant;
-    castleBitmap = newBoard->castleBitmap;
-    whitePieces = newBoard->whitePieces;
-    whiteTargetedSquares = newBoard->whiteTargetedSquares;
-    whitePinnedSquares = newBoard->whitePinnedSquares;
-    blackPieces = newBoard->blackPieces;
-    blackTargetedSquares = newBoard->blackTargetedSquares;
-    blackPinnedSquares = newBoard->blackPinnedSquares;
-    whitePawn = newBoard->whitePawn;
-    whiteBishop = newBoard->whiteBishop;
-    whiteKnight = newBoard->whiteKnight;
-    whiteRook = newBoard->whiteRook;
-    whiteQueen = newBoard->whiteQueen;
-    whiteKing = newBoard->whiteKing;
-    blackPawn = newBoard->blackPawn;
-    blackBishop = newBoard->blackBishop;
-    blackKnight = newBoard->blackKnight;
-    blackRook = newBoard->blackRook;
-    blackQueen = newBoard->blackQueen;
-    blackKing = newBoard->blackKing;
+    moveTurn = prevBoard->moveTurn;
+    moveCounter = prevBoard->moveCounter;
+    legalMoves = prevBoard->legalMoves;
+    //boardStateLog = prevBoard->boardStateLog;
+    threefoldRepetition = prevBoard->threefoldRepetition;
+    boardResult = prevBoard->boardResult;
+    allPieces = prevBoard->allPieces;
+    enPassant = prevBoard->enPassant;
+    castleBitmap = prevBoard->castleBitmap;
+    whitePieces = prevBoard->whitePieces;
+    whiteTargetedSquares = prevBoard->whiteTargetedSquares;
+    whitePinnedSquares = prevBoard->whitePinnedSquares;
+    blackPieces = prevBoard->blackPieces;
+    blackTargetedSquares = prevBoard->blackTargetedSquares;
+    blackPinnedSquares = prevBoard->blackPinnedSquares;
+    whitePawn = prevBoard->whitePawn;
+    whiteBishop = prevBoard->whiteBishop;
+    whiteKnight = prevBoard->whiteKnight;
+    whiteRook = prevBoard->whiteRook;
+    whiteQueen = prevBoard->whiteQueen;
+    whiteKing = prevBoard->whiteKing;
+    blackPawn = prevBoard->blackPawn;
+    blackBishop = prevBoard->blackBishop;
+    blackKnight = prevBoard->blackKnight;
+    blackRook = prevBoard->blackRook;
+    blackQueen = prevBoard->blackQueen;
+    blackKing = prevBoard->blackKing;
 }
 
 const std::set<PieceMove>& Board::getCurrentLegalMoves() {
     return legalMoves;
+}
+
+void Board::printLastMove() {
+    std::cout << lastMove << "\n";
 }
 
 void Board::printBoardApp() {
@@ -558,13 +564,13 @@ void Board::manageCastleMove(uint64_t fromPieceBitmap, const PieceMove& move) {
 }
 
 void Board::registerState() {
-    PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
-    bitBoardToMatrix(pm);
-    BoardState bs(pm, enPassant, castleBitmap);
-    ++boardStateLog[bs];
-    if (boardStateLog[bs] == 3)
-        threefoldRepetition = true;
-    boardLogVector.push_back(*this);
+    //PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
+    //bitBoardToMatrix(pm);
+    //BoardState bs(pm, enPassant, castleBitmap);
+    //++boardStateLog[bs];
+    //if (boardStateLog[bs] == 3)
+    //    threefoldRepetition = true;
+    boardLogList.push_back(*this);
 }
 
 std::pair<uint16_t,uint16_t> Board::bitToij(uint64_t bit) const {

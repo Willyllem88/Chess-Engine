@@ -79,11 +79,9 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
 }
 
 int main(int argc, char* argv[]) {
-    //FIX: Just for testing with the engine making random moves
     time_t seed = time(NULL);
-    std::cout << "SEED: " << seed << std::endl;
-    srand(seed);
-    
+    srand(1719677750);
+    std::cout << "Seed: " << seed << std::endl;
     std::cout << "---------------Guillem's Chess Engine---------------" << std::endl;
     std::cout << "For displaying the usage --help or -h." << std::endl << std::endl;
 
@@ -108,8 +106,10 @@ int main(int argc, char* argv[]) {
     //Loads both players
     std::unique_ptr<Player> whitePlayer, blackPlayer;
     if (whitePlayerName == "PLAYER") whitePlayer = std::make_unique<HumanPlayer>(myApp);
+    else if (whitePlayerName == "RANDOM") whitePlayer = std::make_unique<EngineRandom>(myBoard);
     else whitePlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
     if (blackPlayerName == "PLAYER") blackPlayer = std::make_unique<HumanPlayer>(myApp);
+    else if (blackPlayerName == "RANDOM") blackPlayer = std::make_unique<EngineRandom>(myBoard);
     else blackPlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
 
     //Initializes the app, if it fails, the program will exit
@@ -126,11 +126,13 @@ int main(int argc, char* argv[]) {
         if (myBoard->getMoveTurn() == WHITE && whitePlayer->canMove()) {
             move = whitePlayer->getMove();
             myBoard->movePiece(move);
+            myBoard->printLastMove();
             if (myBoard->getBoardResult() != PLAYING) break;
         }
         else if (myBoard->getMoveTurn() == BLACK && blackPlayer->canMove()) {
             move = blackPlayer->getMove();
             myBoard->movePiece(move);
+            myBoard->printLastMove();
             if (myBoard->getBoardResult() != PLAYING) break;
         }
     }
