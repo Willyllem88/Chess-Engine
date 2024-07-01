@@ -3,6 +3,14 @@
 
 std::list<Board> boardLogList; //FIX: handle it in its own class
 
+struct ZobristTable { //FIX: handle it differently
+    uint64_t zobristPieces[64][12]; //12 pieces, 64 squares
+    uint64_t zobristMoveTurn;
+    uint64_t zobristCastle;
+    uint64_t zobrsitEnPassant;
+}
+zobristTable;
+
 Board::Board(std::shared_ptr<MyApp> a) {
     setDefaulValues();
     this->app = a;
@@ -44,6 +52,8 @@ void Board::setDefaulValues() {
     threefoldRepetition = false;
     moveCounter = 0;
 
+    initializeZobristTable();
+
     //Calculates the first legal moves
     calculateLegalMoves();
     
@@ -62,6 +72,28 @@ PieceMatrix Board::getPieceMatrix() {
     PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
     return pm;
+}
+
+bool Board::isPromotion(const PieceMove& move) {
+    return move.promoteTo != NONE;
+}
+
+bool Board::isCapture(const PieceMove& move) {
+    PieceType toPiece = ijToPieceType(move.to.i, move.to.j);
+    PieceType fromPiece = ijToPieceType(move.from.i, move.from.j);
+    //If the destination square is occupied, it will add the move to the takes set
+    if (toPiece != NONE)
+        return true;
+    //For en passant moves
+    else if ((fromPiece == WHITE_PAWN || fromPiece == BLACK_PAWN) && move.from.j != move.to.j)
+        return true;
+    return false;
+}
+
+bool Board::isTargeted(const PieceMove& move) {
+    uint64_t toBit;
+    ijToBit(move.to.i, move.to.j, toBit);
+    return (moveTurn == WHITE) ? (toBit & blackTargetedSquares) : (toBit & whiteTargetedSquares);
 }
 
 int Board::getPawnsCount(PieceColor col) {
@@ -172,6 +204,13 @@ const std::set<PieceMove>& Board::getCurrentLegalMoves() {
     return legalMoves;
 }
 
+void Board::getCurrentTakes(std::set<PieceMove>& takes) {
+    for (PieceMove move : legalMoves) {
+        if (isCapture(move))
+            takes.insert(move);
+    }
+}
+
 void Board::printLastMove() {
     std::cout << lastMove << "\n";
 }
@@ -209,6 +248,34 @@ void Board::printResult() {
         default:;
     }
 
+}
+
+void Board::initializeZobristTable() {
+    for (int i = 0; i < 64; ++i) {
+        for (int j = 0; j < 12; ++j) {
+            zobristTable.zobristPieces[i][j] = rand_uint64();
+        }
+    }
+    zobristTable.zobristMoveTurn = rand_uint64();
+    zobristTable.zobristCastle = rand_uint64();
+    zobristTable.zobrsitEnPassant = rand_uint64();
+}
+
+uint64_t Board::getZobristHash() {
+    uint64_t hash = 0;
+    PieceType currentPieceType;
+    uint64_t bit = 1;
+    if (moveTurn == BLACK) hash ^= zobristTable.zobristMoveTurn;
+    hash ^= zobristTable.zobristCastle;
+    hash ^= castleBitmap;
+    for (int i = 0; i < 64; ++i) {
+        if (bit & allPieces) {
+            currentPieceType = bitToPieceType(bit);
+            hash ^= zobristTable.zobristPieces[i][currentPieceType];
+        }
+        bit = bit << 1;
+    }
+    return hash;
 }
 
 void Board::calculateLegalMoves() {
@@ -474,8 +541,10 @@ void Board::eliminatePinnedCheckMoves(std::set<PieceMove> &legalMoves) {
 void Board::makeAMove(const PieceMove& move) {
     uint64_t fromBit, toBit;
     uint64_t *fromPieceBitmap, *toPieceBitmap;
+    
     ijToBit(move.from.i, move.from.j, fromBit);
     ijToBit(move.to.i, move.to.j, toBit);
+    
     fromPieceBitmap = bitToPieceBitmap(fromBit);
     toPieceBitmap = bitToPieceBitmap(toBit);
 
@@ -488,7 +557,6 @@ void Board::makeAMove(const PieceMove& move) {
         removePiece(*fromPieceBitmap, fromBit);
         return;
     }
-
     //If the move is a capture, it will remove the piece from the target location
     if (toPieceBitmap != nullptr)
         removePiece(*toPieceBitmap, toBit);
@@ -505,10 +573,9 @@ void Board::makeAMove(const PieceMove& move) {
         //Detects if a castle move is being done, if so, it will move the rook
         manageCastleMove(*fromPieceBitmap, move);
     }
-
     //Add the piece to its new location
     addPiece(*fromPieceBitmap, moveTurn, toBit);
-
+    
     //Remove the piece from it last location
     removePiece(*fromPieceBitmap, fromBit);
 }
@@ -635,6 +702,12 @@ uint64_t* Board::bitToPieceBitmap(uint64_t bit) {
         }
     }
     return nullptr;
+}
+
+PieceType Board::ijToPieceType(int i, int j) const {
+    uint64_t bit;
+    ijToBit(i, j, bit);
+    return bitToPieceType(bit);
 }
 
 PieceType Board::bitToPieceType(uint64_t bit) const {

@@ -8,6 +8,12 @@ bool isBlackPiece(PieceType p) {
     return p >= BLACK_PAWN && p <= BLACK_KING;
 }
 
+uint64_t rand_uint64() {
+    uint32_t a = rand();
+    uint32_t b = rand();
+    return ((uint64_t)a << 32) | b;
+}
+
 //FIX: maybe put this into another file
 std::string pieceToString(PieceType p) {
     switch (p) {

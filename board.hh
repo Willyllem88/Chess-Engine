@@ -27,6 +27,11 @@ public:
     //  Gets the current pieceMatrix of the board.
     PieceMatrix getPieceMatrix();
 
+    //  Returns some information about the outcome of a move.
+    bool isPromotion(const PieceMove& move);
+    bool isCapture(const PieceMove& move);
+    bool isTargeted(const PieceMove& move);
+
     //  Returns the number of pieces of the color passed as argument.
     int getPawnsCount(PieceColor col);
     int getBishopsCount(PieceColor col);
@@ -35,6 +40,8 @@ public:
     int getQueensCount(PieceColor col);
     int getKingsCount(PieceColor col);
 
+    //  Returns the zobrist hash of the board.
+    uint64_t getZobristHash();
 
     //  Makes a move in the board, updating all bitmaps and variables accordingly.
     void movePiece(PieceMove& move);
@@ -44,6 +51,9 @@ public:
 
     //  Returns all the legal moves for the current player's turn.
     const std::set<PieceMove>& getCurrentLegalMoves(); //FIX: maybe return a const reference
+
+    //  Returns all the takes for the current player's turn.
+    void getCurrentTakes(std::set<PieceMove>& takes);
 
     //  Prints the last move made.
     void printLastMove();
@@ -69,7 +79,6 @@ private:
     //  Board result
     BoardResult boardResult; //The result of the game, if it is still ongoing, it will be NONE.
 
-
     //BITMAPS INFORMATION: The board is represented by bitmaps, each bit represents a square in the board. From the white player's view, the MSB (most significant bit) is a-1, and the LSB is h-8.
 
     //  All pieces
@@ -88,6 +97,10 @@ private:
     uint64_t blackPawn, blackBishop, blackKnight, blackRook, blackQueen, blackKing;
     uint64_t blackPieces, blackTargetedSquares, blackPinnedSquares;
 
+    //  Zobrist table, see also [https://en.wikipedia.org/wiki/Zobrist_hashing]
+
+    //  Initializes the zobristTable with random values.
+    void initializeZobristTable();
 
     //LEGAL MOVES CALCULATION related functions
 
@@ -170,6 +183,9 @@ private:
 
     //  Returns a pointer to the bitmap of the piece located in the bit.
     uint64_t* bitToPieceBitmap(uint64_t bit);
+    
+    //  Returns the pieceType of the piece located in the (i, j) coordinates.
+    PieceType ijToPieceType(int i, int j) const;
 
     //  Returns the pieceType of the piece located in the bit.
     PieceType bitToPieceType(uint64_t bit) const;

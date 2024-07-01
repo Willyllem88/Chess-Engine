@@ -9,6 +9,7 @@
 #include <chrono>
 #include <iostream>
 #include <iomanip>
+#include <climits>
 #include <list>
 #include <map>
 #include <memory>
@@ -42,6 +43,8 @@ enum PieceColor {
 };
 
 typedef std::vector<std::vector<PieceType>> PieceMatrix;
+
+uint64_t rand_uint64();
 
 std::string pieceToString(PieceType p);
 
@@ -94,6 +97,7 @@ struct PieceMove {
     }
 };
 
+//FIX: more space efficient, also add moveturn
 struct BoardState{
     PieceMatrix pieceMatrix;
     uint64_t enPassant;

@@ -80,10 +80,12 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
 
 int main(int argc, char* argv[]) {
     time_t seed = time(NULL);
-    srand(1719677750);
-    std::cout << "Seed: " << seed << std::endl;
+    srand(seed);
+    
     std::cout << "---------------Guillem's Chess Engine---------------" << std::endl;
-    std::cout << "For displaying the usage --help or -h." << std::endl << std::endl;
+    std::cout << "For displaying the usage --help or -h." << std::endl;
+    std::cout << "The random seed used was: " << seed << std::endl;
+    std::cout << "----------------------------------------------------" << std::endl << std::endl;;
 
     //Default options for the game
     std::string whitePlayerName = "PLAYER";
