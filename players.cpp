@@ -42,8 +42,8 @@ PieceMove EngineV1::getMove() {
         }
         board->undoMove();
     }
-    std::cout << "Number of boards: " << numboards << std::endl;
-    std::cout << "Transposition hits: " << transpositionHits << std::endl;
+    std::cout << "[INFO] Number of boards: " << numboards << std::endl;
+    std::cout << "[INFO] Transposition hits: " << transpositionHits << std::endl;
     //FIX: temporal solution
     if (bestValue != -INF) return bestMove;
     else {
