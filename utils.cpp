@@ -14,6 +14,10 @@ uint64_t rand_uint64() {
     return ((uint64_t)a << 32) | b;
 }
 
+PieceColor pieceColor(PieceType p) {
+    return (p >= WHITE_PAWN && p <= WHITE_KING) ? WHITE : BLACK;
+}
+
 //FIX: maybe put this into another file
 std::string pieceToString(PieceType p) {
     switch (p) {

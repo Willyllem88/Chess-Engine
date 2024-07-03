@@ -18,8 +18,13 @@
 #include <thread>
 #include <vector>
 
+enum PieceColor : uint8_t{
+    WHITE,
+    BLACK
+};
+
 //This will only be used when displaying the info of the board
-enum PieceType{
+enum PieceType : uint8_t{
     WHITE_PAWN,
     WHITE_BISHOP,
     WHITE_KNIGHT,
@@ -37,14 +42,11 @@ enum PieceType{
     NONE
 };
 
-enum PieceColor {
-    WHITE,
-    BLACK
-};
-
 typedef std::vector<std::vector<PieceType>> PieceMatrix;
 
 uint64_t rand_uint64();
+
+PieceColor pieceColor(PieceType p);
 
 std::string pieceToString(PieceType p);
 
@@ -112,7 +114,7 @@ struct BoardState{
     }
 };
 
-enum BoardResult {
+enum BoardResult : uint8_t {
     PLAYING,
     CHECKMATE,
     STALE_MATE,

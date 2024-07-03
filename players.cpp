@@ -57,8 +57,8 @@ PieceMove EngineV1::getMove() {
 int EngineV1::search(int depth, int alpha, int beta) {
     numboards++; //FIX: only for testing
 
-    /*uint64_t currentHash = board->getZobristHash();
-    if (transpositionTable.contains(currentHash) && transpositionTable.getDepth(currentHash) >= depth) {
+    uint64_t currentHash = board->getZobristHash();
+    /*if (transpositionTable.contains(currentHash) && transpositionTable.getDepth(currentHash) >= depth) {
         ++transpositionHits;
         return transpositionTable.getScore(currentHash);
     }*/
@@ -67,11 +67,11 @@ int EngineV1::search(int depth, int alpha, int beta) {
     
     if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, return -INF
 
-    //transpositionTable.insert(currentHash, alpha, depth, 0);  
+    transpositionTable.insert(currentHash, alpha, depth, 0);  
 
     std::list<PieceMove> moveList;
     orderMoves(board->getCurrentLegalMoves(), moveList);
-    
+
     for (PieceMove m : moveList) {
         board->movePiece(m);
         int score = -search(depth - 1, -beta, -alpha);
@@ -87,33 +87,32 @@ int EngineV1::search(int depth, int alpha, int beta) {
 int EngineV1::quiescenceSearch(int alpha, int beta) {
     numboards++; //FIX: only for testing
 
-    /*uint64_t currentHash = board->getZobristHash();
+    uint64_t currentHash = board->getZobristHash();
     if (transpositionTable.contains(currentHash)) {
         ++transpositionHits;
         auto entry = transpositionTable.getEntry(currentHash);
         return entry->score;
-    }*/
+    }
 
     int score = evaluate();
     if (score >= beta) return beta;
     alpha = std::max(alpha, score);
 
-    //transpositionTable.insert(currentHash, alpha, 0, 0);
-
     std::set<PieceMove> captureSet;
     board->getCurrentTakes(captureSet);
-
-    if (captureSet.empty()) return evaluate();
 
     for (PieceMove capture : captureSet) {
         board->movePiece(capture);
         score = -quiescenceSearch(-beta, -alpha);
         board->undoMove();
-        if (score >= beta) return beta;
+        if (score >= beta) {
+            transpositionTable.insert(currentHash, beta, 0, 0);
+            return beta;
+        }
         alpha = std::max(alpha, score);
     }
 
-    //transpositionTable.insert(currentHash, alpha, 0, 0);
+    transpositionTable.insert(currentHash, alpha, 0, 0);
     return alpha;
 }
 
@@ -136,10 +135,62 @@ int EngineV1::evaluate() {
     int whiteEval = countMaterial(WHITE);
     int blackEval = countMaterial(BLACK);
 
-    int evaluation = whiteEval - blackEval;
+    int evaluation = whiteEval - blackEval + countPositionalValue();
 
     int perspective = (board->getMoveTurn() == WHITE) ? 1 : -1;
     return evaluation * perspective;
+}
+
+int EngineV1::countPositionalValue() {
+    int positionalValue = 0;
+    PieceMatrix pm = board->getPieceMatrix();
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            PieceType p = pm[i][j];
+            switch (p) {
+                case WHITE_PAWN:
+                    positionalValue += pawnEvals[i][j];
+                    break;
+                case BLACK_PAWN:
+                    positionalValue -= pawnEvals[7-i][7-j];
+                    break;
+                case WHITE_KNIGHT:
+                    positionalValue += knightEvals[i][j];
+                    break;
+                case BLACK_KNIGHT:
+                    positionalValue -= knightEvals[7-i][7-j];
+                    break;
+                case WHITE_BISHOP:
+                    positionalValue += bishopEvals[i][j];
+                    break;
+                case BLACK_BISHOP:
+                    positionalValue -= bishopEvals[7-i][7-j];
+                    break;
+                case WHITE_ROOK:
+                    positionalValue += rookEvals[i][j];
+                    break;
+                case BLACK_ROOK:
+                    positionalValue -= rookEvals[7-i][7-j];
+                    break;
+                case WHITE_QUEEN:
+                    positionalValue += queenEvals[i][j];
+                    break;
+                case BLACK_QUEEN:
+                    positionalValue -= queenEvals[7-i][7-j];
+                    break;
+                case WHITE_KING:
+                    positionalValue += kingEvalsMidGame[i][j];
+                    break;
+                case BLACK_KING:
+                    positionalValue -= kingEvalsMidGame[7-i][7-j];
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    return positionalValue;
 }
 
 int EngineV1::countMaterial(PieceColor myColor) {
