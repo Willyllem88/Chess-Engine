@@ -38,6 +38,7 @@ bool ConsoleApp::isPieceMoveAvailable() {
 
 bool ConsoleApp::handleEvents() {
     std::string str;
+    //If the user has inputed text from the console, handle it
     if (readStringFromConsole(str)) {
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
         lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
