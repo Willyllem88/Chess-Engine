@@ -85,7 +85,9 @@ int main(int argc, char* argv[]) {
     std::cout << "---------------Guillem's Chess Engine---------------" << std::endl;
     std::cout << "For displaying the usage --help or -h." << std::endl;
     std::cout << "The random seed used was: " << seed << "." << std::endl;
-    std::cout << "The current available engines are: EngineV1, RandomEngine." << std::endl;
+    std::cout << "The current available engines are: " << std::endl;
+    std::cout << "    - RandomEngine" << std::endl;
+    std::cout << "    - EngineV1" << std::endl;
     std::cout << "----------------------------------------------------" << std::endl << std::endl;;
 
     //Default options for the game

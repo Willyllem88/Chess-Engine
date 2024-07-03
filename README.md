@@ -5,6 +5,8 @@ This program showcases a simple GUI, that will show the user the match, and it w
 
 The project has been made with C++.
 
+![Intro Image](https://github.com/Willyllem88/images/blob/main/intro.png)
+
 ## Requirements
 
 Before you begin, ensure you have met the following requirements:
