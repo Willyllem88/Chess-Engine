@@ -10,8 +10,8 @@ void manageError(const char* message) {
 void usage(const char* programName) {
     std::cout << "Usage: " << programName << " [options]" << std::endl;
     std::cout << "Play a game of chess with the engine." << std::endl << std::endl;
-    std::cout << "Commands:" << std::endl;
-    std::cout << "    u or undo in the console will undo the last move. More than one undo is supported." << std::endl;
+    std::cout << "Commands (through the console):" << std::endl;
+    std::cout << "    u, undo: in the console will undo the last move." << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "    --help, -h: Displays this message." << std::endl;
     std::cout << "    --white, -w <PLAYER | <engine_name>>: Specify who will play with the white pieces." << std::endl;
@@ -84,7 +84,8 @@ int main(int argc, char* argv[]) {
     
     std::cout << "---------------Guillem's Chess Engine---------------" << std::endl;
     std::cout << "For displaying the usage --help or -h." << std::endl;
-    std::cout << "The random seed used was: " << seed << std::endl;
+    std::cout << "The random seed used was: " << seed << "." << std::endl;
+    std::cout << "The current available engines are: EngineV1, RandomEngine." << std::endl;
     std::cout << "----------------------------------------------------" << std::endl << std::endl;;
 
     //Default options for the game
@@ -108,10 +109,10 @@ int main(int argc, char* argv[]) {
     //Loads both players
     std::unique_ptr<Player> whitePlayer, blackPlayer;
     if (whitePlayerName == "PLAYER") whitePlayer = std::make_unique<HumanPlayer>(myApp);
-    else if (whitePlayerName == "RANDOM") whitePlayer = std::make_unique<EngineRandom>(myBoard);
+    else if (whitePlayerName == "RandomEngine") whitePlayer = std::make_unique<EngineRandom>(myBoard);
     else whitePlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
     if (blackPlayerName == "PLAYER") blackPlayer = std::make_unique<HumanPlayer>(myApp);
-    else if (blackPlayerName == "RANDOM") blackPlayer = std::make_unique<EngineRandom>(myBoard);
+    else if (blackPlayerName == "RandomEngine") blackPlayer = std::make_unique<EngineRandom>(myBoard);
     else blackPlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
 
     //Initializes the app, if it fails, the program will exit
@@ -120,9 +121,8 @@ int main(int argc, char* argv[]) {
 
     //The match starts here
     PieceMove move;
-    while (1) {
+    while (myApp->handleEvents()) {
         myBoard->printBoardApp();
-        if (!myApp->handleEvents()) break;
 
         //Player movement logic
         if (myBoard->getMoveTurn() == WHITE && whitePlayer->canMove()) {
