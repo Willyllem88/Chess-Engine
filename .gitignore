@@ -1,5 +1,6 @@
 # Ignore folders
-.vscode extras
+.vscode\
+extras\
 
 # Ignore compiled object files
 *.o
