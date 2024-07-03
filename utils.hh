@@ -18,12 +18,13 @@
 #include <thread>
 #include <vector>
 
+//  The color of the pieces
 enum PieceColor : uint8_t{
     WHITE,
     BLACK
 };
 
-//This will only be used when displaying the info of the board
+//  This will only be used when displaying the info of the board
 enum PieceType : uint8_t{
     WHITE_PAWN,
     WHITE_BISHOP,
@@ -44,33 +45,19 @@ enum PieceType : uint8_t{
 
 typedef std::vector<std::vector<PieceType>> PieceMatrix;
 
+//  Returns a random uint64_t number
 uint64_t rand_uint64();
 
+//  Returns the color a piece
 PieceColor pieceColor(PieceType p);
 
+//  Returns the name of a piece as a string
 std::string pieceToString(PieceType p);
 
+//  Returns the name of a color as a string
 std::string pieceColorToString(PieceColor p);
 
-//Structs for the mouse and the pieces moves.
-//  The mouse will be trackts with (x, y) coordinates
-//  The pieces with (i, j) coordinates
-
-struct MousePos {
-    int x;
-    int y;
-
-    inline MousePos() : x(0), y(0) { };
-    inline MousePos(int x, int y) : x(x), y(y) { };
-};
-
-struct MouseMove {
-    MousePos from;
-    MousePos to;
-
-    inline MouseMove() : from(MousePos(0, 0)), to(MousePos(0, 0)) { };
-};
-
+//  Struct for the position of a piece, with i being the row and j the column. The origin is the top left corner of the board. a7 is (0, 0), h1 is (7, 7)
 struct PiecePos {
     uint16_t i, j;
     inline PiecePos() : i(0), j(0) { };
@@ -81,6 +68,7 @@ struct PiecePos {
     }
 };
 
+//  Struct for a piece move, with from being the position of the piece to move, and to being the position to move the piece to. If the move is a promotion, promoteTo will be the piece to promote to. If not, it will be NONE
 struct PieceMove {
     PiecePos from, to;
     //If the move is a promotion, this will be the piece to promote to. If not, it will be NONE
@@ -100,6 +88,7 @@ struct PieceMove {
 };
 
 //FIX: more space efficient, also add moveturn
+//  A struct that represents the state of the board. It will store the pieceMatrix, the enPassant square, and the castle rights. Used if need to compare two different board states.
 struct BoardState{
     PieceMatrix pieceMatrix;
     uint64_t enPassant;
@@ -114,6 +103,7 @@ struct BoardState{
     }
 };
 
+//  The result of the board. It will be used to determine if the game is over, and if so, how it ended.
 enum BoardResult : uint8_t {
     PLAYING,
     CHECKMATE,

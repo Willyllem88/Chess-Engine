@@ -45,6 +45,24 @@ class MyApp{
         PieceMove lastPieceMove; //The last piece move made by the player
         bool pieceMoveAvailable; //True if a piece move is available, false otherwise
         PieceColor moveTurn; //The color of the player that will move next
+
+        //  Structs for the mouse and the pieces moves.
+        //      The mouse will be trackts with (x, y) coordinates
+        //      The pieces with (i, j) coordinates
+        struct MousePos {
+            int x;
+            int y;
+
+            inline MousePos() : x(0), y(0) { };
+            inline MousePos(int x, int y) : x(x), y(y) { };
+        };
+
+        struct MouseMove {
+            MousePos from;
+            MousePos to;
+
+            inline MouseMove() : from(MousePos(0, 0)), to(MousePos(0, 0)) { };
+        };
 };
 
 class ConsoleApp : public MyApp {
