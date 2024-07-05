@@ -146,7 +146,7 @@ void Board::movePiece(PieceMove& move) {
     //Makes the move
     makeAMove(move);
 
-    //Update the oponent targeted squares
+    //Update the opponent targeted squares
     updateTargetedSquares(moveTurn);
 
     //Toggles the turn
@@ -303,9 +303,9 @@ void Board::getAllPiecesMoves(std::set<PieceMove>& legalMoves) {
     legalMoves.clear();
 
     uint64_t *myPieces = (moveTurn == WHITE) ? &whitePieces : &blackPieces;
-    //uint64_t *oponentTargetedeSquares = (moveTurn == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
-    //uint64_t *oponentPinnedSquares = (moveTurn == WHITE) ? &blackPinnedSquares : &whitePinnedSquares;
-    //*oponentTargetedeSquares = 0; *oponentPinnedSquares = 0;
+    //uint64_t *opponentTargetedeSquares = (moveTurn == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
+    //uint64_t *opponentPinnedSquares = (moveTurn == WHITE) ? &blackPinnedSquares : &whitePinnedSquares;
+    //*opponentTargetedeSquares = 0; *opponentPinnedSquares = 0;
 
     //For each piece, it will get their possible moves
     uint64_t bit = 0x8000000000000000;
@@ -365,9 +365,9 @@ void Board::getPieceMoves(uint64_t& bit, std::set<PieceMove>& pieceLegalMoves) {
 void Board::updateTargetedSquares(PieceColor col) {
     uint64_t *myPieces = (col == WHITE) ? &whitePieces : &blackPieces;
     uint64_t *opponentTargetedSquares = (col == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
-    uint64_t *oponentPinnedSquares = (col == WHITE) ? &blackPinnedSquares : &whitePinnedSquares;    
+    uint64_t *opponentPinnedSquares = (col == WHITE) ? &blackPinnedSquares : &whitePinnedSquares;    
     *opponentTargetedSquares = 0;
-    *oponentPinnedSquares = 0;
+    *opponentPinnedSquares = 0;
 
     uint64_t bit = 0x8000000000000000;
     for (int i = 0; i < 64; ++i) {
