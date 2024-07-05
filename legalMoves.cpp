@@ -294,7 +294,7 @@ void Board::targetedByBishop(uint64_t bit) {
     uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
     uint64_t *opponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
     uint64_t *opponentTargetedeSquares = (moveTurn == WHITE) ? &blackTargetedSquares : &whiteTargetedSquares;
-    uint64_t *opponentKing = (bit & whitePieces) ? &blackKing : &blackPieces;
+    uint64_t *opponentKing = (bit & whitePieces) ? &blackKing : &whiteKing;
     uint64_t *opponentPinned = (bit & whitePieces) ? &blackPinnedSquares : &whitePinnedSquares;
     uint64_t pinned;
     int piecesFound;
@@ -315,17 +315,16 @@ void Board::targetedByBishop(uint64_t bit) {
             ijToBit(newI, newJ, aux);
             if (piecesFound == 0) *opponentTargetedeSquares |= aux;
 
-            if (aux & ~*myPieces) {
-                if (piecesFound == 0) {
-                    if (aux & *opponentPieces) {
-                        pinned = aux;
-                        ++piecesFound;
-                    }
+            if (aux & *myPieces) break;
+
+            if (piecesFound == 0) {
+                if (aux & *opponentPieces) {
+                    pinned = aux;
+                    ++piecesFound;
                 }
-                else if (aux & *opponentKing)
-                    *opponentPinned |= pinned;
             }
-            else break;
+            else if (aux & *opponentKing)
+                *opponentPinned |= pinned;
         }
     }
 }
@@ -350,7 +349,7 @@ void Board::targetedByRook(uint64_t bit) {
     uint64_t *myPieces = (bit & whitePieces) ? &whitePieces : &blackPieces;
     uint64_t *opponentPieces = (bit & whitePieces) ? &blackPieces : &whitePieces;
     uint64_t *opponentTargetedeSquares = (bit & whitePieces) ? &blackTargetedSquares : &whiteTargetedSquares;
-    uint64_t *opponentKing = (bit & whitePieces) ? &blackKing : &blackPieces;
+    uint64_t *opponentKing = (bit & whitePieces) ? &blackKing : &whiteKing;
     uint64_t *opponentPinned = (bit & whitePieces) ? &blackPinnedSquares : &whitePinnedSquares;
     uint64_t pinned;
     int piecesFound;
@@ -372,17 +371,16 @@ void Board::targetedByRook(uint64_t bit) {
             ijToBit(newI, newJ, aux);
             if (piecesFound == 0) *opponentTargetedeSquares |= aux;
 
-            if (aux & ~*myPieces) {
-                if (piecesFound == 0) {
-                    if (aux & *opponentPieces) {
-                        pinned = aux;
-                        ++piecesFound;
-                    }
+            if (aux & *myPieces) break;
+            
+            if (piecesFound == 0) {
+                if (aux & *opponentPieces) {
+                    pinned = aux;
+                    ++piecesFound;
                 }
-                else if (aux & *opponentKing)
-                    *opponentPinned |= pinned;
             }
-            else break;
+            else if (aux & *opponentKing)
+                *opponentPinned |= pinned;
         }
     }
 }
