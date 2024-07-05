@@ -17,6 +17,7 @@ PieceMove HumanPlayer::getMove() {
 EngineV1::EngineV1(std::shared_ptr<Board> myBoard, std::chrono::milliseconds timeSpan) {
     board = myBoard;
     moveDelay = timeSpan;
+    searchTimeExceeded = false;
 }
 
 bool EngineV1::canMove() {
@@ -27,31 +28,77 @@ int numboards; //FIX: only for testing
 int transpositionHits;
 
 PieceMove EngineV1::getMove() {
+    //Activate timer
+    while (!searchTimeExceeded); //Wait for the last timer to finish (FIX: not the best solution)
+    float elapsedTime = 2.0f;
+    std::thread([this, elapsedTime]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(elapsedTime * 1000)));
+        searchTimeExceeded = true;
+    }).detach();
+
     numboards = 0; //FIX: only for testingç
     transpositionHits = 0;
-    std::set<PieceMove> s = board->getCurrentLegalMoves();
+    searchTimeExceeded = false;
+
+    MoveEval pastItBestMove; //The best move in the actual iteration and the best move in the past iteration
     PieceMove bestMove;
-    int bestValue = -INF;
-    //Random move
-    for (PieceMove move : s) {
-        board->movePiece(move);
-        int tempValue = -search(MAX_DEPTH - 1, -INF, INF);
-        if (tempValue > bestValue) {
-            bestValue = tempValue;
-            bestMove = move;
+    
+    pastItBestMove.move = *board->getCurrentLegalMoves().begin();
+    pastItBestMove.eval = -INF;
+    
+    int depth;
+    for (depth = 1; depth <= MAX_DEPTH; depth++) {
+        if (searchTimeExceeded) break;
+
+        MoveEval actItMoveEval = firstSearch(depth);
+
+        if (actItMoveEval.eval == INF) {
+            std::cout << "--> Checkmate found" << std::endl;
+            bestMove = actItMoveEval.move;
+            break;
         }
-        board->undoMove();
+
+        if (actItMoveEval.eval > pastItBestMove.eval) {
+            bestMove = actItMoveEval.move;
+        } else {
+            bestMove = pastItBestMove.move;
+        }
+
+        pastItBestMove = actItMoveEval;
     }
+    
+    std::cout << "[INFO] Depth reached: " << depth << std::endl;
     std::cout << "[INFO] Number of boards: " << numboards << std::endl;
     std::cout << "[INFO] Transposition hits: " << transpositionHits << std::endl;
     //FIX: temporal solution
-    if (bestValue != -INF) return bestMove;
-    else {
-        int random = rand() % s.size();
-        auto it = s.begin();
-        std::advance(it, random);
-        return *it;
+    return bestMove;
+}
+
+EngineV1::MoveEval EngineV1::firstSearch(int depth) {
+    numboards++; //FIX: only for testing
+
+    PieceMove bestMove = *board->getCurrentLegalMoves().begin();
+    int bestEval = -INF;
+
+    std::list<PieceMove> orderedMoves;
+    orderMoves(board->getCurrentLegalMoves(), orderedMoves);
+
+    for (PieceMove move : orderedMoves) {
+        if (searchTimeExceeded) return {bestMove, bestEval};
+
+        board->movePiece(move);
+        int score = -search(depth - 1, -INF, INF); //FIX: maybe change the bounds
+        board->undoMove();
+
+        if (score == INF) return {move, INF};
+
+        if (score > bestEval) {
+            bestEval = score;
+            bestMove = move;
+        }
     }
+
+    return {bestMove, bestEval};
 }
 
 int EngineV1::search(int depth, int alpha, int beta) {
@@ -63,9 +110,10 @@ int EngineV1::search(int depth, int alpha, int beta) {
         return transpositionTable.getScore(currentHash);
     }*/
 
-    if (depth == 0) return quiescenceSearch(alpha, beta);
-    
     if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, return -INF
+    if (board->getBoardResult() == STALE_MATE) return 0; //If it's a stalemate, returns 0
+
+    if (depth == 0) return quiescenceSearch(alpha, beta);
 
     transpositionTable.insert(currentHash, alpha, depth, 0);  
 

@@ -11,12 +11,15 @@ public:
     Player() {}
     virtual ~Player() {}
 
+    //  Returns true if the player can make a move, false otherwise
     virtual bool canMove() = 0;
+
+    //  Returns the move that the player wants to make
     virtual PieceMove getMove() = 0;
 
 protected:
-    std::shared_ptr<MyApp> app;
-    std::shared_ptr<Board> board;
+    std::shared_ptr<MyApp> app; //Pointer to the application
+    std::shared_ptr<Board> board; //Pointer to the board
 };
 
 class HumanPlayer : public Player {
@@ -39,10 +42,12 @@ public:
         return true;
     }
     PieceMove getMove() {
-        std::set<PieceMove> s = board->getCurrentLegalMoves();
+        const std::set<PieceMove> s = board->getCurrentLegalMoves();
         int random = rand() % s.size();
         auto it = s.begin();
         std::advance(it, random);
+        //Wait for the delay
+        //std::this_thread::sleep_for(std::chrono::milliseconds(250));
         return *it;
     }
 };
@@ -88,25 +93,55 @@ public:
     bool canMove() override;
     PieceMove getMove() override;
 
-private: 
+private:
+    struct MoveEval {
+        PieceMove move;
+        int eval;
+    };
+
     TranspositionTable transpositionTable;
 
-    //Recursive function that searches for the best move. Depth is the current depth of the search, alfa and beta are the bounds of the search.
+    std::chrono::milliseconds moveDelay;
+
+    bool searchTimeExceeded;
+
+    EngineV1::MoveEval firstSearch(int depth);
+
+    //  Recursive function that searches for the best move. Depth is the current depth of the search, alfa and beta are the bounds of the search.
     //  Negamax algorithm with alpha-beta pruning. For more information, visit:
     //      Negamax: [https://www.chessprogramming.org/Negamax]
     //      Alpha Beta Pruning: [https://www.chessprogramming.org/Alpha-Beta]
     int search(int depth, int alfa, int beta);
 
+    //  Searches for a quiet position. A quiet position is a position where no captures are possible. Returns the value of the position.
     int quiescenceSearch(int alfa, int beta);
 
+    //  Orders the moves in the list from best to worst. The ordering is done by the evaluation of the move. Helps the alpha-beta pruning.
     void orderMoves(const std::set<PieceMove>& moves, std::list<PieceMove>& orderedMoves);
 
+    //  Evaluates the board. Returns the value of the board from white's perspective. Heuristic function.
     int evaluate();
 
+    //  Returns the material value of the board from the perspective of the player with the color myColor
     int countMaterial(PieceColor myColor);
 
-    //Returns the positional value of the board from white's perspective
+    //  Returns the positional value of the board from white's perspective
     int countPositionalValue();
+
+    //  Returns true if the game is in the endgame, false otherwise
+    bool isEndGame();
+
+    
+    static constexpr int MAX_DEPTH = 25;
+    static constexpr int MAX_ITERATIONS = 1000000;
+    static constexpr int INF = INT_MAX;
+
+    static constexpr int PAWN_VALUE = 100;
+    static constexpr int KNIGHT_VALUE = 320;
+    static constexpr int BISHOP_VALUE = 330;
+    static constexpr int ROOK_VALUE = 500;
+    static constexpr int QUEEN_VALUE = 900;
+    static constexpr int KING_VALUE = 20000;
 
     const int pawnEvals[8][8] = {
         0,  0,  0,  0,  0,  0,  0,  0,
@@ -117,7 +152,6 @@ private:
         5, -5,-10,  0,  0,-10, -5,  5,
         5, 10, 10,-20,-20, 10, 10,  5,
         0,  0,  0,  0,  0,  0,  0,  0};
-
     const int knightEvals[8][8] = {
         -50,-40,-30,-30,-30,-30,-40,-50,
         -40,-20,  0,  0,  0,  0,-20,-40,
@@ -127,7 +161,6 @@ private:
         -30,  5, 10, 15, 15, 10,  5,-30,
         -40,-20,  0,  5,  5,  0,-20,-40,
         -50,-40,-30,-30,-30,-30,-40,-50};
-
     const int bishopEvals[8][8] = {
         -20,-10,-10,-10,-10,-10,-10,-20,
         -10,  0,  0,  0,  0,  0,  0,-10,
@@ -137,7 +170,6 @@ private:
         -10, 10, 10, 10, 10, 10, 10,-10,
         -10,  5,  0,  0,  0,  0,  5,-10,
         -20,-10,-10,-10,-10,-10,-10,-20};
-
     const int rookEvals[8][8] = {
         0,  0,  0,  0,  0,  0,  0,  0,
         5, 10, 10, 10, 10, 10, 10,  5,
@@ -146,8 +178,7 @@ private:
         -5,  0,  0,  0,  0,  0,  0, -5,
         -5,  0,  0,  0,  0,  0,  0, -5,
         -5,  0,  0,  0,  0,  0,  0, -5,
-        0,  0,  0,  5,  5,  0,  0,  0};
-    
+        0,  0,  0,  5,  5,  0,  0,  0};  
     const int queenEvals[8][8] = {
         -20,-10,-10, -5, -5,-10,-10,-20,
         -10,  0,  0,  0,  0,  0,  0,-10,
@@ -157,7 +188,6 @@ private:
         -10,  5,  5,  5,  5,  5,  0,-10,
         -10,  0,  5,  0,  0,  0,  0,-10,
         -20,-10,-10, -5, -5,-10,-10,-20};
-
     const int kingEvalsMidGame[8][8] = {
         -30,-40,-40,-50,-50,-40,-40,-30,
         -30,-40,-40,-50,-50,-40,-40,-30,
@@ -168,7 +198,6 @@ private:
         20, 20,  0,  0,  0,  0, 20, 20,
         20, 30, 10,  0,  0, 10, 30, 20
     };
-
     const int kingEvalEndGame[8][8] {
         -50,-40,-30,-20,-20,-30,-40,-50,
         -30,-20,-10,  0,  0,-10,-20,-30,
@@ -179,18 +208,6 @@ private:
         -30,-30,  0,  0,  0,  0,-30,-30,
         -50,-30,-30,-30,-30,-30,-30,-50
     };          
-
-    static constexpr int MAX_DEPTH = 4;
-    static constexpr int INF = INT_MAX;
-
-    static constexpr int PAWN_VALUE = 100;
-    static constexpr int KNIGHT_VALUE = 320;
-    static constexpr int BISHOP_VALUE = 330;
-    static constexpr int ROOK_VALUE = 500;
-    static constexpr int QUEEN_VALUE = 900;
-    static constexpr int KING_VALUE = 20000;
-
-    std::chrono::milliseconds moveDelay;
 };
 
 #endif

@@ -4,7 +4,7 @@ Here I will list the pending tasks and the bugs and issues that should be addres
 
 ## High Priority
 
-* ENGINE: Dynamic depth
+* ENGINE: must perform the shortest path to a checkmate.
 * ENGINE: change the king value  depending.
 * ENGINE: different weights depending if we are in the early, mid and endgame.
 * Handle in a optimal way the threefold repetition.
