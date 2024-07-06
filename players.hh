@@ -47,7 +47,7 @@ public:
         auto it = s.begin();
         std::advance(it, random);
         //Wait for the delay
-        //std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
         return *it;
     }
 };
@@ -101,16 +101,24 @@ private:
 
     TranspositionTable transpositionTable;
 
-    std::chrono::milliseconds moveDelay;
+    //  Time related variables, the more time the engine has, the better the move it will make
+    //      The atomic variables are needed because they will be accessed by different threads
+    std::chrono::milliseconds moveDelay; //The time the engine has to make a move
+    std::atomic<bool> searchTimeExceeded; //True if the time has exceeded
+    std::atomic<bool> stopTimer; //True if the timer has to stop
 
-    bool searchTimeExceeded;
+    //  The purpose of these variables is to keep information of a search.
+    int numBoards; //Number of boards evaluated in the search
+    int transpositionHits; //Number of transposition table hits
 
+    //  For each depth in iterative deepening, it will search for the best move. Returns the best move and its evaluation. This is the first search for the different depths. This function will call the search function.
+    //      Iterative Deepening: [https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search]
     EngineV1::MoveEval firstSearch(int depth);
 
     //  Recursive function that searches for the best move. Depth is the current depth of the search, alfa and beta are the bounds of the search.
     //  Negamax algorithm with alpha-beta pruning. For more information, visit:
-    //      Negamax: [https://www.chessprogramming.org/Negamax]
-    //      Alpha Beta Pruning: [https://www.chessprogramming.org/Alpha-Beta]
+    //      - Negamax: [https://www.chessprogramming.org/Negamax]
+    //      - Alpha Beta Pruning: [https://www.chessprogramming.org/Alpha-Beta]
     int search(int depth, int alfa, int beta);
 
     //  Searches for a quiet position. A quiet position is a position where no captures are possible. Returns the value of the position.
@@ -131,10 +139,12 @@ private:
     //  Returns true if the game is in the endgame, false otherwise
     bool isEndGame();
 
+    void iniTimer(std::chrono::milliseconds timeSpan);
+
     
     static constexpr int MAX_DEPTH = 25;
     static constexpr int MAX_ITERATIONS = 1000000;
-    static constexpr int INF = INT_MAX;
+    static constexpr int INF = 1000000;
 
     static constexpr int PAWN_VALUE = 100;
     static constexpr int KNIGHT_VALUE = 320;
