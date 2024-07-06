@@ -21,9 +21,10 @@ The project is implemented in C++.
 
 Before you begin, ensure you have met the following requirements:
 * You have installed `g++`
+* `make` is installed
 * You have `libsdl2-dev` and `libsdl2-image-dev` installed
 
-If these are not installed, please refer to the section 'Installing Dependencies on Ubuntu/Debian'.
+If these are not installed, please refer to the section [Installing Dependencies on Ubuntu/Debian](#installing-dependencies-on-ubuntudebian).
 
 ### Installing Dependencies on Ubuntu/Debian
 
@@ -31,7 +32,7 @@ To install the necessary dependencies, run the following commands:
 
 ```sh
 sudo apt-get update
-sudo apt-get install libsdl2-dev libsdl2-image-dev
+sudo apt-get install g++ make libsdl2-dev libsdl2-image-dev
 ```
 
 ## Compiling and Executing
