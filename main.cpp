@@ -2,7 +2,7 @@
 #include "myApp.hh"
 #include "players.hh"
 
-void manageError(const char* message) {
+void manageError(std::string message) {
     std::cerr << message << std::endl;
     exit(1);
 }
@@ -20,7 +20,7 @@ void usage(const char* programName) {
     std::cout << "    --timespan <time>, -t <time>: The time span in seconds for the engine to play a turn, can use decimals." << std::endl;
     std::cout << std::endl;
     std::cout << "The default options are:" << std::endl;
-    std::cout << "    --white PLAYER, --black PLAYER --timespan 0" << std::endl;
+    std::cout << "    --white PLAYER, --black PLAYER --timespan 2" << std::endl;
 
     exit(0);
 }
@@ -67,15 +67,32 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
                 exit(1);
         }
     }
-    //Displays the options chosen
-    std::cout << "Options chosen:" << std::endl;
-    std::cout << "  White player: " << whitePlayer << std::endl;
-    std::cout << "  Black player: " << blackPlayer << std::endl;
-    std::cout << "  Display GUI: " << (displayGUIApp ? "Yes" : "No") << std::endl;
-    std::cout << "  Engine time span: " << engineTimeSpan.count() << " seconds" << std::endl;
-    std::cout << std::endl;
-
     return;
+}
+
+void printOptionsChosen(std::string whitePlayer, std::string blackPlayer, bool displayGUIApp, std::chrono::milliseconds engineTimeSpan) {
+    std::cout << "Options chosen:" << std::endl;
+    std::cout << "    - White player: " << whitePlayer << std::endl;
+    std::cout << "    - Black player: " << blackPlayer << std::endl;
+    std::cout << "    - Display GUI: " << (displayGUIApp ? "Yes" : "No") << std::endl;
+    std::cout << "    - Engine time span: " << engineTimeSpan.count() / 1000.0 << " s" << std::endl;
+    std::cout << std::endl;
+}
+
+std::shared_ptr<MyApp> initializeApp(bool displayGUIApp, std::shared_ptr<Board>& myBoard) {
+    std::shared_ptr<MyApp> myApp;
+    if (displayGUIApp) myApp = std::make_shared<GUIApp>();
+    else myApp = std::make_shared<ConsoleApp>();
+    myBoard = std::make_shared<Board>(myApp);
+    myApp->setBoard(myBoard);
+    return myApp;
+}
+
+void loadPlayers(std::unique_ptr<Player>& player, std::string playerName, std::shared_ptr<MyApp> myApp, std::shared_ptr<Board> myBoard, std::chrono::milliseconds engineTimeSpan) {
+    if (playerName == "Player") player = std::make_unique<HumanPlayer>(myApp);
+    else if (playerName == "RandomEngine") player = std::make_unique<EngineRandom>(myBoard);
+    else if (playerName == "EngineV1") player = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
+    else manageError("ERROR: " + playerName + " is not a valid player.");
 }
 
 int main(int argc, char* argv[]) {
@@ -84,38 +101,31 @@ int main(int argc, char* argv[]) {
     
     std::cout << "---------------Guillem's Chess Engine---------------" << std::endl;
     std::cout << "For displaying the usage --help or -h." << std::endl;
-    std::cout << "The random seed used was: " << seed << "." << std::endl;
     std::cout << "The current available engines are: " << std::endl;
     std::cout << "    - RandomEngine" << std::endl;
     std::cout << "    - EngineV1" << std::endl;
+    std::cout << "The random seed used was: " << seed << "." << std::endl;
     std::cout << "----------------------------------------------------" << std::endl << std::endl;;
 
     //Default options for the game
-    std::string whitePlayerName = "PLAYER";
-    std::string blackPlayerName = "PLAYER";
+    std::string whitePlayerName = "Player";
+    std::string blackPlayerName = "Player";
     bool displayGUIApp = true;
-    std::chrono::milliseconds engineTimeSpan(0);
-
-    std::shared_ptr<MyApp> myApp;
-    std::shared_ptr<Board> myBoard;
+    std::chrono::milliseconds engineTimeSpan(2000);
 
     //Handles the command line arguments
     processCommandLine(argc, argv, whitePlayerName, blackPlayerName, displayGUIApp, engineTimeSpan);
 
+    printOptionsChosen(whitePlayerName, blackPlayerName, displayGUIApp, engineTimeSpan);
+
     // Inicialization of the app and the board
-    if (displayGUIApp) myApp = std::make_shared<GUIApp>();
-    else myApp = std::make_shared<ConsoleApp>();
-    myBoard = std::make_shared<Board>(myApp);
-    myApp->setBoard(myBoard);
+    std::shared_ptr<Board> myBoard;
+    std::shared_ptr<MyApp> myApp = initializeApp(displayGUIApp, myBoard);
 
     //Loads both players
     std::unique_ptr<Player> whitePlayer, blackPlayer;
-    if (whitePlayerName == "PLAYER") whitePlayer = std::make_unique<HumanPlayer>(myApp);
-    else if (whitePlayerName == "RandomEngine") whitePlayer = std::make_unique<EngineRandom>(myBoard);
-    else whitePlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
-    if (blackPlayerName == "PLAYER") blackPlayer = std::make_unique<HumanPlayer>(myApp);
-    else if (blackPlayerName == "RandomEngine") blackPlayer = std::make_unique<EngineRandom>(myBoard);
-    else blackPlayer = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
+    loadPlayers(whitePlayer, whitePlayerName, myApp, myBoard, engineTimeSpan);
+    loadPlayers(blackPlayer, blackPlayerName, myApp, myBoard, engineTimeSpan);
 
     //Initializes the app, if it fails, the program will exit
     if (!myApp->init())
