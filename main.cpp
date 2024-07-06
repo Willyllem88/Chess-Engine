@@ -12,15 +12,16 @@ void usage(const char* programName) {
     std::cout << "Play a game of chess with the engine." << std::endl << std::endl;
     std::cout << "Commands (through the console):" << std::endl;
     std::cout << "    u, undo: in the console will undo the last move." << std::endl;
+    std::cout << "    <algebraic-move-notation>: if it's a valid move, it will perform it." << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "    --help, -h: Displays this message." << std::endl;
-    std::cout << "    --white, -w <PLAYER | <engine_name>>: Specify who will play with the white pieces." << std::endl;
-    std::cout << "    --black, -b <PLAYER | <engine_name>>: Specify who will play with the black pieces." << std::endl;
+    std::cout << "    --white, -w <Player | <engine_name>>: Specify who will play with the white pieces." << std::endl;
+    std::cout << "    --black, -b <Player | <engine_name>>: Specify who will play with the black pieces." << std::endl;
     std::cout << "    --console-only, -c: The GUI will not be displayed." << std::endl;
     std::cout << "    --timespan <time>, -t <time>: The time span in seconds for the engine to play a turn, can use decimals." << std::endl;
     std::cout << std::endl;
     std::cout << "The default options are:" << std::endl;
-    std::cout << "    --white PLAYER, --black PLAYER --timespan 2" << std::endl;
+    std::cout << "    --white Player, --black Player --timespan 2" << std::endl;
 
     exit(0);
 }
