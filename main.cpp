@@ -2,11 +2,6 @@
 #include "myApp.hh"
 #include "players.hh"
 
-void manageError(std::string message) {
-    std::cerr << message << std::endl;
-    exit(1);
-}
-
 void usage(const char* programName) {
     std::cout << "Usage: " << programName << " [options]" << std::endl;
     std::cout << "Play a game of chess with the engine." << std::endl << std::endl;
@@ -19,6 +14,7 @@ void usage(const char* programName) {
     std::cout << "    --black, -b <Player | <engine_name>>: Specify who will play with the black pieces." << std::endl;
     std::cout << "    --console-only, -c: The GUI will not be displayed." << std::endl;
     std::cout << "    --timespan <time>, -t <time>: The time span in seconds for the engine to play a turn, can use decimals." << std::endl;
+    std::cout << "    --load-fen \"<fen>\", -f \"<fen>\": Load a FEN board. IMPORTANT: The FEN string must be enclosed in quotes." << std::endl;
     std::cout << std::endl;
     std::cout << "The default options are:" << std::endl;
     std::cout << "    --white Player, --black Player --timespan 2" << std::endl;
@@ -26,7 +22,7 @@ void usage(const char* programName) {
     exit(0);
 }
 
-void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::string& blackPlayer, bool& displayGUIApp, std::chrono::milliseconds& engineTimeSpan) {
+void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::string& blackPlayer, bool& displayGUIApp, std::chrono::milliseconds& engineTimeSpan, std::string& FEN) {
     if (argc == 1)
         return;
 
@@ -37,23 +33,24 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
         {"white",        no_argument,       0, 'w'},
         {"console-only", no_argument,       0, 'c'},
         {"timespan",     required_argument, 0, 't'},
+        {"load-fen",     required_argument, 0, 'f'},
         {0, 0, 0, 0}
     };
-
+    std::vector<std::string> fenParts;
     //Handles the options
     int opt;
     int optionIndex = 0;
-    while ((opt = getopt_long(argc, argv, "hb:w:ct:", longOptions, &optionIndex)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hb:w:ct:f:", longOptions, &optionIndex)) != -1) {
         switch (opt) {
             case 'h': //Help
                 usage(argv[0]);
                 break;
             case 'w': //White player
-                if (optarg == nullptr) manageError("ERROR: You must specify the white player.");
+                if (optarg == nullptr) errorAndExit("ERROR: You must specify the white player.");
                 whitePlayer = optarg;
                 break;
             case 'b': //Black player
-                if (optarg == nullptr) manageError("ERROR: You must specify the white player.");
+                if (optarg == nullptr) errorAndExit("ERROR: You must specify the white player.");
                 blackPlayer = optarg;
                 break;
             case 'c': //Console only
@@ -63,6 +60,9 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
                 //stof
                 engineTimeSpan = std::chrono::milliseconds(int(std::stof(optarg) * 1000));
                 break;
+            case 'f': //Load FEN
+                FEN = optarg;
+                break;
             default: //Invalid option
                 std::cerr << "Invalid option" << std::endl;
                 exit(1);
@@ -71,29 +71,32 @@ void processCommandLine(int argc, char* argv[], std::string& whitePlayer, std::s
     return;
 }
 
-void printOptionsChosen(std::string whitePlayer, std::string blackPlayer, bool displayGUIApp, std::chrono::milliseconds engineTimeSpan) {
+void printOptionsChosen(const std::string& whitePlayer,const std::string& blackPlayer, bool displayGUIApp, std::chrono::milliseconds engineTimeSpan, const std::string& FEN) {
     std::cout << "Options chosen:" << std::endl;
     std::cout << "    - White player: " << whitePlayer << std::endl;
     std::cout << "    - Black player: " << blackPlayer << std::endl;
     std::cout << "    - Display GUI: " << (displayGUIApp ? "Yes" : "No") << std::endl;
     std::cout << "    - Engine time span: " << engineTimeSpan.count() / 1000.0 << " s" << std::endl;
+    std::cout << "    - FEN: " << FEN << std::endl;
     std::cout << std::endl;
 }
 
-std::shared_ptr<MyApp> initializeApp(bool displayGUIApp, std::shared_ptr<Board>& myBoard) {
-    std::shared_ptr<MyApp> myApp;
+void initializeBoardApp(std::shared_ptr<Board>& myBoard, std::shared_ptr<MyApp>& myApp, bool displayGUIApp, const std::string& FEN) {
     if (displayGUIApp) myApp = std::make_shared<GUIApp>();
     else myApp = std::make_shared<ConsoleApp>();
     myBoard = std::make_shared<Board>(myApp);
     myApp->setBoard(myBoard);
-    return myApp;
+
+    //Initializes the pieces on the board
+    if (FEN == "") myBoard->setDefaulValues();
+    else myBoard->loadFEN(FEN);
 }
 
 void loadPlayers(std::unique_ptr<Player>& player, std::string playerName, std::shared_ptr<MyApp> myApp, std::shared_ptr<Board> myBoard, std::chrono::milliseconds engineTimeSpan) {
     if (playerName == "Player") player = std::make_unique<HumanPlayer>(myApp);
     else if (playerName == "RandomEngine") player = std::make_unique<EngineRandom>(myBoard);
     else if (playerName == "EngineV1") player = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
-    else manageError("ERROR: " + playerName + " is not a valid player.");
+    else errorAndExit("ERROR: " + playerName + " is not a valid player.");
 }
 
 int main(int argc, char* argv[]) {
@@ -113,15 +116,17 @@ int main(int argc, char* argv[]) {
     std::string blackPlayerName = "Player";
     bool displayGUIApp = true;
     std::chrono::milliseconds engineTimeSpan(2000);
+    std::string fenBoard = "";
 
     //Handles the command line arguments
-    processCommandLine(argc, argv, whitePlayerName, blackPlayerName, displayGUIApp, engineTimeSpan);
+    processCommandLine(argc, argv, whitePlayerName, blackPlayerName, displayGUIApp, engineTimeSpan, fenBoard);
 
-    printOptionsChosen(whitePlayerName, blackPlayerName, displayGUIApp, engineTimeSpan);
+    printOptionsChosen(whitePlayerName, blackPlayerName, displayGUIApp, engineTimeSpan, fenBoard);
 
     // Inicialization of the app and the board
     std::shared_ptr<Board> myBoard;
-    std::shared_ptr<MyApp> myApp = initializeApp(displayGUIApp, myBoard);
+    std::shared_ptr<MyApp> myApp;
+    initializeBoardApp(myBoard, myApp, displayGUIApp, fenBoard);
 
     //Loads both players
     std::unique_ptr<Player> whitePlayer, blackPlayer;

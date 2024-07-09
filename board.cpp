@@ -12,7 +12,6 @@ struct ZobristTable { //FIX: handle it differently
 zobristTable;
 
 Board::Board(std::shared_ptr<MyApp> a) {
-    setDefaulValues();
     this->app = a;
 }
 
@@ -57,6 +56,113 @@ void Board::setDefaulValues() {
     //Calculates the first legal moves
     calculateLegalMoves();
     
+    boardLogList.push_back(*this);
+}
+
+void Board::loadFEN(const std::string& FEN) {
+    //Clears all the board data
+    allPieces = enPassant = castleBitmap = 0;
+    whitePieces = whitePawn = whiteBishop = whiteKnight = whiteRook = whiteQueen = whiteKing = 0;
+    blackPieces = blackPawn = blackBishop = blackKnight = blackRook = blackQueen = blackKing = 0;
+    threefoldRepetition = false;
+    moveCounter = 0;
+
+    int index = 0; //The FEN string index
+
+    //Loads pieces
+    int nullCounter = 0;
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            if (nullCounter > 0) {
+                --nullCounter;
+                continue;
+            }
+
+            if (FEN[index] == '/') ++index; //Ignore slashes
+
+            uint64_t bit = 0;
+            ijToBit(i, j, bit);
+
+            if (FEN[index] == 'P')      whitePawn |= bit;
+            else if (FEN[index] == 'B') whiteBishop |= bit;
+            else if (FEN[index] == 'N') whiteKnight |= bit;
+            else if (FEN[index] == 'R') whiteRook |= bit;
+            else if (FEN[index] == 'Q') whiteQueen |= bit;
+            else if (FEN[index] == 'K') whiteKing |= bit;
+            else if (FEN[index] == 'p') blackPawn |= bit;
+            else if (FEN[index] == 'b') blackBishop |= bit;
+            else if (FEN[index] == 'n') blackKnight |= bit;
+            else if (FEN[index] == 'r') blackRook |= bit;
+            else if (FEN[index] == 'q') blackQueen |= bit;
+            else if (FEN[index] == 'k') blackKing |= bit;
+            else if (FEN[index] >= '1' && FEN[index] <= '8') nullCounter = FEN[index] - '0' - 1;
+            else errorAndExit("Invalid FEN, wrong piece placement data.");
+
+            ++index;
+        }
+    }
+    whitePieces = whitePawn | whiteBishop | whiteKnight | whiteRook | whiteQueen | whiteKing;
+    blackPieces = blackPawn | blackBishop | blackKnight | blackRook | blackQueen | blackKing;
+    allPieces = whitePieces | blackPieces;
+
+    if (FEN[index] != ' ') errorAndExit("Invalid FEN, wrong separator.");
+    ++index;
+
+    //Loads the active color
+    if (FEN[index] == 'w') moveTurn = WHITE;
+    else if (FEN[index] == 'b') moveTurn = BLACK;
+    else errorAndExit("Invalid FEN, wrong activate color.");
+    ++index;
+
+    if (FEN[index] != ' ') errorAndExit("Invalid FEN, wrong separator.");
+    ++index;
+
+    //Loads castling data
+    if (FEN[index] == '-') ++index;
+    else {
+        if (FEN[index] == 'K') {castleBitmap |= 0x0200000000000000; ++index;}
+        if (FEN[index] == 'Q') {castleBitmap |= 0x2000000000000000; ++index;}
+        if (FEN[index] == 'k') {castleBitmap |= 0x0000000000000002; ++index;}
+        if (FEN[index] == 'q') {castleBitmap |= 0x0000000000000020; ++index;}
+        if (FEN[index] != ' ') errorAndExit("Invalid FEN, wrong casteling data.");
+    }
+
+    if (FEN[index] != ' ') errorAndExit("Invalid FEN, wrong separator.");
+    ++index;
+
+    //Loads en passant data
+    if (FEN[index] == '-') ++index;
+    else {
+        int i = FEN[index] - 'a';
+        int j = FEN[index+1] - '1';
+        if (i < 0 || i > 7 || j < 0 || j > 7) errorAndExit("Invalid FEN, wrong en passant data.");
+        uint64_t bit;
+        ijToBit(i, j, bit);
+        enPassant = bit;
+        index += 2;
+    }
+
+    if (FEN[index] != ' ') errorAndExit("Invalid FEN, wrong separator.");
+    ++index;
+
+    //Loads the halfmove clock, for 50 moves rule (not implemented)
+    if (atoi(&FEN[index]) < 0) errorAndExit("Invalid FEN, wrong halfmove clock.");
+    ++index;
+
+    if (FEN[index] != ' ') errorAndExit("Invalid FEN, wrong separator.");
+    ++index;
+
+    //Loads the fullmove number
+    if (atoi(&FEN[index]) < 0) errorAndExit("Invalid FEN, wrong fullmove number.");
+    moveCounter = 2*atoi(&FEN[index]) + (moveTurn == BLACK);
+    ++index;
+
+    if (index != FEN.size()) errorAndExit("Invalid FEN, wrong size.");
+
+    //FIX: Should also target the squares
+    initializeZobristTable();
+    updateTargetedSquares(moveTurn == WHITE ? BLACK : WHITE); //Updates the squares targeted by the opponent
+    calculateLegalMoves(); //Calculates the legal moves
     boardLogList.push_back(*this);
 }
 

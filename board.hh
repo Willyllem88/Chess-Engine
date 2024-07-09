@@ -18,6 +18,9 @@ public:
     //  Sets the board to the initial position.
     void setDefaulValues();
 
+    //  Sets the board to the position passed as argument.
+    void loadFEN(const std::string& fen);
+
     //  Gets the pieceColor of the player that will move next.
     PieceColor getMoveTurn();
 
