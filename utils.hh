@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <getopt.h>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdlib>

@@ -41,103 +41,105 @@ PieceMove EngineV1::getMove() {
     //Activate timer (FIX: 2s just for testing)
     iniTimer(moveDelay);
 
+    bool isMate = false;
+
     numBoards = 0; //FIX: only for testingç
     transpositionHits = 0;
     searchTimeExceeded = false;
 
-    MoveEval pastItBestMove; //The best move in the actual iteration and the best move in the past iteration
-    MoveEval bestMoveEval;
+    std::set <PieceMove> legalMoves = board->getCurrentLegalMoves();
+    std::vector<PieceMove> orderedMoves(legalMoves.begin(), legalMoves.end());
     
-    pastItBestMove.move = bestMoveEval.move = *board->getCurrentLegalMoves().begin();
-    pastItBestMove.eval = bestMoveEval.eval = -INF;
-
+    MoveEval bestMoveEval = {orderedMoves[0], -INF};
     
     int depth;
     for (depth = 1; depth <= MAX_DEPTH; depth++) {
+        std::vector<MoveEval> actItEvaluatedMoves = firstSearch(orderedMoves, depth);
+        
+        //If the time limit is exceeded, the search will stop
         if (searchTimeExceeded) break;
-
-        MoveEval actItMoveEval = firstSearch(depth);
+        
+        //Sort the moves based on the evaluation, from worst to best. In the bext iteration, the moves will be examined in this order
+        std::sort(actItEvaluatedMoves.begin(), actItEvaluatedMoves.end(), std::greater<MoveEval>());
+        MoveEval actItBestMove = actItEvaluatedMoves.front();
+        
+        //Reorder the moves for the next iteration based on the current evaluation, orderedMoves will have moves evaluated in the last iteration ordered from best to worst
+        orderedMoves.clear();
+        for (MoveEval m : actItEvaluatedMoves) orderedMoves.push_back(m.move);
 
         //If a checkmate is detected, the search will stop
-        if (actItMoveEval.eval >= INF){
-            std::cout << "--> Checkmate in " << depth << " moves." << std::endl;
-            bestMoveEval = actItMoveEval;
+        if (actItBestMove.eval >= INF || actItBestMove.eval <= -INF){
+            isMate = true;
+            bestMoveEval = actItBestMove;
             break;
         }
 
-        //If the evaluation of the actual iteration is better than the past iteration, the best move will be updated
-        if (actItMoveEval.eval > pastItBestMove.eval) bestMoveEval = actItMoveEval;
-        else bestMoveEval = pastItBestMove;
-
-        pastItBestMove = actItMoveEval;
+        bestMoveEval = actItBestMove;
     }
 
+    //Stop the timer, in case it hasn't stopped yet
     stopTimer = true;
     
+    //Print some useful information about the search
     std::cout << "[INFO] Depth reached: " << depth << std::endl;
-    std::cout << "[INFO] Evaluation: " << bestMoveEval.eval << std::endl;
+    if (isMate) {
+        //A wierd implementation, but it works, same as a negated xor
+        bool imDoingMate = (bestMoveEval.eval >= INF);
+        bool imWhite = (board->getMoveTurn() == WHITE);
+        if (imDoingMate == imWhite) 
+            std::cout << "[INFO] Evaluation: +M" << (depth + 1)/2 << std::endl;
+        else 
+            std::cout << "[INFO] Evaluation: -M" << (depth + 1)/2 << std::endl;
+    }
+    else std::cout << "[INFO] Evaluation: " << bestMoveEval.eval << std::endl;
     std::cout << "[INFO] Number of boards: " << numBoards << std::endl;
     std::cout << "[INFO] Transposition hits: " << transpositionHits << std::endl;
-    //FIX: temporal solution
+    
     return bestMoveEval.move;
 }
 
-EngineV1::MoveEval EngineV1::firstSearch(int depth) {
-    numBoards++; //FIX: only for testing
+std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMove>& orderedMoves, int depth) {
+    numBoards++;
 
-    PieceMove bestMove = *board->getCurrentLegalMoves().begin();
-    int bestEval = -INF;
-
-    std::list<PieceMove> orderedMoves;
-    orderMoves(board->getCurrentLegalMoves(), orderedMoves);
+    std::vector<EngineV1::MoveEval> evaluatedMoves;
 
     for (PieceMove move : orderedMoves) {
-        if (searchTimeExceeded) return {bestMove, bestEval};
-
         board->movePiece(move);
         int score = -search(depth - 1, -INF, INF); //FIX: maybe change the bounds
         board->undoMove();
 
-        if (score >= INF) return {move, score};
+        if (searchTimeExceeded) return evaluatedMoves;
 
-        if (score > bestEval) {
-            bestEval = score;
-            bestMove = move;
-        }
+        evaluatedMoves.push_back({move, score});
+
+        if (score >= INF) return evaluatedMoves; //If a checkmate is detected, the search will stop
     }
 
-    return {bestMove, bestEval};
+    return evaluatedMoves;
 }
 
 int EngineV1::search(int depth, int alpha, int beta) {
     numBoards++; //FIX: only for testing
 
-    /*uint64_t currentHash = board->getZobristHash();
-    if (transpositionTable.contains(currentHash) && transpositionTable.getDepth(currentHash) >= depth) {
-        ++transpositionHits;
-        return transpositionTable.getScore(currentHash);
-    }*/
-    
     if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, my evaluation is -INF
     if (board->getBoardResult() == STALE_MATE) return 0; //If it's a stalemate, the evaluation is 0
     if (board->getBoardResult() == THREEFOLD_REPETITION) return 0; //If it's a threefold repetition, the evaluation is 0
 
     if (depth == 0) return quiescenceSearch(alpha, beta);
 
-    //transpositionTable.insert(currentHash, alpha, depth, 0);  
-
     std::list<PieceMove> moveList;
-    orderMoves(board->getCurrentLegalMoves(), moveList);
+    orderMoves(board->getCurrentLegalMoves(), moveList); //FIX: more accurate ordering
 
     for (PieceMove m : moveList) {
         board->movePiece(m);
         int score = -search(depth - 1, -beta, -alpha);
         board->undoMove();
-        if (score >= beta) return beta;
+        if (score >= beta) {
+            return beta;
+        }
         alpha = std::max(alpha, score);
     }
     
-    //transpositionTable.insert(currentHash, alpha, depth, 0);
     return alpha;
 }
 

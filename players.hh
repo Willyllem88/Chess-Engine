@@ -97,6 +97,13 @@ private:
     struct MoveEval {
         PieceMove move;
         int eval;
+
+        bool operator<(const MoveEval& other) const {
+            return eval < other.eval;
+        }
+        bool operator>(const MoveEval& other) const {
+            return eval > other.eval;
+        }
     };
 
     TranspositionTable transpositionTable;
@@ -113,7 +120,7 @@ private:
 
     //  For each depth in iterative deepening, it will search for the best move. Returns the best move and its evaluation. This is the first search for the different depths. This function will call the search function.
     //      Iterative Deepening: [https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search]
-    EngineV1::MoveEval firstSearch(int depth);
+    std::vector<EngineV1::MoveEval> firstSearch(const std::vector<PieceMove>& orderedMoves, int depth);
 
     //  Recursive function that searches for the best move. Depth is the current depth of the search, alfa and beta are the bounds of the search.
     //  Negamax algorithm with alpha-beta pruning. For more information, visit:
@@ -142,7 +149,7 @@ private:
     void iniTimer(std::chrono::milliseconds timeSpan);
 
     
-    static constexpr int MAX_DEPTH = 25;
+    static constexpr int MAX_DEPTH = 50;
     static constexpr int INF = 1000000;
 
     static constexpr int PAWN_VALUE = 100;
