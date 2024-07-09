@@ -65,10 +65,10 @@ The default values are `--white Player`, `--black Player`, and `--timespan 2`.
 
 #### Example Usage
 
-To run the program with a player as white and an engine named "EngineV1" as black, with a timespan of 2.5 seconds, and displaying it through the console, use:
+To run the program with a player as white and an engine named "EngineV1" as black, with a timespan of 2.5 seconds, and displaying it through the console, with an example FEN string, use:
 
 ```sh
-./engine -w Player -b EngineV1 -t 2.5 -c
+./engine -w Player -b EngineV1 -t 2.5 -c -f "4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1"
 ```
 
 ### Commands
