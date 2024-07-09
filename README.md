@@ -59,6 +59,7 @@ The options are specified using the `-option` format:
 * `-w <Player | <engine_name>>` or `--white <Player | <engine_name>>`: Specifies who will play with the white pieces.
 * `-c` or `--console-only`: Runs the program without the GUI, allowing moves to be entered via the console.
 * `-t <seconds>` or `--timespan <seconds>`: Sets the time span (in seconds) that the engine will take to make a move after its opponent. Can handle decimals.
+* `-l` or `--load-fen`: Loads a FEN (Forsyth-Edwards_Notation) position to the board. Visit (FEN documentation)[https://www.chess.com/terms/fen-chess]. If not specified, the initial board will be set to the default position.
 
 The default values are `--white Player`, `--black Player`, and `--timespan 2`.
 
@@ -78,6 +79,7 @@ During the execution of the program, the user can enter the following commands:
 
 ## References
 
+* [FEN-Forsyth Edwards Notation](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)
 * [Negamax algorithm](https://www.chessprogramming.org/Negamax)
 * [Alpha Beta Pruning](https://www.chessprogramming.org/Alpha-Beta)
 * [Transposition Table](https://en.wikipedia.org/wiki/Transposition_table)
