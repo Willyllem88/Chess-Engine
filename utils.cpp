@@ -1,5 +1,10 @@
 #include "utils.hh"
 
+void errorAndExit(const std::string& errorMessage) {
+    std::cerr << errorMessage << std::endl;
+    std::exit(1);
+}
+
 bool isWhitePiece(PieceType p) {
     return p >= WHITE_PAWN && p <= WHITE_KING;
 }

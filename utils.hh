@@ -8,6 +8,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <climits>
@@ -45,6 +46,9 @@ enum PieceType : uint8_t{
 };
 
 typedef std::vector<std::vector<PieceType>> PieceMatrix;
+
+//  For error handling
+void errorAndExit(const std::string& errorMessage);
 
 //  Returns a random uint64_t number
 uint64_t rand_uint64();
