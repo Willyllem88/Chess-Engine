@@ -77,7 +77,7 @@ void printOptionsChosen(const std::string& whitePlayer,const std::string& blackP
     std::cout << "    - Black player: " << blackPlayer << std::endl;
     std::cout << "    - Display GUI: " << (displayGUIApp ? "Yes" : "No") << std::endl;
     std::cout << "    - Engine time span: " << engineTimeSpan.count() / 1000.0 << " s" << std::endl;
-    std::cout << "    - FEN: " << FEN << std::endl;
+    std::cout << "    - FEN: " << (FEN == "" ? "default" : FEN) << std::endl;
     std::cout << std::endl;
 }
 
