@@ -334,21 +334,21 @@ void Board::printResult() {
         case CHECKMATE:
             if (moveTurn == BLACK)
                 std::cout << "======================================\n" <<
-                             "*   *  *  *  *  WHITE WINS  *  *  *   *\n" <<
+                             "||            WHITE WINS            ||\n" <<
                              "======================================\n";
             else
                 std::cout << "======================================\n" <<
-                             "*   *  *  *  *  BLACK WINS  *  *  *   *\n" <<
+                             "||            BLACK WINS            ||\n" <<
                              "======================================\n"; 
             break;
         case STALE_MATE:
             std::cout << "======================================\n" <<
-                         "*   *  *  *  *  STALEMATE  *  *  *   *\n" <<
+                         "||             STALEMATE            ||\n" <<
                          "======================================\n";
             break;
         case THREEFOLD_REPETITION:
             std::cout << "======================================\n" <<
-                         "*  *  *  THREEFOLD REPETITION  *  *  *\n" <<
+                         "||       THREEFOLD REPETITION       ||\n" <<
                          "======================================\n";
             break;
         default:;
