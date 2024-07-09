@@ -47,7 +47,7 @@ public:
         auto it = s.begin();
         std::advance(it, random);
         //Wait for the delay
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(250));
         return *it;
     }
 };
@@ -127,6 +127,9 @@ private:
     //  Orders the moves in the list from best to worst. The ordering is done by the evaluation of the move. Helps the alpha-beta pruning.
     void orderMoves(const std::set<PieceMove>& moves, std::list<PieceMove>& orderedMoves);
 
+    //  
+    float currentEndGamePhaseWeight(PieceColor myColor);
+
     //  Evaluates the board. Returns the value of the board from white's perspective. Heuristic function.
     int evaluate();
 
@@ -134,16 +137,12 @@ private:
     int countMaterial(PieceColor myColor);
 
     //  Returns the positional value of the board from white's perspective
-    int countPositionalValue();
-
-    //  Returns true if the game is in the endgame, false otherwise
-    bool isEndGame();
+    int countPositionalValue(PieceColor myColor, float myEndGamePhase);
 
     void iniTimer(std::chrono::milliseconds timeSpan);
 
     
     static constexpr int MAX_DEPTH = 25;
-    static constexpr int MAX_ITERATIONS = 1000000;
     static constexpr int INF = 1000000;
 
     static constexpr int PAWN_VALUE = 100;
@@ -151,7 +150,9 @@ private:
     static constexpr int BISHOP_VALUE = 330;
     static constexpr int ROOK_VALUE = 500;
     static constexpr int QUEEN_VALUE = 900;
-    static constexpr int KING_VALUE = 20000;
+
+    //  The start of the endgame is when the material is less than endgameMaterialStart
+    static constexpr int endgameMaterialStart = 1650; // 1650 = 2*ROOK + KINGHT + BISHOP
 
     const int pawnEvals[8][8] = {
         0,  0,  0,  0,  0,  0,  0,  0,
@@ -208,7 +209,7 @@ private:
         20, 20,  0,  0,  0,  0, 20, 20,
         20, 30, 10,  0,  0, 10, 30, 20
     };
-    const int kingEvalEndGame[8][8] {
+    const int kingEvalsEndGame[8][8] {
         -50,-40,-30,-20,-20,-30,-40,-50,
         -30,-20,-10,  0,  0,-10,-20,-30,
         -30,-10, 20, 30, 30, 20,-10,-30,

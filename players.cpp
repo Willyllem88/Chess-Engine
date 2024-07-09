@@ -117,9 +117,10 @@ int EngineV1::search(int depth, int alpha, int beta) {
         ++transpositionHits;
         return transpositionTable.getScore(currentHash);
     }*/
-
+    
     if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, my evaluation is -INF
     if (board->getBoardResult() == STALE_MATE) return 0; //If it's a stalemate, the evaluation is 0
+    if (board->getBoardResult() == THREEFOLD_REPETITION) return 0; //If it's a threefold repetition, the evaluation is 0
 
     if (depth == 0) return quiescenceSearch(alpha, beta);
 
@@ -141,7 +142,7 @@ int EngineV1::search(int depth, int alpha, int beta) {
 }
 
 int EngineV1::quiescenceSearch(int alpha, int beta) {
-    numBoards++; //FIX: only for testing
+    numBoards++;
 
     uint64_t currentHash = board->getZobristHash();
     if (transpositionTable.contains(currentHash)) {
@@ -187,22 +188,40 @@ void EngineV1::orderMoves(const std::set<PieceMove>& moves, std::list<PieceMove>
     orderedMoves.splice(orderedMoves.end(), targeted);
 }
 
+
+float EngineV1::currentEndGamePhaseWeight(PieceColor myColor) {
+    //Based on heuristics: the less major pieces, the more endgame it is, we exclude the pawns. We will consider the endgame when the material is less than endgameMaterialStart (2 Rooks + Knight + Bishop)
+    const float multiplier = 1.0f / static_cast<float>(endgameMaterialStart);
+    int materialWithoutPawns = countMaterial(myColor) - board->getPawnsCount(myColor) * PAWN_VALUE;
+    return 1.0f - std::min(1.0f, multiplier * materialWithoutPawns);
+}
+
 int EngineV1::evaluate() {
     int whiteEval = countMaterial(WHITE);
     int blackEval = countMaterial(BLACK);
 
-    int evaluation = whiteEval - blackEval + countPositionalValue();
+    float whiteEndGamePhase = currentEndGamePhaseWeight(WHITE);
+    float blackEndGamePhase = currentEndGamePhaseWeight(BLACK);
+
+    int whitePositionalValue = countPositionalValue(WHITE, whiteEndGamePhase);
+    int blackPositionalValue = countPositionalValue(BLACK, blackEndGamePhase);
+
+    int evaluation = whiteEval - blackEval + whitePositionalValue - blackPositionalValue;
 
     int perspective = (board->getMoveTurn() == WHITE) ? 1 : -1;
     return evaluation * perspective;
 }
 
-int EngineV1::countPositionalValue() {
+int EngineV1::countPositionalValue(PieceColor myColor, float myEndGamePhase) {
     int positionalValue = 0;
     PieceMatrix pm = board->getPieceMatrix();
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             PieceType p = pm[i][j];
+
+            //If the piece is not mine, we continue
+            if (p == NONE || pieceColor(p) != myColor) continue;
+
             switch (p) {
                 case WHITE_PAWN:
                     positionalValue += pawnEvals[i][j];
@@ -235,10 +254,10 @@ int EngineV1::countPositionalValue() {
                     positionalValue -= queenEvals[7-i][7-j];
                     break;
                 case WHITE_KING:
-                    positionalValue += kingEvalsMidGame[i][j];
+                    positionalValue += kingEvalsMidGame[i][j]*(1.0f-myEndGamePhase) + kingEvalsEndGame[i][j]*myEndGamePhase;
                     break;
                 case BLACK_KING:
-                    positionalValue -= kingEvalsMidGame[7-i][7-j];
+                    positionalValue -= kingEvalsMidGame[7-i][7-j]*(1.0f-myEndGamePhase) + kingEvalsEndGame[7-i][7-j]*myEndGamePhase;
                     break;
                 default:
                     break;
@@ -256,6 +275,5 @@ int EngineV1::countMaterial(PieceColor myColor) {
     material += board->getKnightsCount(myColor) * KNIGHT_VALUE;
     material += board->getRooksCount(myColor) * ROOK_VALUE;
     material += board->getQueensCount(myColor) * QUEEN_VALUE;
-    material += board->getKingsCount(myColor) * KING_VALUE;
     return material;
 }
