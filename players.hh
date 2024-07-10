@@ -61,10 +61,13 @@ public:
         uint8_t nodeType;
     };
 
-    static constexpr uint8_t NODE_TYPE_EXACT = 0;
-    static constexpr uint8_t NODE_TYPE_LOWERBOUND = 1;
-    static constexpr uint8_t NODE_TYPE_UPPERBOUND = 2;
-    static constexpr uint8_t NODE_TYPE_QUIESCENCE = 3;
+    static constexpr uint8_t NT_EXACT = 0;
+    static constexpr uint8_t NT_LOWERBOUND = 1;
+    static constexpr uint8_t NT_UPPERBOUND = 2;
+
+    void clear() {
+        memset(transpositionTableBuffer, 0, sizeof(transpositionTableBuffer));
+    }
 
 
     bool contains(uint64_t zobristHash) {

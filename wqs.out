@@ -1,0 +1,124 @@
+-------------- Guillem's Chess Engine --------------
+For displaying the usage --help or -h.
+The current available engines are: 
+    - RandomEngine
+    - EngineV1
+The random seed used was: 1720601687.
+----------------------------------------------------
+
+Options chosen:
+    - White player: EngineV1
+    - Black player: EngineV1
+    - Display method: GUI
+    - Engine time span: 1 s
+    - FEN: 4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1
+----------------------------------------------------
+
+[INFO] Depth reached: 5
+[INFO] Evaluation: 476
+[INFO] Number of boards: 297354
+[INFO] Transposition hits: 18544
+Re2
+[INFO] Depth reached: 6
+[INFO] Evaluation: 10
+[INFO] Number of boards: 613471
+[INFO] Transposition hits: 66800
+Kf7
+[INFO] Depth reached: 5
+[INFO] Evaluation: 476
+[INFO] Number of boards: 299258
+[INFO] Transposition hits: 29404
+Ra7
+[INFO] Depth reached: 7
+[INFO] Evaluation: -475
+[INFO] Number of boards: 409219
+[INFO] Transposition hits: 77807
+Kf6
+[INFO] Depth reached: 5
+[INFO] Evaluation: 4
+[INFO] Number of boards: 266181
+[INFO] Transposition hits: 25877
+Rf2
+[INFO] Depth reached: 7
+[INFO] Evaluation: -480
+[INFO] Number of boards: 366918
+[INFO] Transposition hits: 59281
+Kg5
+[INFO] Depth reached: 5
+[INFO] Evaluation: 482
+[INFO] Number of boards: 279641
+[INFO] Transposition hits: 21474
+Rxg7
+[INFO] Depth reached: 7
+[INFO] Evaluation: -494
+[INFO] Number of boards: 493283
+[INFO] Transposition hits: 94205
+Kh6
+[INFO] Depth reached: 6
+[INFO] Evaluation: 490
+[INFO] Number of boards: 350960
+[INFO] Transposition hits: 60965
+Rf7
+[INFO] Depth reached: 7
+[INFO] Evaluation: -491
+[INFO] Number of boards: 374438
+[INFO] Transposition hits: 98291
+Kh5
+[INFO] Depth reached: 6
+[INFO] Evaluation: 491
+[INFO] Number of boards: 338901
+[INFO] Transposition hits: 66586
+Kf2
+[INFO] Depth reached: 6
+[INFO] Evaluation: -491
+[INFO] Number of boards: 380217
+[INFO] Transposition hits: 60018
+Rh6
+[INFO] Depth reached: 6
+[INFO] Evaluation: 504
+[INFO] Number of boards: 331559
+[INFO] Transposition hits: 75828
+Rf3
+[INFO] Depth reached: 6
+[INFO] Evaluation: -970
+[INFO] Number of boards: 419560
+[INFO] Transposition hits: 80297
+Kh4
+[INFO] Depth reached: 6
+[INFO] Evaluation: 980
+[INFO] Number of boards: 355437
+[INFO] Transposition hits: 73419
+Kg2
+[INFO] Depth reached: 6
+[INFO] Evaluation: -980
+[INFO] Number of boards: 402042
+[INFO] Transposition hits: 81488
+Rg6
+[INFO] Depth reached: 5
+[INFO] Evaluation: +M3
+[INFO] Number of boards: 2489
+[INFO] Transposition hits: 532
+Rxg6
+[INFO] Depth reached: 1
+[INFO] Evaluation: +M1
+[INFO] Number of boards: 2
+[INFO] Transposition hits: 1
+Kh5
+[INFO] Depth reached: 1
+[INFO] Evaluation: +M1
+[INFO] Number of boards: 2
+[INFO] Transposition hits: 1
+Rg8
+[INFO] Depth reached: 1
+[INFO] Evaluation: +M1
+[INFO] Number of boards: 3
+[INFO] Transposition hits: 2
+Kh6
+[INFO] Depth reached: 1
+[INFO] Evaluation: +M1
+[INFO] Number of boards: 46
+[INFO] Transposition hits: 6
+Rh3
+======================================
+||            WHITE WINS            ||
+======================================

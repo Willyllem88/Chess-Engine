@@ -121,11 +121,25 @@ std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMov
 int EngineV1::search(int depth, int alpha, int beta) {
     numBoards++; //FIX: only for testing
 
+    uint64_t currentHash = board->getZobristHash();
+    //FIX: maybe put all the logic in the transposition table class
+    if (transpositionTable.contains(currentHash)) {
+        auto entry = transpositionTable.getEntry(currentHash);
+        if (entry->depth >= depth) {
+            ++transpositionHits;
+            if (entry->nodeType == TranspositionTable::NT_EXACT) return entry->score;
+            if (entry->nodeType == TranspositionTable::NT_UPPERBOUND && entry->score <= alpha) return entry->score;
+            if (entry->nodeType == TranspositionTable::NT_LOWERBOUND && entry->score >= beta) return entry->score;
+        }
+    }
+
     if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, my evaluation is -INF
     if (board->getBoardResult() == STALE_MATE) return 0; //If it's a stalemate, the evaluation is 0
     if (board->getBoardResult() == THREEFOLD_REPETITION) return 0; //If it's a threefold repetition, the evaluation is 0
 
     if (depth == 0) return quiescenceSearch(alpha, beta);
+
+    int evalType = TranspositionTable::NT_UPPERBOUND;
 
     std::list<PieceMove> moveList;
     orderMoves(board->getCurrentLegalMoves(), moveList); //FIX: more accurate ordering
@@ -135,11 +149,16 @@ int EngineV1::search(int depth, int alpha, int beta) {
         int score = -search(depth - 1, -beta, -alpha);
         board->undoMove();
         if (score >= beta) {
+            transpositionTable.insert(currentHash, beta, depth, TranspositionTable::NT_LOWERBOUND);
             return beta;
         }
-        alpha = std::max(alpha, score);
+        if (score > alpha) {
+            evalType = TranspositionTable::NT_EXACT;
+            alpha = score;
+        }
     }
     
+    transpositionTable.insert(currentHash, alpha, depth, evalType);
     return alpha;
 }
 
@@ -149,8 +168,7 @@ int EngineV1::quiescenceSearch(int alpha, int beta) {
     uint64_t currentHash = board->getZobristHash();
     if (transpositionTable.contains(currentHash)) {
         ++transpositionHits;
-        auto entry = transpositionTable.getEntry(currentHash);
-        return entry->score;
+        return transpositionTable.getEntry(currentHash)->score;
     }
 
     int score = evaluate();
