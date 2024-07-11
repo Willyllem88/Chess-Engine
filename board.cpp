@@ -161,10 +161,9 @@ void Board::loadFEN(const std::string& FEN) {
 
     if (index != FEN.size()) errorAndExit("Invalid FEN, wrong size.");
 
-    //FIX: Should also target the squares
     initializeZobristTable();
     updateTargetedSquares(moveTurn == WHITE ? BLACK : WHITE); //Updates the squares targeted by the opponent
-    calculateLegalMoves(); //Calculates the legal moves
+    calculateLegalMoves(); //Calculates my legal moves
     boardLogList.push_back(*this);
 }
 
@@ -282,9 +281,14 @@ void Board::movePiece(PieceMove& move) {
 void Board::undoMove() {
     if (boardLogList.size() <= 1) return;
 
+    //Removes the current state from the counter
+    uint64_t hash = getZobristHash();
+    --boardStateCounter[hash];
+    if (boardStateCounter[hash] == 0)
+        boardStateCounter.erase(hash);
+
     //The back element is the current state, so it will be removed
     boardLogList.pop_back();
-
     Board *prevBoard = &boardLogList.back();
 
     moveTurn = prevBoard->moveTurn;
