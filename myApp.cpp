@@ -179,7 +179,6 @@ bool GUIApp::handleEvents() {
         //Handles left arrow pressed
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_LEFT) {
             board->undoMove();
-            std::cout << "HELOOO\n";
         }
     }
 
