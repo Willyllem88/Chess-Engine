@@ -4,9 +4,6 @@ Here I will list the pending tasks and the bugs and issues that should be addres
 
 ## High Priority
 
-* ENGINE: change the king value squares depending.
-* ENGINE: different weights depending if we are in the early, mid and endgame.
-* Handle in a optimal way the threefold repetition.
 * Comment the .hh files, maybe also in de cpp files.
 
 ## Low Priority
