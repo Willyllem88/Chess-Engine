@@ -91,6 +91,8 @@ struct PieceMove {
         if (to.j != other.to.j) return to.j < other.to.j;
         return promoteTo < other.promoteTo;
     }
+
+    #define invalidMove PieceMove(0,0,0,0)
 };
 
 //FIX: more space efficient, also add moveturn
