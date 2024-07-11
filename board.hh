@@ -21,6 +21,9 @@ public:
     //  Sets the board to the position passed as argument.
     void loadFEN(const std::string& fen);
 
+    //  Returns the number of times the current board state has been repeated.
+    int timesRepeated();
+
     //  Gets the pieceColor of the player that will move next.
     PieceColor getMoveTurn();
 
@@ -75,8 +78,11 @@ private:
     std::set<PieceMove> legalMoves; //The set of legal moves for the current player
     std::string lastMove; //The last move made
 
-    //  Log of the boardState
-    //std::map<BoardState, int> boardStateLog; //FIX: maybe implement it differently, it causes delays when duplicating the Board object.
+    //  Log of the boardState, static because there will be copies of the board, and the log should be the same for all of them. Those copies must not modify the log.
+    //  Maps a board state, represented by its zobrist hash, to the number of times it has been repeated. 
+    //  We will only store the zobrist hash because the possibility of two different board states having the same zobrist hash is negligible. Actualy we can calculate it, with the birthaday paradox. p = 1 - e^-((n*(n-1)) / (2*2^k)) where n is the number of board states, and k is the number of bits of the zobrist hash. For n = 2^20, k = 64, p ≈ 0.
+    static std::map<uint64_t, int> boardStateCounter;
+    static std::list<Board> boardLogList; //List of boards, used to undo moves
     bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
 
     //  Board result
@@ -157,7 +163,7 @@ private:
 
     //MAKING A MOVE related functions
     
-    //  Makes the move in the board, updating all bitmaps and variables accordingly.
+    //  Makes the move in the board, only updates the bitmaps
     void makeAMove(const PieceMove& move);
 
     //  Removes the bit from the targetBitMap.

@@ -1,7 +1,9 @@
 #include "board.hh"
 #include "myApp.hh"
 
-std::list<Board> boardLogList; //FIX: handle it in its own class
+//  The board state log
+std::map<uint64_t, int> Board::boardStateCounter;
+std::list<Board> Board::boardLogList;
 
 struct ZobristTable { //FIX: handle it differently
     uint64_t zobristPieces[64][12]; //12 pieces, 64 squares
@@ -166,6 +168,14 @@ void Board::loadFEN(const std::string& FEN) {
     boardLogList.push_back(*this);
 }
 
+int Board::timesRepeated() {
+    uint64_t hash = getZobristHash();
+    if (boardStateCounter.find(hash) == boardStateCounter.end())
+        return 0;
+    return boardStateCounter[hash];
+
+}
+
 PieceColor Board::getMoveTurn() {
     return moveTurn;
 }
@@ -280,7 +290,6 @@ void Board::undoMove() {
     moveTurn = prevBoard->moveTurn;
     moveCounter = prevBoard->moveCounter;
     legalMoves = prevBoard->legalMoves;
-    //boardStateLog = prevBoard->boardStateLog;
     threefoldRepetition = prevBoard->threefoldRepetition;
     boardResult = prevBoard->boardResult;
     allPieces = prevBoard->allPieces;
@@ -595,7 +604,7 @@ void Board::manageCheck(std::set<PieceMove> &legalMoves) {
     for (auto moveIterator = legalMoves.begin(); moveIterator != legalMoves.end(); ) {
         PieceMove move = *moveIterator;
         uint64_t fromBit;
-        ijToBit(move.from.i, move.from.j, fromBit);
+        ijToBit(move.from.i, move.from.j, fromBit);     
 
         //Explanation: a copy of the class board (baux) is created. Baux will make the move, and if the king is still targeted, the move will be removed from the legalMoves set.
         Board baux = *this;
@@ -737,12 +746,10 @@ void Board::manageCastleMove(uint64_t fromPieceBitmap, const PieceMove& move) {
 }
 
 void Board::registerState() {
-    //PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
-    //bitBoardToMatrix(pm);
-    //BoardState bs(pm, enPassant, castleBitmap);
-    //++boardStateLog[bs];
-    //if (boardStateLog[bs] == 3)
-    //    threefoldRepetition = true;
+    uint64_t hash = getZobristHash();
+    boardStateCounter[hash] += 1;
+    if (boardStateCounter[hash] == 3)
+        threefoldRepetition = true;
     boardLogList.push_back(*this);
 }
 
