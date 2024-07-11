@@ -51,6 +51,7 @@ PieceMove EngineV1::getMove() {
     std::vector<PieceMove> orderedMoves(legalMoves.begin(), legalMoves.end());
     
     MoveEval bestMoveEval = {orderedMoves[0], -INF};
+
     
     int depth;
     for (depth = 1; depth <= MAX_DEPTH; depth++) {
@@ -111,8 +112,6 @@ std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMov
         if (searchTimeExceeded) return evaluatedMoves;
 
         evaluatedMoves.push_back({move, score});
-
-        if (score >= INF) return evaluatedMoves; //If a checkmate is detected, the search will stop
     }
 
     return evaluatedMoves;
@@ -207,7 +206,6 @@ void EngineV1::orderMoves(const std::set<PieceMove>& moves, std::list<PieceMove>
     orderedMoves.splice(orderedMoves.end(), other);
     orderedMoves.splice(orderedMoves.end(), targeted);
 }
-
 
 float EngineV1::currentEndGamePhaseWeight(PieceColor myColor) {
     //Based on heuristics: the less major pieces, the more endgame it is, we exclude the pawns. We will consider the endgame when the material is less than endgameMaterialStart (2 Rooks + Knight + Bishop)
