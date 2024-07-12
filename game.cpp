@@ -33,6 +33,9 @@ void Game::run(int argc, char* argv[]) {
     if (!myApp->init())
         errorAndExit("ERROR: The app could not be initialized.");
 
+    //Prints the initial board
+    myBoard->printBoardApp();
+
     //The match starts here
     PieceMove move;
     while (myApp->handleEvents()) {
