@@ -189,6 +189,11 @@ PieceMatrix Board::getPieceMatrix() {
     return pm;
 }
 
+PieceType Board::getPieceType(int i, int j) {
+    if (i < 0 || i > 7 || j < 0 || j > 7) return NONE;
+    return ijToPieceType(i, j);
+}
+
 bool Board::isPromotion(const PieceMove& move) {
     return move.promoteTo != NONE;
 }

@@ -33,6 +33,9 @@ public:
     //  Gets the current pieceMatrix of the board.
     PieceMatrix getPieceMatrix();
 
+    //  Gets the piece type of the piece located in the (i, j) coordinates.
+    PieceType getPieceType(int i, int j);
+
     //  Returns some information about the outcome of a move.
     bool isPromotion(const PieceMove& move);
     bool isCapture(const PieceMove& move);
