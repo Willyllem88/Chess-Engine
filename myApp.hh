@@ -96,6 +96,18 @@ class GUIApp : public MyApp {
         MouseMove lastMouseMove; //The last mouse move made by the player
         MousePos promotionClickPos; //The position of the click that will determine the promotion piece
         
+        PieceType draggedPiece; //The piece that is currently being dragged
+        PiecePos draggedPiecePos; //The position of the piece that is currently being dragged
+
+        std::set<PiecePos> targetedSquares; //The possible moves of the piece that is pressed
+        std::set<PiecePos> targetedPieces; //The pieces that can be captured by the piece that is pressed
+
+        //declare rgb colors
+        const SDL_Color BACKGROUND = {0, 0, 0, 255};
+        const SDL_Color WHITE_SQUARES = {255, 255, 255, 255};
+        const SDL_Color BLACK_SQUARES = {100, 100, 100, 255};
+        const SDL_Color PROMOTE_BACKGROUND = {175, 175, 175, 255};
+        
 
         //PROMOTION INFORMATION
 
@@ -131,6 +143,12 @@ class GUIApp : public MyApp {
         SDL_Texture* mBlackQueenTexture;
         SDL_Texture* mBlackKingTexture;
 
+        SDL_Texture* mTargetedSquareTexture;
+        SDL_Texture* mTargetedPieceTexture;
+
+        //When clicking on a piece, its possible moves are displayed, this functions gets those squares
+        void getTargets();
+
         //Translates the mouse move to a piece move
         void mouseMoveToPieceMove(MouseMove& move);
 
@@ -151,6 +169,8 @@ class GUIApp : public MyApp {
 
         //Loads a single piece texture
         SDL_Texture* loadTexture(const std::string &path);
+
+        SDL_Texture* getPieceTexture(PieceType p);
 };
 
 #endif

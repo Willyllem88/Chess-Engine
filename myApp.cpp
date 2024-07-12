@@ -70,6 +70,11 @@ GUIApp::GUIApp() {
     pieceMoveAvailable = false;
     promotionPending = false;
     pressed = false;
+
+    draggedPiece = NONE;
+    targetedPieces.clear();
+    targetedSquares.clear();
+
     pieceMatrix = std::vector(8, std::vector(8, NONE));
 
     mWhitePawnTexture = nullptr; 
@@ -84,7 +89,10 @@ GUIApp::GUIApp() {
     mBlackKnightTexture = nullptr;
     mBlackRookTexture = nullptr;
     mBlackQueenTexture = nullptr;
-    mBlackKingTexture = nullptr; 
+    mBlackKingTexture = nullptr;
+
+    mTargetedSquareTexture = nullptr;
+    mTargetedPieceTexture = nullptr;
 }
 
 GUIApp::~GUIApp() {
@@ -100,6 +108,8 @@ GUIApp::~GUIApp() {
     SDL_DestroyTexture(mBlackRookTexture);
     SDL_DestroyTexture(mBlackQueenTexture);
     SDL_DestroyTexture(mBlackKingTexture);
+    SDL_DestroyTexture(mTargetedSquareTexture);
+    SDL_DestroyTexture(mTargetedPieceTexture);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
@@ -147,15 +157,31 @@ bool GUIApp::handleEvents() {
         }
         //Handle mouse click
         else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            std::cout << "Mouse pressed\n";
             lastPieceMove.promoteTo = NONE;
             pressed = true;
             SDL_GetMouseState(&lastMouseMove.from.x, &lastMouseMove.from.y);
+            SDL_GetMouseState(&lastMouseMove.to.x, &lastMouseMove.to.y);
+
             if (promotionPending)
                 lastPieceMove.promoteTo = mousePosToPromotionOption(lastMouseMove.from);
+            else {
+                //Get the piece that is being dragged and the possible moves, only when we are not displaying the promotion options
+                int i, j;
+                i = (lastMouseMove.from.y - A8_y)/TILE_SIZE;
+                j = (lastMouseMove.from.x - A8_x)/TILE_SIZE;
+                draggedPiece = board->getPieceType(i, j);
+                draggedPiecePos = PiecePos(i, j);
+                getTargets();
+            }
         }
         //Handle mouse release
         else if (e.type == SDL_MOUSEBUTTONUP && pressed) {
+            draggedPiece = NONE;
+            targetedPieces.clear();
+            targetedSquares.clear();
             pressed = false;
+
             if (!promotionPending) {
                 SDL_GetMouseState(&lastMouseMove.to.x, &lastMouseMove.to.y);
                 mouseMoveToPieceMove(lastMouseMove);
@@ -209,66 +235,44 @@ PieceType GUIApp::mousePosToPromotionOption(MousePos& pos) {
 }
 
 void GUIApp::renderBoard() {
+    SDL_Rect fillRect;
     for (int i = 0; i < 8; ++i) {
         for (int j = 0; j < 8; ++j) {
-            SDL_Rect fillRect = { j * TILE_SIZE + A8_x, i * TILE_SIZE + A8_y, TILE_SIZE, TILE_SIZE };
-            //Print board
-            if ((i + j) % 2 == 0) {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  // White
-            } else {
-                SDL_SetRenderDrawColor(renderer, 100, 100, 100 , 255);  // Black
-            }
-            SDL_RenderFillRect(renderer, &fillRect);
+            fillRect = { j * TILE_SIZE + A8_x, i * TILE_SIZE + A8_y, TILE_SIZE, TILE_SIZE };
             
+            //Print board
+            if ((i + j) % 2 == 0)
+                SDL_SetRenderDrawColor(renderer, WHITE_SQUARES.r, WHITE_SQUARES.g, WHITE_SQUARES.b, WHITE_SQUARES.a);  // White
+            else
+                SDL_SetRenderDrawColor(renderer, BLACK_SQUARES.r, BLACK_SQUARES.g, BLACK_SQUARES.b, BLACK_SQUARES.a);  // Black
+            SDL_RenderFillRect(renderer, &fillRect);
+
+            //Print targeted squares
+            if (targetedSquares.find(PiecePos(i, j)) != targetedSquares.end())
+                SDL_RenderCopy(renderer, mTargetedSquareTexture, nullptr, &fillRect);
+            else if (targetedPieces.find(PiecePos(i, j)) != targetedPieces.end())
+                SDL_RenderCopy(renderer, mTargetedPieceTexture, nullptr, &fillRect);
+            
+            if (draggedPiecePos == PiecePos(i, j) && draggedPiece != NONE) continue;
+
             //Print pieces
-            switch (pieceMatrix[i][j]) {
-                case WHITE_PAWN:
-                    SDL_RenderCopy(renderer, mWhitePawnTexture, nullptr, &fillRect);
-                    break;
-                case WHITE_BISHOP:
-                    SDL_RenderCopy(renderer, mWhiteBishopTexture, nullptr, &fillRect);
-                    break;
-                case WHITE_KNIGHT:
-                    SDL_RenderCopy(renderer, mWhiteKnightTexture, nullptr, &fillRect);
-                    break;
-                case WHITE_ROOK:
-                    SDL_RenderCopy(renderer, mWhiteRookTexture, nullptr, &fillRect);
-                    break;
-                case WHITE_QUEEN:
-                    SDL_RenderCopy(renderer, mWhiteQueenTexture, nullptr, &fillRect);
-                    break;
-                case WHITE_KING:
-                    SDL_RenderCopy(renderer, mWhiteKingTexture, nullptr, &fillRect);
-                    break;
-                case BLACK_PAWN:
-                    SDL_RenderCopy(renderer, mBlackPawnTexture, nullptr, &fillRect);
-                    break;
-                case BLACK_BISHOP:
-                    SDL_RenderCopy(renderer, mBlackBishopTexture, nullptr, &fillRect);
-                    break;
-                case BLACK_KNIGHT:
-                    SDL_RenderCopy(renderer, mBlackKnightTexture, nullptr, &fillRect);
-                    break;
-                case BLACK_ROOK:
-                    SDL_RenderCopy(renderer, mBlackRookTexture, nullptr, &fillRect);
-                    break;
-                case BLACK_QUEEN:
-                    SDL_RenderCopy(renderer, mBlackQueenTexture, nullptr, &fillRect);
-                    break;
-                case BLACK_KING:
-                    SDL_RenderCopy(renderer, mBlackKingTexture, nullptr, &fillRect);
-                    break;
-                case NONE:
-                    break;
-            }
+            SDL_Texture* pieceTexture = getPieceTexture(pieceMatrix[i][j]);
+            SDL_RenderCopy(renderer, pieceTexture, nullptr, &fillRect);
         }
+    }
+
+    //If a piece is being dragged and the player is not promoting, render the piece being dragged
+    if (draggedPiece != NONE) {
+        fillRect = { lastMouseMove.to.x - TILE_SIZE/2, lastMouseMove.to.y - TILE_SIZE/2, TILE_SIZE, TILE_SIZE };
+        SDL_Texture* pieceTexture = getPieceTexture(draggedPiece);
+        SDL_RenderCopy(renderer, pieceTexture, nullptr, &fillRect);  
     }
 }
 
 void GUIApp::printBoard(PieceMatrix& pm) {
     pieceMatrix = pm;
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, BACKGROUND.r, BACKGROUND.g, BACKGROUND.b, BACKGROUND.a);
     SDL_RenderClear(renderer);
 
     renderBoard();
@@ -276,6 +280,21 @@ void GUIApp::printBoard(PieceMatrix& pm) {
         displayPromotionOptions(promotionColor);
 
     SDL_RenderPresent(renderer);
+}
+
+void GUIApp::getTargets() {
+    targetedSquares.clear();
+    targetedPieces.clear();
+    
+    std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
+    for (PieceMove move : legalMoves) {
+        if (move.from == draggedPiecePos) {
+            if (board->getPieceType(move.to.i, move.to.j) == NONE)
+                targetedSquares.insert(move.to);
+            else
+                targetedPieces.insert(move.to);
+        }
+    }
 }
 
 void GUIApp::mouseMoveToPieceMove(MouseMove& move) {
@@ -300,14 +319,14 @@ void GUIApp::mouseMoveToPieceMove(MouseMove& move) {
 void GUIApp::displayPromotionOptions(PieceColor color) {
     //Display a 3x3 square for the background of the promotion options
     SDL_Rect fillRect = { 5*TILE_SIZE/2 + A8_x, 5*TILE_SIZE/2 + A8_y, 3*TILE_SIZE, 3*TILE_SIZE };
-    SDL_SetRenderDrawColor(renderer, 175, 175, 175, 255);
+    SDL_SetRenderDrawColor(renderer, PROMOTE_BACKGROUND.r, PROMOTE_BACKGROUND.g, PROMOTE_BACKGROUND.b, PROMOTE_BACKGROUND.a);
     SDL_RenderFillRect(renderer, &fillRect);
 
     //Pints each piece in the promotion options
     for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j) {
             fillRect = { j * TILE_SIZE + A8_x + 3 * TILE_SIZE, i * TILE_SIZE + A8_y + 3 * TILE_SIZE, TILE_SIZE, TILE_SIZE };
-            if (color == WHITE) {
+            if (color == WHITE) {  
                 switch (i * 2 + j) {
                     case 0:
                         SDL_RenderCopy(renderer, mWhiteQueenTexture, nullptr, &fillRect);
@@ -379,6 +398,11 @@ bool GUIApp::loadMedia() {
     mBlackKingTexture = loadTexture("./img/blackKing.png");
     if (mBlackKingTexture == nullptr) return false;
 
+    mTargetedSquareTexture = loadTexture("./img/targetedSquare.png");
+    if (mTargetedSquareTexture == nullptr) return false;
+    mTargetedPieceTexture = loadTexture("./img/targetedPiece.png");
+    if (mTargetedPieceTexture == nullptr) return false;
+
     return true;
 }
 
@@ -395,4 +419,35 @@ SDL_Texture* GUIApp::loadTexture(const std::string &path) {
         SDL_FreeSurface(loadedSurface);
     }
     return newTexture;
+}
+
+SDL_Texture* GUIApp::getPieceTexture(PieceType p) {
+    switch (p) {
+        case WHITE_PAWN:
+            return mWhitePawnTexture;
+        case WHITE_BISHOP:
+            return mWhiteBishopTexture;
+        case WHITE_KNIGHT:
+            return mWhiteKnightTexture;
+        case WHITE_ROOK:
+            return mWhiteRookTexture;
+        case WHITE_QUEEN:
+            return mWhiteQueenTexture;
+        case WHITE_KING:
+            return mWhiteKingTexture;
+        case BLACK_PAWN:
+            return mBlackPawnTexture;
+        case BLACK_BISHOP:
+            return mBlackBishopTexture;
+        case BLACK_KNIGHT:
+            return mBlackKnightTexture;
+        case BLACK_ROOK:
+            return mBlackRookTexture;
+        case BLACK_QUEEN:
+            return mBlackQueenTexture;
+        case BLACK_KING:
+            return mBlackKingTexture;
+        default:
+            return nullptr;
+    }
 }
