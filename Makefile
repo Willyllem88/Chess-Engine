@@ -8,10 +8,10 @@ CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20 -O2
 LDFLAGS = -lSDL2 -lSDL2_image
 
 # Source files
-SRC = main.cpp myApp.cpp board.cpp utils.cpp legalMoves.cpp players.cpp
+SRC = main.cpp game.cpp myApp.cpp board.cpp utils.cpp legalMoves.cpp players.cpp
 
 # Header files
-HEADERS = myApp.hh board.hh utils.hh players.hh
+HEADERS = game.hh myApp.hh board.hh utils.hh players.hh
 
 # Object files
 OBJ = $(SRC:.cpp=.o)
