@@ -157,7 +157,6 @@ bool GUIApp::handleEvents() {
         }
         //Handle mouse click
         else if (e.type == SDL_MOUSEBUTTONDOWN) {
-            std::cout << "Mouse pressed\n";
             lastPieceMove.promoteTo = NONE;
             pressed = true;
             SDL_GetMouseState(&lastMouseMove.from.x, &lastMouseMove.from.y);
@@ -215,6 +214,10 @@ bool GUIApp::handleEvents() {
         if (str == "undo" || str == "u") board->undoMove();
         else pieceMoveAvailable = true;
     }
+
+    // Add a short delay to reduce CPU usage
+    SDL_Delay(10);
+    
     return true;
 }
 
