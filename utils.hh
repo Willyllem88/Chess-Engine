@@ -69,6 +69,10 @@ struct PiecePos {
     inline PiecePos() : i(0), j(0) { };
     inline PiecePos(uint16_t x, uint16_t y) : i(x), j(y) { };
     inline PiecePos(std::pair<uint16_t, uint16_t> p) : i(p.first), j(p.second) { };
+    bool operator<(const PiecePos& other) const {
+        if (i != other.i) return i < other.i;
+        return j < other.j;
+    }
     bool operator==(const PiecePos& other) const {
         return i == other.i and j == other.j;
     }
