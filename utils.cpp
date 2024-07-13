@@ -75,6 +75,23 @@ std::string pieceColorToString(PieceColor p) {
     else return "Black";
 }
 
+std::string PieceMove::toString() {
+    std::string str = "";
+    str += (char)('a' + from.j);
+    str += (char)('1' + 7 - from.i);
+    str += " - ";
+    str += (char)('a' + to.j);
+    str += (char)('1' + 7 - to.i);
+    if (promoteTo != NONE) {
+        if (promoteTo == WHITE_QUEEN || promoteTo == BLACK_QUEEN) str += 'Q';
+        else if (promoteTo == WHITE_ROOK || promoteTo == BLACK_ROOK) str += 'R';
+        else if (promoteTo == WHITE_BISHOP || promoteTo == BLACK_BISHOP) str += 'B';
+        else if (promoteTo == WHITE_KNIGHT || promoteTo == BLACK_KNIGHT) str += 'N';
+    }
+    return str;
+}
+
+
 bool readStringFromConsole(std::string& str) {
     fd_set set;
     struct timeval timeout;

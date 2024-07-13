@@ -24,7 +24,8 @@
 //  The color of the pieces
 enum PieceColor : uint8_t{
     WHITE,
-    BLACK
+    BLACK,
+    NONE_COLOR
 };
 
 //  This will only be used when displaying the info of the board
@@ -87,6 +88,8 @@ struct PieceMove {
     inline PieceMove() : from(PiecePos(0, 0)), to(PiecePos(0, 0)), promoteTo(NONE) { };
     inline PieceMove(PiecePos f, PiecePos t) : from(f), to(t), promoteTo(NONE) { };
     inline PieceMove(uint16_t fi, uint16_t fj, uint16_t ti, uint16_t tj) : from(PiecePos(fi, fj)), to(PiecePos(ti, tj)), promoteTo(NONE) { };
+
+    std::string toString();
 
     bool operator<(const PieceMove& other) const {
         if (from.i != other.from.i) return from.i < other.from.i;
