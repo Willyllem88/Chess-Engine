@@ -41,9 +41,12 @@ PieceMove EngineV1::getMove() {
     //Activate timer (FIX: 2s just for testing)
     iniTimer(moveDelay);
 
-    bool isMate = false;
+    PieceColor mateColor = NONE_COLOR;
 
-    numBoards = 0; //FIX: only for testingç
+    //Clear the transposition table before starting the search
+    transpositionTable.clear();
+
+    numBoards = 0;
     transpositionHits = 0;
     searchTimeExceeded = false;
 
@@ -55,6 +58,7 @@ PieceMove EngineV1::getMove() {
     
     int depth;
     for (depth = 1; depth <= MAX_DEPTH; depth++) {
+
         std::vector<MoveEval> actItEvaluatedMoves = firstSearch(orderedMoves, depth);
         
         //If the time limit is exceeded, the search will stop
@@ -70,7 +74,8 @@ PieceMove EngineV1::getMove() {
 
         //If a checkmate is detected, the search will stop
         if (actItBestMove.eval >= INF || actItBestMove.eval <= -INF){
-            isMate = true;
+            if (actItBestMove.eval >= INF) mateColor = board->getMoveTurn();
+            else mateColor = board->getMoveTurn() == WHITE ? BLACK : WHITE;
             bestMoveEval = actItBestMove;
             break;
         }
@@ -83,14 +88,12 @@ PieceMove EngineV1::getMove() {
     
     //Print some useful information about the search
     std::cout << "[INFO] Depth reached: " << depth << std::endl;
-    if (isMate) {
-        //A wierd implementation, but it works, same as a negated xor
-        bool imDoingMate = (bestMoveEval.eval >= INF);
-        bool imWhite = (board->getMoveTurn() == WHITE);
-        if (imDoingMate == imWhite) 
-            std::cout << "[INFO] Evaluation: +M" << (depth + 1)/2 << std::endl;
+    if (mateColor != NONE_COLOR) {
+        int mateDepth = (depth+1)/2;
+        if (mateColor == WHITE) 
+            std::cout << "[INFO] Evaluation: +M" << mateDepth << std::endl;
         else 
-            std::cout << "[INFO] Evaluation: -M" << (depth + 1)/2 << std::endl;
+            std::cout << "[INFO] Evaluation: -M" << mateDepth << std::endl;
     }
     else std::cout << "[INFO] Evaluation: " << bestMoveEval.eval << std::endl;
     std::cout << "[INFO] Number of boards: " << numBoards << std::endl;
@@ -106,7 +109,7 @@ std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMov
 
     for (PieceMove move : orderedMoves) {
         board->movePiece(move);
-        int score = -search(depth - 1, -INF, INF); //FIX: maybe change the bounds
+        int score = -search(depth - 1, -INF, INF);
         board->undoMove();
 
         if (searchTimeExceeded) return evaluatedMoves;
@@ -118,23 +121,27 @@ std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMov
 }
 
 int EngineV1::search(int depth, int alpha, int beta) {
-    numBoards++; //FIX: only for testing
+    numBoards++;
+    if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, my evaluation is -INF
+    if (board->getBoardResult() == STALE_MATE) return 0; //If it's a stalemate, the evaluation is 0
+    if (board->getBoardResult() == THREEFOLD_REPETITION) return 0; //If it's a threefold repetition, the evaluation is 0
 
+    //Transposition table handling: if the current board is already in the table, we will use the stored evaluation
     uint64_t currentHash = board->getZobristHash();
-    //FIX: maybe put all the logic in the transposition table class
     if (transpositionTable.contains(currentHash)) {
         auto entry = transpositionTable.getEntry(currentHash);
         if (entry->depth >= depth) {
             ++transpositionHits;
-            if (entry->nodeType == TranspositionTable::NT_EXACT) return entry->score;
-            if (entry->nodeType == TranspositionTable::NT_UPPERBOUND && entry->score <= alpha) return entry->score;
-            if (entry->nodeType == TranspositionTable::NT_LOWERBOUND && entry->score >= beta) return entry->score;
+            if (entry->nodeType == TranspositionTable::NT_EXACT) 
+                return entry->score;
+            else if (entry->nodeType == TranspositionTable::NT_UPPERBOUND && entry->score <= alpha) 
+                alpha = entry->score;
+            else if (entry->nodeType == TranspositionTable::NT_LOWERBOUND && entry->score >= beta)
+                beta = entry->score;
+            
+            if (alpha >= beta) return entry->score;
         }
     }
-
-    if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, my evaluation is -INF
-    if (board->getBoardResult() == STALE_MATE) return 0; //If it's a stalemate, the evaluation is 0
-    if (board->getBoardResult() == THREEFOLD_REPETITION) return 0; //If it's a threefold repetition, the evaluation is 0
 
     if (depth == 0) return quiescenceSearch(alpha, beta);
 
@@ -164,31 +171,32 @@ int EngineV1::search(int depth, int alpha, int beta) {
 int EngineV1::quiescenceSearch(int alpha, int beta) {
     numBoards++;
 
+    int score = evaluate();
+    if (score >= beta) return beta;
+    alpha = std::max(alpha, score);
+
+    std::set<PieceMove> captureSet = {};
+    board->getCurrentTakes(captureSet);
+    if (captureSet.empty()) return score;
+
     uint64_t currentHash = board->getZobristHash();
     if (transpositionTable.contains(currentHash)) {
         ++transpositionHits;
         return transpositionTable.getEntry(currentHash)->score;
     }
 
-    int score = evaluate();
-    if (score >= beta) return beta;
-    alpha = std::max(alpha, score);
-
-    std::set<PieceMove> captureSet;
-    board->getCurrentTakes(captureSet);
-
     for (PieceMove capture : captureSet) {
         board->movePiece(capture);
         score = -quiescenceSearch(-beta, -alpha);
         board->undoMove();
         if (score >= beta) {
-            transpositionTable.insert(currentHash, beta, 0, 0);
+            transpositionTable.insert(currentHash, beta, 0, TranspositionTable::NT_QUIESCENCE);
             return beta;
         }
         alpha = std::max(alpha, score);
     }
 
-    transpositionTable.insert(currentHash, alpha, 0, 0);
+    transpositionTable.insert(currentHash, alpha, 0, TranspositionTable::NT_QUIESCENCE);
     return alpha;
 }
 

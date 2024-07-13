@@ -64,6 +64,7 @@ public:
     static constexpr uint8_t NT_EXACT = 0;
     static constexpr uint8_t NT_LOWERBOUND = 1;
     static constexpr uint8_t NT_UPPERBOUND = 2;
+    static constexpr uint8_t NT_QUIESCENCE = 3;
 
     void clear() {
         memset(transpositionTableBuffer, 0, sizeof(transpositionTableBuffer));
