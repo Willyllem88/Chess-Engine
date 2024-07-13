@@ -3,6 +3,7 @@
 
 #include </usr/include/SDL2/SDL.h>
 #include </usr/include/SDL2/SDL_image.h>
+#include </usr/include/SDL2/SDL_mixer.h>
 
 #include <memory>
 
@@ -22,9 +23,6 @@ class MyApp{
 
         //  Sets the board to the app
         void setBoard(std::shared_ptr<Board> b);
-
-        //  Sets the move turn to the color passed as argument
-        void setMoveTurn(PieceColor color);
 
         //  Initializes the app
         virtual bool init() = 0;
@@ -76,7 +74,6 @@ class ConsoleApp : public MyApp {
         void printBoard(PieceMatrix& pm) override;
     
     private:
-        PieceColor prevMoveTurn; //The color of the player that moved last
 };
 
 class GUIApp : public MyApp {
@@ -113,6 +110,9 @@ class GUIApp : public MyApp {
 
         bool promotionPending; //True if the user has to choose wich piece to promote to, false otherwise
         PieceColor promotionColor; //The color of the player that will promote
+
+        //BOARD INFORMATION
+        int piecesCount; //The number of pieces in the board
         
 
         //SDL INFORMATION
@@ -142,9 +142,12 @@ class GUIApp : public MyApp {
         SDL_Texture* mBlackRookTexture;
         SDL_Texture* mBlackQueenTexture;
         SDL_Texture* mBlackKingTexture;
-
         SDL_Texture* mTargetedSquareTexture;
         SDL_Texture* mTargetedPieceTexture;
+
+        //Audio files
+        Mix_Chunk* mMoveSound;
+        Mix_Chunk* mCaptureSound;
 
         //When clicking on a piece, its possible moves are displayed, this functions gets those squares
         void getTargets();

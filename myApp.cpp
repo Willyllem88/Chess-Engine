@@ -16,13 +16,8 @@ void MyApp::setBoard(std::shared_ptr<Board> b) {
     this->board = b;
 }
 
-void MyApp::setMoveTurn(PieceColor color) {
-    moveTurn = color;
-}
-
 ConsoleApp::ConsoleApp() {
     pieceMoveAvailable = false;
-    prevMoveTurn = BLACK;
     pieceMatrix = std::vector(8, std::vector(8, NONE));
 }
 
@@ -41,7 +36,7 @@ bool ConsoleApp::handleEvents() {
     //If the user has inputed text from the console, handle it
     if (readStringFromConsole(str)) {
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
-        lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
+        lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, board->getMoveTurn());
         if (str == "undo" || str == "u") board->undoMove();
         else pieceMoveAvailable = true;
     }
@@ -49,7 +44,9 @@ bool ConsoleApp::handleEvents() {
 }
 
 void ConsoleApp::printBoard(PieceMatrix& pm) {
-    if (moveTurn == prevMoveTurn) return;
+    //If the turn has changed, print the board
+    if (board->getMoveTurn() == moveTurn) return;
+    moveTurn = board->getMoveTurn();
 
     pieceMatrix = pm;
     char pieceChar[] = {'P', 'B', 'N', 'R', 'Q', 'K', 'p', 'b', 'n', 'r', 'q', 'k', ' '};
@@ -62,11 +59,11 @@ void ConsoleApp::printBoard(PieceMatrix& pm) {
     }
     std::cout << "  +---+---+---+---+---+---+---+---+\n";
     std::cout << "    a   b   c   d   e   f   g   h  \n\n";
-
-    prevMoveTurn = moveTurn;
 }
 
 GUIApp::GUIApp() {
+    piecesCount = 32;
+
     pieceMoveAvailable = false;
     promotionPending = false;
     pressed = false;
@@ -113,13 +110,17 @@ GUIApp::~GUIApp() {
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+    Mix_FreeChunk(mMoveSound);
+    Mix_FreeChunk(mCaptureSound);
+    Mix_CloseAudio();
     
     SDL_Quit();
 }
 
 bool GUIApp::init() {
     // Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
@@ -131,17 +132,25 @@ bool GUIApp::init() {
         return false;
     }
 
+    // Create renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == nullptr) {
         printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
 
+    // Initialize SDL_mixer
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        printf("SDL_mixer no pudo inicializarse: %s\n", Mix_GetError());
+        return 1;
+    }
+    
+    // Load media
     if (!loadMedia()) {
         printf("Failed to load media!\n");
         return false;
     }
-
+    
     return true;
 }
 
@@ -210,7 +219,7 @@ bool GUIApp::handleEvents() {
     std::string str;
     if (readStringFromConsole(str)) {
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
-        lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, moveTurn);
+        lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, board->getMoveTurn());
         if (str == "undo" || str == "u") board->undoMove();
         else pieceMoveAvailable = true;
     }
@@ -273,6 +282,16 @@ void GUIApp::renderBoard() {
 }
 
 void GUIApp::printBoard(PieceMatrix& pm) {
+    //If the turn has changed, play the sound
+    if (moveTurn != board->getMoveTurn()) {
+        if (board->getAllPiecesCount() < piecesCount)
+            Mix_PlayChannel(-1, mCaptureSound, 0);
+        else
+            Mix_PlayChannel(-1, mMoveSound, 0);
+    }
+    moveTurn = board->getMoveTurn();
+    piecesCount = board->getAllPiecesCount();
+
     pieceMatrix = pm;
 
     SDL_SetRenderDrawColor(renderer, BACKGROUND.r, BACKGROUND.g, BACKGROUND.b, BACKGROUND.a);
@@ -375,36 +394,39 @@ void GUIApp::resizeWindow(int newWidth, int newHeight) {
 }
 
 bool GUIApp::loadMedia() {
-    mWhitePawnTexture = loadTexture("./img/whitePawn.png");
+    mWhitePawnTexture = loadTexture("./assets/img/whitePawn.png");
     if (mWhitePawnTexture == nullptr) return false;
-    mWhiteBishopTexture = loadTexture("./img/whiteBishop.png");
+    mWhiteBishopTexture = loadTexture("./assets/img/whiteBishop.png");
     if (mWhiteBishopTexture == nullptr) return false;
-    mWhiteKnightTexture = loadTexture("./img/whiteKnight.png");
+    mWhiteKnightTexture = loadTexture("./assets/img/whiteKnight.png");
     if (mWhiteKnightTexture == nullptr) return false;
-    mWhiteRookTexture = loadTexture("./img/whiteRook.png");
+    mWhiteRookTexture = loadTexture("./assets/img/whiteRook.png");
     if (mWhiteRookTexture == nullptr) return false;
-    mWhiteQueenTexture = loadTexture("./img/whiteQueen.png");
+    mWhiteQueenTexture = loadTexture("./assets/img/whiteQueen.png");
     if (mWhiteQueenTexture == nullptr) return false;
-    mWhiteKingTexture = loadTexture("./img/whiteKing.png");
+    mWhiteKingTexture = loadTexture("./assets/img/whiteKing.png");
     if (mWhiteKingTexture == nullptr) return false;
-
-    mBlackPawnTexture = loadTexture("./img/blackPawn.png");
+    mBlackPawnTexture = loadTexture("./assets/img/blackPawn.png");
     if (mBlackPawnTexture == nullptr) return false;
-    mBlackBishopTexture = loadTexture("./img/blackBishop.png");
+    mBlackBishopTexture = loadTexture("./assets/img/blackBishop.png");
     if (mBlackBishopTexture == nullptr) return false;
-    mBlackKnightTexture = loadTexture("./img/blackKnight.png");
+    mBlackKnightTexture = loadTexture("./assets/img/blackKnight.png");
     if (mBlackKnightTexture == nullptr) return false;
-    mBlackRookTexture = loadTexture("./img/blackRook.png");
+    mBlackRookTexture = loadTexture("./assets/img/blackRook.png");
     if (mBlackRookTexture == nullptr) return false;
-    mBlackQueenTexture = loadTexture("./img/blackQueen.png");
+    mBlackQueenTexture = loadTexture("./assets/img/blackQueen.png");
     if (mBlackQueenTexture == nullptr) return false;
-    mBlackKingTexture = loadTexture("./img/blackKing.png");
+    mBlackKingTexture = loadTexture("./assets/img/blackKing.png");
     if (mBlackKingTexture == nullptr) return false;
-
-    mTargetedSquareTexture = loadTexture("./img/targetedSquare.png");
+    mTargetedSquareTexture = loadTexture("./assets/img/targetedSquare.png");
     if (mTargetedSquareTexture == nullptr) return false;
-    mTargetedPieceTexture = loadTexture("./img/targetedPiece.png");
+    mTargetedPieceTexture = loadTexture("./assets/img/targetedPiece.png");
     if (mTargetedPieceTexture == nullptr) return false;
+
+    mMoveSound = Mix_LoadWAV("./assets/audio/move.wav");
+    if (mMoveSound == nullptr) return false;
+    mCaptureSound = Mix_LoadWAV("./assets/audio/capture.wav");
+    if (mCaptureSound == nullptr) return false;
 
     return true;
 }

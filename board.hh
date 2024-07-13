@@ -42,6 +42,8 @@ public:
     bool isTargeted(const PieceMove& move);
 
     //  Returns the number of pieces of the color passed as argument.
+    int getAllPiecesCount();
+    int getPlayerPiecesCount(PieceColor col);
     int getPawnsCount(PieceColor col);
     int getBishopsCount(PieceColor col);
     int getKnightsCount(PieceColor col);
@@ -110,7 +112,6 @@ private:
     uint64_t blackPieces, blackTargetedSquares, blackPinnedSquares;
 
     //  Zobrist table, see also [https://en.wikipedia.org/wiki/Zobrist_hashing]
-
     //  Initializes the zobristTable with random values.
     void initializeZobristTable();
 

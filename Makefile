@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20 -O2
 
 # Flags for the SDL2 library
-LDFLAGS = -lSDL2 -lSDL2_image
+LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer
 
 # Source files
 SRC = main.cpp game.cpp myApp.cpp board.cpp utils.cpp legalMoves.cpp players.cpp

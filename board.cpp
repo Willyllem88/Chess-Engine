@@ -216,6 +216,15 @@ bool Board::isTargeted(const PieceMove& move) {
     return (moveTurn == WHITE) ? (toBit & blackTargetedSquares) : (toBit & whiteTargetedSquares);
 }
 
+int Board::getAllPiecesCount() {
+    return __builtin_popcountll(allPieces);
+}
+
+int Board::getPlayerPiecesCount(PieceColor col) {
+    if (col == WHITE) return __builtin_popcountll(whitePieces);
+    else return __builtin_popcountll(blackPieces);
+}
+
 int Board::getPawnsCount(PieceColor col) {
     if (col == WHITE) return __builtin_popcountll(whitePawn);   
     else return __builtin_popcountll(blackPawn);       
@@ -271,7 +280,6 @@ void Board::movePiece(PieceMove& move) {
 
     //Toggles the turn
     moveTurn = (moveTurn == WHITE) ? BLACK : WHITE;
-    app->setMoveTurn(moveTurn);
     ++moveCounter;
 
     //Calculates the legal moves of the opponent
@@ -344,6 +352,7 @@ void Board::printBoardApp() {
 
     bitBoardToMatrix(pm);
     app->printBoard(pm);
+    
     return;
 }
 
