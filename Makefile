@@ -22,13 +22,18 @@ EXEC = engine
 # Default target
 all: check_dependencies $(EXEC)
 
-# Check dependencies
+# Check all dependencies
 check_dependencies:
-	@echo "Checking SDL2 dependencies..."
-	@pkg-config --exists sdl2 || (echo "Error: sdl2.pc not found. Please install SDL2. (sudo apt-get install libsdl2-dev)" && exit 1)
-	@pkg-config --exists SDL2_image || (echo "Error: SDL2_image.pc not found. Please install SDL2_image. (sudo apt-get install libsdl2-image-dev)" && exit 1)
-	@pkg-config --exists SDL2_mixer || (echo "Error: SDL2_mixer.pc not found. Please install SDL2_mixer. (sudo apt-get install libsdl2-mixer-dev)" && exit 1)
-	@echo "All SDL2 dependencies are satisfied."
+	@printf "Checking SDL2 dependencies... "
+
+	@pkg-config --exists sdl2 SDL2_image SDL2_mixer || \
+		(printf "ERROR\n" && \
+		( ! pkg-config --exists sdl2 && printf "  - SDL2.pc not found. Please install SDL2. (sudo apt-get install libsdl2-dev)\n" ) && \
+		( ! pkg-config --exists SDL2_image && printf "  - SDL2_image.pc not found. Please install SDL2_image. (sudo apt-get install libsdl2-image-dev)\n" ) && \
+		( ! pkg-config --exists SDL2_mixer && printf "  - SDL2_mixer.pc not found. Please install SDL2_mixer. (sudo apt-get install libsdl2-mixer-dev)\n" ) && \
+		exit 1 )
+
+	@printf "OK\n"
 
 # Linking
 $(EXEC): $(OBJ)
