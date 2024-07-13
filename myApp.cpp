@@ -113,6 +113,7 @@ GUIApp::~GUIApp() {
 
     Mix_FreeChunk(mMoveSound);
     Mix_FreeChunk(mCaptureSound);
+    Mix_FreeChunk(mCheckmateSound);
     Mix_CloseAudio();
     
     SDL_Quit();
@@ -282,9 +283,11 @@ void GUIApp::renderBoard() {
 }
 
 void GUIApp::printBoard(PieceMatrix& pm) {
-    //If the turn has changed, play the sound
+    //If the turn has changed, play the sound (i don't really like this, i think the sound should be addressed in a different way)
     if (moveTurn != board->getMoveTurn()) {
-        if (board->getAllPiecesCount() < piecesCount)
+        if (board->getBoardResult() != PLAYING)
+            Mix_PlayChannel(-1, mCheckmateSound, 0);
+        else if (board->getAllPiecesCount() < piecesCount)
             Mix_PlayChannel(-1, mCaptureSound, 0);
         else
             Mix_PlayChannel(-1, mMoveSound, 0);
@@ -427,6 +430,8 @@ bool GUIApp::loadMedia() {
     if (mMoveSound == nullptr) return false;
     mCaptureSound = Mix_LoadWAV("./assets/audio/capture.wav");
     if (mCaptureSound == nullptr) return false;
+    mCheckmateSound = Mix_LoadWAV("./assets/audio/checkmate.wav");
+    if (mCheckmateSound == nullptr) return false;
 
     return true;
 }

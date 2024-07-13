@@ -112,6 +112,7 @@ class GUIApp : public MyApp {
         PieceColor promotionColor; //The color of the player that will promote
 
         //BOARD INFORMATION
+
         int piecesCount; //The number of pieces in the board
         
 
@@ -148,6 +149,7 @@ class GUIApp : public MyApp {
         //Audio files
         Mix_Chunk* mMoveSound;
         Mix_Chunk* mCaptureSound;
+        Mix_Chunk* mCheckmateSound;
 
         //When clicking on a piece, its possible moves are displayed, this functions gets those squares
         void getTargets();
