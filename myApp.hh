@@ -1,9 +1,9 @@
 #ifndef MYAPP_HH
 #define MYAPP_HH
 
-#include </usr/include/SDL2/SDL.h>
-#include </usr/include/SDL2/SDL_image.h>
-#include </usr/include/SDL2/SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include <memory>
 
