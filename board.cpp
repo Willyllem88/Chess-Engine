@@ -624,7 +624,7 @@ void Board::manageCheck(std::set<PieceMove> &legalMoves) {
         uint64_t fromBit;
         ijToBit(move.from.i, move.from.j, fromBit);     
 
-        //Explanation: a copy of the class board (baux) is created. Baux will make the move, and if the king is still targeted, the move will be removed from the legalMoves set.
+        //Explanation: a copy of the class board (baux) is created. Baux will make the move, and if the king is still targeted, the move will be removed from the legalMoves set. (should be done better without creating a new board)
         Board baux = *this;
         baux.makeAMove(move);
         baux.moveTurn = (baux.moveTurn == WHITE) ? BLACK : WHITE;
@@ -652,7 +652,7 @@ void Board::eliminatePinnedCheckMoves(std::set<PieceMove> &legalMoves) {
         uint64_t fromBit;
         ijToBit(move.from.i, move.from.j, fromBit);
 
-        //Explanation: a copy of the class board (baux) is created. Baux will make the move, and if the king is still targeted, the move will be removed from the legalMoves set.
+        //Explanation: a copy of the class board (baux) is created. Baux will make the move, and if the king is still targeted, the move will be removed from the legalMoves set. (should be done better without creating a new board)
         if (*myPinnedSquares & fromBit) {
             Board baux = *this;
             baux.makeAMove(move);
