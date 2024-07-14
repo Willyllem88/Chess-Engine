@@ -51,7 +51,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 $(OBJ): $(HEADERS)
 
 # Phony targets
-.PHONY: all run clean check_dependencies
+.PHONY: all clean check_dependencies
 
 # Cleaning
 clean:
