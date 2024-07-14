@@ -7,17 +7,19 @@ CXXFLAGS = -Wall -Wextra -Wno-sign-compare -std=c++20 -O2 $(shell pkg-config --c
 # Flags for the SDL2 library
 LDFLAGS = $(shell pkg-config --libs sdl2 SDL2_image SDL2_mixer)
 
-# Source files
-SRC = main.cpp game.cpp myApp.cpp board.cpp utils.cpp legalMoves.cpp players.cpp
+# Directories
+HEADER_DIR = include
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
 
-# Header files
-HEADERS = game.hh myApp.hh board.hh utils.hh players.hh
-
-# Object files
-OBJ = $(SRC:.cpp=.o)
+# Source, header and object files
+SRC = $(wildcard $(SRC_DIR)/*.cpp)
+HEADERS = $(wildcard $(HEADER_DIR)/*.hpp)
+OBJ = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 
 # Executable name
-EXEC = engine
+EXEC = $(BIN_DIR)/engine
 
 # Default target
 all: check_dependencies $(EXEC)
@@ -37,15 +39,20 @@ check_dependencies:
 
 # Linking
 $(EXEC): $(OBJ)
+	@mkdir -p $(BIN_DIR)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
 
 # Compilation
-%.o: %.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
+	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Rebuild objects if headers change
 $(OBJ): $(HEADERS)
 
+# Phony targets
+.PHONY: all run clean check_dependencies
+
 # Cleaning
 clean:
-	rm -f $(OBJ) $(EXEC)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)

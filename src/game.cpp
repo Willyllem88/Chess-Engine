@@ -1,4 +1,4 @@
-#include "game.hh"
+#include "../include/game.hh"
 
 void Game::run(int argc, char* argv[]) {
     time_t seed = time(NULL);

@@ -1,5 +1,5 @@
-#include "myApp.hh"
-#include "board.hh"
+#include "../include/myApp.hh"
+#include "../include/board.hh"
 
 MyApp::MyApp() {
     pieceMoveAvailable = false;

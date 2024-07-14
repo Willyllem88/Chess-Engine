@@ -1,5 +1,5 @@
-#include "board.hh"
-#include "myApp.hh"
+#include "../include/board.hh"
+#include "../include/myApp.hh"
 
 //  The board state log
 std::map<uint64_t, int> Board::boardStateCounter;

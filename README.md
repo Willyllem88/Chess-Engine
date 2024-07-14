@@ -49,7 +49,7 @@ To clean the directory of object files and executables, use:
 make clean
 ```
 
-The executable file will be named `engine`.
+The executable file will be named `engine`, located in `./bin/engine`.
 
 ### Executing Options
 

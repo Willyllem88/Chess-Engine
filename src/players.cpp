@@ -1,6 +1,6 @@
-#include "board.hh"
-#include "myApp.hh"
-#include "players.hh"
+#include "../include/board.hh"
+#include "../include/myApp.hh"
+#include "../include/players.hh"
 
 HumanPlayer::HumanPlayer(std::shared_ptr<MyApp> myApp) {
     app = myApp;
