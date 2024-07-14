@@ -9,3 +9,6 @@ bin\
 
 # Ignore the engine executable file
 engine
+
+# Ignore run shell script
+run.sh

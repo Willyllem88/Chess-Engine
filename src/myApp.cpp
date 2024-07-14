@@ -397,40 +397,48 @@ void GUIApp::resizeWindow(int newWidth, int newHeight) {
 }
 
 bool GUIApp::loadMedia() {
-    mWhitePawnTexture = loadTexture("./assets/img/whitePawn.png");
+    // Get the path of the executable using /proc/self/exe on Unix-like systems
+    std::filesystem::path exePath = std::filesystem::canonical("/proc/self/exe");
+
+    // Determine the base path for resources by moving two levels up from the executable directory
+    std::filesystem::path basePath = exePath.parent_path().parent_path();
+
+    // Load textures
+    mWhitePawnTexture = loadTexture((basePath / "assets/img/whitePawn.png").string());
     if (mWhitePawnTexture == nullptr) return false;
-    mWhiteBishopTexture = loadTexture("./assets/img/whiteBishop.png");
+    mWhiteBishopTexture = loadTexture((basePath / "assets/img/whiteBishop.png").string());
     if (mWhiteBishopTexture == nullptr) return false;
-    mWhiteKnightTexture = loadTexture("./assets/img/whiteKnight.png");
+    mWhiteKnightTexture = loadTexture((basePath / "assets/img/whiteKnight.png").string());
     if (mWhiteKnightTexture == nullptr) return false;
-    mWhiteRookTexture = loadTexture("./assets/img/whiteRook.png");
+    mWhiteRookTexture = loadTexture((basePath / "assets/img/whiteRook.png").string().c_str());
     if (mWhiteRookTexture == nullptr) return false;
-    mWhiteQueenTexture = loadTexture("./assets/img/whiteQueen.png");
+    mWhiteQueenTexture = loadTexture((basePath / "assets/img/whiteQueen.png").string().c_str());
     if (mWhiteQueenTexture == nullptr) return false;
-    mWhiteKingTexture = loadTexture("./assets/img/whiteKing.png");
+    mWhiteKingTexture = loadTexture((basePath / "assets/img/whiteKing.png").string().c_str());
     if (mWhiteKingTexture == nullptr) return false;
-    mBlackPawnTexture = loadTexture("./assets/img/blackPawn.png");
+    mBlackPawnTexture = loadTexture((basePath / "assets/img/blackPawn.png").string().c_str());
     if (mBlackPawnTexture == nullptr) return false;
-    mBlackBishopTexture = loadTexture("./assets/img/blackBishop.png");
+    mBlackBishopTexture = loadTexture((basePath / "assets/img/blackBishop.png").string().c_str());
     if (mBlackBishopTexture == nullptr) return false;
-    mBlackKnightTexture = loadTexture("./assets/img/blackKnight.png");
+    mBlackKnightTexture = loadTexture((basePath / "assets/img/blackKnight.png").string().c_str());
     if (mBlackKnightTexture == nullptr) return false;
-    mBlackRookTexture = loadTexture("./assets/img/blackRook.png");
+    mBlackRookTexture = loadTexture((basePath / "assets/img/blackRook.png").string().c_str());
     if (mBlackRookTexture == nullptr) return false;
-    mBlackQueenTexture = loadTexture("./assets/img/blackQueen.png");
+    mBlackQueenTexture = loadTexture((basePath / "assets/img/blackQueen.png").string().c_str());
     if (mBlackQueenTexture == nullptr) return false;
-    mBlackKingTexture = loadTexture("./assets/img/blackKing.png");
+    mBlackKingTexture = loadTexture((basePath / "assets/img/blackKing.png").string().c_str());
     if (mBlackKingTexture == nullptr) return false;
-    mTargetedSquareTexture = loadTexture("./assets/img/targetedSquare.png");
+    mTargetedSquareTexture = loadTexture((basePath / "assets/img/targetedSquare.png").string().c_str());
     if (mTargetedSquareTexture == nullptr) return false;
-    mTargetedPieceTexture = loadTexture("./assets/img/targetedPiece.png");
+    mTargetedPieceTexture = loadTexture((basePath / "assets/img/targetedPiece.png").string().c_str());
     if (mTargetedPieceTexture == nullptr) return false;
 
-    mMoveSound = Mix_LoadWAV("./assets/audio/move.wav");
+    // Load sounds
+    mMoveSound = Mix_LoadWAV((basePath / "assets/audio/move.wav").string().c_str());
     if (mMoveSound == nullptr) return false;
-    mCaptureSound = Mix_LoadWAV("./assets/audio/capture.wav");
+    mCaptureSound = Mix_LoadWAV((basePath / "assets/audio/capture.wav").string().c_str());
     if (mCaptureSound == nullptr) return false;
-    mCheckmateSound = Mix_LoadWAV("./assets/audio/checkmate.wav");
+    mCheckmateSound = Mix_LoadWAV((basePath / "assets/audio/checkmate.wav").string().c_str());
     if (mCheckmateSound == nullptr) return false;
 
     return true;

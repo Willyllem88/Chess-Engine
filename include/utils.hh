@@ -1,5 +1,5 @@
-#ifndef STRUCTS_HH
-#define STRUCTS_HH
+#ifndef UTILS_HH
+#define UTILS_HH
 
 #include <unistd.h>
 #include <sys/select.h>
@@ -9,10 +9,11 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <climits>
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <iomanip>
-#include <climits>
 #include <list>
 #include <map>
 #include <memory>
