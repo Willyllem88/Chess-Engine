@@ -42,7 +42,7 @@ class MyApp{
         PieceMatrix pieceMatrix; //The matrix that represents the board
         PieceMove lastPieceMove; //The last piece move made by the player
         bool pieceMoveAvailable; //True if a piece move is available, false otherwise
-        PieceColor moveTurn; //The color of the player that will move next
+        PieceColor prevMoveTurn; //The color of the player that moved last
 
         //  Structs for the mouse and the pieces moves.
         //      The mouse will be trackts with (x, y) coordinates

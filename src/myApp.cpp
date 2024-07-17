@@ -4,7 +4,7 @@
 MyApp::MyApp() {
     pieceMoveAvailable = false;
     pieceMatrix = std::vector(8, std::vector(8, NONE));
-    moveTurn = WHITE;
+    prevMoveTurn = BLACK;
 }
 
 PieceMove MyApp::getMove() {
@@ -45,8 +45,8 @@ bool ConsoleApp::handleEvents() {
 
 void ConsoleApp::printBoard(PieceMatrix& pm) {
     //If the turn has changed, print the board
-    if (board->getMoveTurn() == moveTurn) return;
-    moveTurn = board->getMoveTurn();
+    if (board->getMoveTurn() == prevMoveTurn) return;
+    prevMoveTurn = board->getMoveTurn();
 
     pieceMatrix = pm;
     char pieceChar[] = {'P', 'B', 'N', 'R', 'Q', 'K', 'p', 'b', 'n', 'r', 'q', 'k', ' '};
@@ -284,7 +284,7 @@ void GUIApp::renderBoard() {
 
 void GUIApp::printBoard(PieceMatrix& pm) {
     //If the turn has changed, play the sound (i don't really like this, i think the sound should be addressed in a different way)
-    if (moveTurn != board->getMoveTurn()) {
+    if (prevMoveTurn != board->getMoveTurn()) {
         if (board->getBoardResult() != PLAYING)
             Mix_PlayChannel(-1, mCheckmateSound, 0);
         else if (board->getAllPiecesCount() < piecesCount)
@@ -292,7 +292,7 @@ void GUIApp::printBoard(PieceMatrix& pm) {
         else
             Mix_PlayChannel(-1, mMoveSound, 0);
     }
-    moveTurn = board->getMoveTurn();
+    prevMoveTurn = board->getMoveTurn();
     piecesCount = board->getAllPiecesCount();
 
     pieceMatrix = pm;
@@ -328,11 +328,11 @@ void GUIApp::mouseMoveToPieceMove(MouseMove& move) {
     lastPieceMove.to = PiecePos((move.to.y - A8_y)/TILE_SIZE, (move.to.x - A8_x)/TILE_SIZE);
     //if the move is a promotion, the user will have to click on the piece to promote to
     //FIX: has to detect which turn it is. It now shows the promotion options for both players even though it's not their turn
-    if (moveTurn == WHITE && pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == WHITE_PAWN && lastPieceMove.from.i == 1 && lastPieceMove.to.i == 0) {
+    if (board->getMoveTurn() == WHITE && pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == WHITE_PAWN && lastPieceMove.from.i == 1 && lastPieceMove.to.i == 0) {
         promotionColor = WHITE;
         promotionPending = true;
     }
-    else if (moveTurn == BLACK && pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == BLACK_PAWN && lastPieceMove.from.i == 6 && lastPieceMove.to.i == 7) {
+    else if (board->getMoveTurn() == BLACK && pieceMatrix[lastPieceMove.from.i][lastPieceMove.from.j] == BLACK_PAWN && lastPieceMove.from.i == 6 && lastPieceMove.to.i == 7) {
         promotionColor = BLACK;
         promotionPending = true;
     }
