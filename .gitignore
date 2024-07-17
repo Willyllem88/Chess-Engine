@@ -1,6 +1,5 @@
 # Ignore folders
 .vscode\
-extras\
 build\
 
 # Ignore run shell script
