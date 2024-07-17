@@ -21,7 +21,7 @@ The project is implemented in C++.
 
 Before you begin, ensure you have met the following requirements:
 * You have installed `g++`
-* `make` is installed
+* `cmake` is installed
 * You have `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-mixer-dev` installed
 
 If these are not installed, please refer to the section [Installing Dependencies on Ubuntu/Debian](#installing-dependencies-on-ubuntudebian).
@@ -32,24 +32,43 @@ To install the necessary dependencies, run the following commands:
 
 ```sh
 sudo apt-get update
-sudo apt-get install g++ make libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
+sudo apt-get install g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 ```
 
 ## Compiling and Executing
 
-The program uses a Makefile for compilation. To compile the program, run:
+1. **Build the project**:
 
-```sh
-make
-```
+   ```sh
+   mkdir build
+   cd build
+   cmake ..
+   make
+   ```
 
-To clean the directory of object files and executables, use:
+2. **Executing the Program**:
 
-```sh
-make clean
-```
+   After compiling, the executable file is `engine`, to see its options use `--help`.
 
-The executable file will be named `engine`, located in `./bin/engine`.
+   ```sh
+   ./engine <options>
+   ```
+   
+3. **Cleaning the Build**:
+
+   To clean the directory of object files and executables, use:
+
+   ```sh
+   make clean
+   ```
+
+   In order to clean the entire build, use:
+
+   ```sh
+   make distclean
+   ```
+
+The executable file will be named `engine`.
 
 ### Executing Options
 
