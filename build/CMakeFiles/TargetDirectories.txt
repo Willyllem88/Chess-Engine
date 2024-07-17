@@ -1,4 +1,0 @@
-/mnt/c/Users/guill/OneDrive/Projectes/Chess-Engine/build/CMakeFiles/engine.dir
-/mnt/c/Users/guill/OneDrive/Projectes/Chess-Engine/build/CMakeFiles/distclean.dir
-/mnt/c/Users/guill/OneDrive/Projectes/Chess-Engine/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/guill/OneDrive/Projectes/Chess-Engine/build/CMakeFiles/rebuild_cache.dir
