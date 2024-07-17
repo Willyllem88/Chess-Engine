@@ -1,0 +1,1 @@
+g++  -Wall -Wextra -Wno-sign-compare -O2 -O3 -DNDEBUG CMakeFiles/engine.dir/src/board.cpp.o CMakeFiles/engine.dir/src/game.cpp.o CMakeFiles/engine.dir/src/legalMoves.cpp.o CMakeFiles/engine.dir/src/main.cpp.o CMakeFiles/engine.dir/src/myApp.cpp.o CMakeFiles/engine.dir/src/players.cpp.o CMakeFiles/engine.dir/src/utils.cpp.o -o engine  -lSDL2_image -lSDL2_mixer -lSDL2 
