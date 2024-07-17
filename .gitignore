@@ -1,14 +1,7 @@
 # Ignore folders
 .vscode\
 extras\
-obj\
-bin\
-
-# Ignore compiled object files
-*.o
-
-# Ignore the engine executable file
-engine
+build\
 
 # Ignore run shell script
 run.sh
