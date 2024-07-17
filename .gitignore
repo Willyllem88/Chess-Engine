@@ -1,8 +1,3 @@
-# Ignore the .vscode folder
-.vscode\
-
-# Ignore the build folder
-build\
-
-# Ignore run shell script
+.vscode/
+build/
 run.sh
