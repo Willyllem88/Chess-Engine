@@ -1,17 +1,10 @@
 #include "board.hh"
 #include "myApp.hh"
 
-//  The board state log
+//  Static variables
 std::map<uint64_t, int> Board::boardStateCounter;
 std::list<Board> Board::boardLogList;
-
-struct ZobristTable { //FIX: handle it differently
-    uint64_t zobristPieces[64][12]; //12 pieces, 64 squares
-    uint64_t zobristMoveTurn;
-    uint64_t zobristCastle;
-    uint64_t zobrsitEnPassant;
-}
-zobristTable;
+Board::ZobristTable Board::zobristTable;
 
 Board::Board() { }
 

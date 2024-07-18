@@ -89,6 +89,11 @@ private:
     static std::map<uint64_t, int> boardStateCounter;
     static std::list<Board> boardLogList; //List of boards, used to undo moves
     bool threefoldRepetition; //True if the same board state is repeated three times, false otherwise.
+    static struct ZobristTable {
+        uint64_t zobristPieces[64][12]; //12 pieces, 64 squares
+        uint64_t zobristMoveTurn, zobristCastle, zobrsitEnPassant;
+    }
+    zobristTable;
 
     //  Board result
     BoardResult boardResult; //The result of the game, if it is still ongoing, it will be NONE.
