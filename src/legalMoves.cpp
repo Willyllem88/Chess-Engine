@@ -1,6 +1,6 @@
 //This file contains the implementation of the functions that will be used to get the legal moves of the pieces
 
-#include "../include/board.hh"
+#include "board.hh"
 
 void Board::getWhitePawnMoves(uint64_t bit, std::set<PieceMove>& pieceMoves) {
     PieceMove move;

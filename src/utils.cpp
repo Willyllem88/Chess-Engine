@@ -1,4 +1,4 @@
-#include "../include/utils.hh"
+#include "utils.hh"
 
 void errorAndExit(const std::string& errorMessage) {
     std::cerr << errorMessage << std::endl;

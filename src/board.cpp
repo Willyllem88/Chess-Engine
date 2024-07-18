@@ -1,5 +1,5 @@
-#include "../include/board.hh"
-#include "../include/myApp.hh"
+#include "board.hh"
+#include "myApp.hh"
 
 //  The board state log
 std::map<uint64_t, int> Board::boardStateCounter;
@@ -13,11 +13,13 @@ struct ZobristTable { //FIX: handle it differently
 }
 zobristTable;
 
-Board::Board(std::shared_ptr<MyApp> a) {
-    this->app = a;
-}
+Board::Board() { }
 
 Board::~Board() { }
+
+void Board::setApp(std::shared_ptr<MyApp> app) {
+    this->app = app;
+}
 
 void Board::setDefaulValues() {
     boardLogList.clear();

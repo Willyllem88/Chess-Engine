@@ -1,4 +1,4 @@
-#include "../include/game.hh"
+#include "game.hh"
 
 void Game::run(int argc, char* argv[]) {
     time_t seed = time(NULL);
@@ -156,9 +156,15 @@ void Game::processCommandLine(int argc, char* argv[], std::string& whitePlayer, 
 }
 
 void Game::initializeBoardApp(std::shared_ptr<Board>& myBoard, std::shared_ptr<MyApp>& myApp, bool displayGUIApp, const std::string& FEN) {
+    //Initializes the board
+    myBoard = std::make_shared<Board>();
+
+    //Initializes the app
     if (displayGUIApp) myApp = std::make_shared<GUIApp>();
     else myApp = std::make_shared<ConsoleApp>();
-    myBoard = std::make_shared<Board>(myApp);
+
+    //Links the board with the app
+    myBoard->setApp(myApp);
     myApp->setBoard(myBoard);
 
     //Initializes the pieces on the board

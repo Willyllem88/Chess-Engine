@@ -9,16 +9,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -O2")
 
-# Set compilers (Replace with your actual compiler paths if needed)
-set(CMAKE_C_COMPILER gcc)
-set(CMAKE_CXX_COMPILER g++)
-
 # Include directories
 include_directories(include)
 
 # Source files
 file(GLOB SRC_FILES "src/*.cpp")
-file(GLOB HEADER_FILES "include/*.hpp")
+file(GLOB HEADER_FILES "include/*.hh")
 
 # SDL2 dependencies
 find_package(PkgConfig REQUIRED)
@@ -48,3 +44,9 @@ add_custom_target(distclean
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
     COMMENT "Removing build directory"
 )
+
+# Target-specific include directories
+target_include_directories(engine PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+# Ensure proper linking of SDL2
+target_link_libraries(engine ${SDL2_LIBRARIES})

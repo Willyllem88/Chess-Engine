@@ -1,9 +1,6 @@
 #ifndef BOARD_HH
 #define BOARD_HH
 
-#include </usr/include/SDL2/SDL.h>
-#include </usr/include/SDL2/SDL_image.h>
-
 #include "utils.hh"
 
 class MyApp;
@@ -11,9 +8,12 @@ class MyApp;
 class Board {
 public:
     //  Creates a board with the pieces in the initial position. An instance of MyApp is needed to print the board.
-    Board(std::shared_ptr<MyApp> a);
+    Board();
 
     ~Board();
+
+    //  Sets the app that will print the board.
+    void setApp(std::shared_ptr<MyApp> a);
 
     //  Sets the board to the initial position.
     void setDefaulValues();
