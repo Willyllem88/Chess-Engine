@@ -36,34 +36,48 @@ void Game::run(int argc, char* argv[]) {
     //Prints the initial board
     myBoard->printBoardApp();
 
+    //Creates a thread to handle the events
+    std::atomic<bool> running(true);
+    std::thread eventThread(eventHandler, std::ref(running), std::ref(myApp), std::ref(whitePlayer), std::ref(blackPlayer));
+
     //The match starts here
     PieceMove move;
-    while (myApp->handleEvents()) {
+    while (running) {
         //Player movement logic
         if (myBoard->getMoveTurn() == WHITE && whitePlayer->canMove()) {
             move = whitePlayer->getMove();
-            myBoard->movePiece(move);
-            myBoard->printLastMove();
-            if (myBoard->getBoardResult() != PLAYING) break;
+            if (!whitePlayer->wasInterrupted()) {
+                myBoard->movePiece(move);
+                myBoard->printLastMove();
+            }
         }
         else if (myBoard->getMoveTurn() == BLACK && blackPlayer->canMove()) {
             move = blackPlayer->getMove();
-            myBoard->movePiece(move);
-            myBoard->printLastMove();
-            if (myBoard->getBoardResult() != PLAYING) break;
+            if (!blackPlayer->wasInterrupted()) {
+                myBoard->movePiece(move);
+                myBoard->printLastMove();
+            }
         }
 
         myBoard->printBoardApp();
+        if (myBoard->getBoardResult() != PLAYING) break;
     }
 
     //Check if the game has concluded, then print the result
-    if (myBoard->getBoardResult() != PLAYING) {
-        myBoard->printBoardApp();
-        myBoard->printResult();
-        while (myApp->handleEvents());
-    }
+    if (myBoard->getBoardResult() != PLAYING) myBoard->printResult();
+
+    if (eventThread.joinable()) eventThread.join();
 }
 
+void Game::eventHandler(std::atomic<bool>& running, std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer) {
+    while (running) {
+        if (!myApp->handleEvents()) {
+            whitePlayer->interrupt();
+            blackPlayer->interrupt();
+            running = false;
+        }
+    }
+}
 
 void Game::printUsage(const char* programName) {
     std::cout << "Usage: " << programName << " [options]" << std::endl;

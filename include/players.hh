@@ -8,7 +8,7 @@ class Board;
 
 class Player {
 public:
-    Player() {}
+    Player();
     virtual ~Player() {}
 
     //  Returns true if the player can make a move, false otherwise
@@ -17,9 +17,14 @@ public:
     //  Returns the move that the player wants to make
     virtual PieceMove getMove() = 0;
 
+    virtual void interrupt();
+    bool wasInterrupted();
+
 protected:
     std::shared_ptr<MyApp> app; //Pointer to the application
     std::shared_ptr<Board> board; //Pointer to the board
+
+    std::atomic<bool> interrupted; //True if the player has been interrupted
 };
 
 class HumanPlayer : public Player {

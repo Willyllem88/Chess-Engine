@@ -2,6 +2,18 @@
 #include "myApp.hh"
 #include "players.hh"
 
+Player::Player() {
+    interrupted = false;
+}
+
+void Player::interrupt() {
+    interrupted = true;
+}
+
+bool Player::wasInterrupted() {
+    return interrupted;
+}
+
 HumanPlayer::HumanPlayer(std::shared_ptr<MyApp> myApp) {
     app = myApp;
 }
@@ -35,6 +47,7 @@ void EngineV1::iniTimer(std::chrono::milliseconds timeSpan) {
         }
         searchTimeExceeded = true;
     }).detach();
+    //TODO: maybe not using detach, but join. But currently it works fine.
 }
 
 PieceMove EngineV1::getMove() {
@@ -58,11 +71,11 @@ PieceMove EngineV1::getMove() {
     
     int depth;
     for (depth = 1; depth <= MAX_DEPTH; depth++) {
-
         std::vector<MoveEval> actItEvaluatedMoves = firstSearch(orderedMoves, depth);
         
         //If the time limit is exceeded, the search will stop
         if (searchTimeExceeded) break;
+        if (interrupted) break;
         
         //Sort the moves based on the evaluation, from worst to best. In the bext iteration, the moves will be examined in this order
         std::sort(actItEvaluatedMoves.begin(), actItEvaluatedMoves.end(), std::greater<MoveEval>());
@@ -87,6 +100,7 @@ PieceMove EngineV1::getMove() {
     stopTimer = true;
     
     //Print some useful information about the search
+    if (interrupted) std::cout << "[INFO] Search interrupted" << std::endl;
     std::cout << "[INFO] Depth reached: " << depth << std::endl;
     if (mateColor != NONE_COLOR) {
         int mateDepth = (depth+1)/2;
@@ -113,6 +127,7 @@ std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMov
         board->undoMove();
 
         if (searchTimeExceeded) return evaluatedMoves;
+        if (interrupted) return evaluatedMoves;
 
         evaluatedMoves.push_back({move, score});
     }
