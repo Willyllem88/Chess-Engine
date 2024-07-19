@@ -14,6 +14,25 @@ bool Player::wasInterrupted() {
     return interrupted;
 }
 
+RandomEngine::RandomEngine(std::shared_ptr<Board> myBoard) {
+    board = myBoard;
+}
+
+bool RandomEngine::canMove() {
+    return true;
+}
+
+PieceMove RandomEngine::getMove() {
+    interrupted = false;
+    const std::set<PieceMove> s = board->getCurrentLegalMoves();
+    int random = rand() % s.size();
+    auto it = s.begin();
+    std::advance(it, random);
+    //IF NEEDED: Wait for the delay
+    //std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    return *it;
+}
+
 HumanPlayer::HumanPlayer(std::shared_ptr<MyApp> myApp) {
     app = myApp;
 }
@@ -23,6 +42,7 @@ bool HumanPlayer::canMove() {
 }
 
 PieceMove HumanPlayer::getMove() {
+    interrupted = false;
     return app->getMove();
 }
 
@@ -51,7 +71,9 @@ void EngineV1::iniTimer(std::chrono::milliseconds timeSpan) {
 }
 
 PieceMove EngineV1::getMove() {
-    //Activate timer (FIX: 2s just for testing)
+    interrupted = false;
+    
+    //Activate timer
     iniTimer(moveDelay);
 
     PieceColor mateColor = NONE_COLOR;

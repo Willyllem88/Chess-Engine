@@ -9,6 +9,7 @@ Here I will list the pending tasks and the bugs and issues that should be addres
 
 ## Low Priority
 
+* Better files handling, for the engine, for e.g., transposition table in another class etc
 * PieceMoveToAlgebraic could write also # and + if is checkmate or check.
 * The undo function acts wierd when an engine in playing. Could use interruptions in order to handle those events.
 * Improve the GUI, maybe with qt, adding buttons

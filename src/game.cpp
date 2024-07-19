@@ -1,5 +1,10 @@
 #include "game.hh"
 
+//Static variables
+std::atomic<bool> Game::running;
+std::atomic<MyApp::eventType> Game::lastEvent;
+std::atomic<bool> Game::lastEventHandled;
+
 void Game::run(int argc, char* argv[]) {
     time_t seed = time(NULL);
     srand(seed);
@@ -37,8 +42,10 @@ void Game::run(int argc, char* argv[]) {
     myBoard->printBoardApp();
 
     //Creates a thread to handle the events
-    std::atomic<bool> running(true);
-    std::thread eventThread(eventHandler, std::ref(running), std::ref(myApp), std::ref(whitePlayer), std::ref(blackPlayer));
+    running = true;
+    lastEvent = MyApp::NO_EVENT;
+    lastEventHandled = true;
+    std::thread eventThread(eventDetector, std::ref(myApp), std::ref(whitePlayer), std::ref(blackPlayer));
 
     //The match starts here
     PieceMove move;
@@ -59,6 +66,8 @@ void Game::run(int argc, char* argv[]) {
             }
         }
 
+        eventHandler(myBoard, whitePlayer, blackPlayer);
+
         myBoard->printBoardApp();
         if (myBoard->getBoardResult() != PLAYING) break;
     }
@@ -69,12 +78,27 @@ void Game::run(int argc, char* argv[]) {
     if (eventThread.joinable()) eventThread.join();
 }
 
-void Game::eventHandler(std::atomic<bool>& running, std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer) {
+void Game::eventHandler(std::shared_ptr<Board> myBoard, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer) {
+    if (lastEvent == MyApp::QUIT) {
+        running = false;
+    }
+    else if (lastEvent == MyApp::UNDO) {
+        myBoard->undoMove();
+        //Some mechanism to avoid the other player to move in one second from the undo
+    }
+    lastEventHandled = true;
+    lastEvent = MyApp::NO_EVENT;
+}
+
+void Game::eventDetector(std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer) {
     while (running) {
-        if (!myApp->handleEvents()) {
-            whitePlayer->interrupt();
-            blackPlayer->interrupt();
-            running = false;
+        if (lastEventHandled) {
+            lastEvent = myApp->handleEvents();
+            if (lastEvent != MyApp::NO_EVENT) {
+                whitePlayer->interrupt();
+                blackPlayer->interrupt();
+                lastEventHandled = false; 
+            }
         }
     }
 }
@@ -188,7 +212,7 @@ void Game::initializeBoardApp(std::shared_ptr<Board>& myBoard, std::shared_ptr<M
 
 void Game::loadPlayers(std::unique_ptr<Player>& player, const std::string& playerName, std::shared_ptr<MyApp> myApp, std::shared_ptr<Board> myBoard, std::chrono::milliseconds engineTimeSpan) {
     if (playerName == "Player") player = std::make_unique<HumanPlayer>(myApp);
-    else if (playerName == "RandomEngine") player = std::make_unique<EngineRandom>(myBoard);
+    else if (playerName == "RandomEngine") player = std::make_unique<RandomEngine>(myBoard);
     else if (playerName == "EngineV1") player = std::make_unique<EngineV1>(myBoard, engineTimeSpan);
     else errorAndExit("ERROR: " + playerName + " is not a valid player.");
 }

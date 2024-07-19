@@ -11,8 +11,11 @@ public:
     static void run(int argc, char* argv[]);
 
 private:
-    // Handles the events of the game
-    static void eventHandler(std::atomic<bool>& running, std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer);
+    //Makes the needed actions to handle each event
+    static void eventHandler(std::shared_ptr<Board> myBoard, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer);
+
+    // Detects the events of the game, will run in a separate thread
+    static void eventDetector(std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer);
 
     // Prints usage information
     static void printUsage(const char* programName);
@@ -31,6 +34,10 @@ private:
     
     // Loads the players based on provided names
     static void loadPlayers(std::unique_ptr<Player>& player, const std::string& playerName, std::shared_ptr<MyApp> myApp, std::shared_ptr<Board> myBoard, std::chrono::milliseconds engineTimeSpan);
+
+    static std::atomic<bool> running;
+    static std::atomic<MyApp::eventType> lastEvent;
+    static std::atomic<bool> lastEventHandled;
 };
 
 #endif

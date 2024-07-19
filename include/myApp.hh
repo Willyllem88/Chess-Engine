@@ -28,8 +28,13 @@ class MyApp{
         //  Returns true if a piece move is available
         virtual bool isPieceMoveAvailable() = 0;
 
+        enum eventType {
+            NO_EVENT,
+            UNDO,
+            QUIT
+        };
         //  Handles the events of the app
-        virtual bool handleEvents() = 0;
+        virtual eventType handleEvents() = 0;
 
         //  Prints the board
         virtual void printBoard([[maybe_unused]] PieceMatrix& pm) = 0;
@@ -68,7 +73,7 @@ class ConsoleApp : public MyApp {
 
         bool init() override;
         bool isPieceMoveAvailable() override;
-        bool handleEvents() override;
+        eventType handleEvents() override;
         void printBoard(PieceMatrix& pm) override;
     
     private:
@@ -81,7 +86,7 @@ class GUIApp : public MyApp {
 
         bool init() override;
         bool isPieceMoveAvailable() override;
-        bool handleEvents() override;
+        eventType handleEvents() override;
         void printBoard(PieceMatrix& pm) override;
         
     private:

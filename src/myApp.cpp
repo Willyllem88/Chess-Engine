@@ -31,16 +31,16 @@ bool ConsoleApp::isPieceMoveAvailable() {
     return pieceMoveAvailable;
 }
 
-bool ConsoleApp::handleEvents() {
+MyApp::eventType ConsoleApp::handleEvents() {
     std::string str;
     //If the user has inputed text from the console, handle it
     if (readStringFromConsole(str)) {
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
         lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, board->getMoveTurn());
-        if (str == "undo" || str == "u") board->undoMove();
+        if (str == "undo" || str == "u") return UNDO;
         else pieceMoveAvailable = true;
     }
-    return true;
+    return NO_EVENT;
 }
 
 void ConsoleApp::printBoard(PieceMatrix& pm) {
@@ -159,11 +159,12 @@ bool GUIApp::isPieceMoveAvailable() {
     return pieceMoveAvailable;
 }
 
-bool GUIApp::handleEvents() {
-    while (SDL_PollEvent(&e) != 0) {
+MyApp::eventType GUIApp::handleEvents() {
+    //Wait for an event, this way we don't use 100% of the CPU
+    if (SDL_WaitEvent(&e)) {
         //Handle QUIT
         if (e.type == SDL_QUIT) {
-            return false;
+            return QUIT;
         }
         //Handle mouse click
         else if (e.type == SDL_MOUSEBUTTONDOWN) {
@@ -213,7 +214,7 @@ bool GUIApp::handleEvents() {
         }
         //Handles left arrow pressed
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_LEFT) {
-            board->undoMove();
+            return UNDO;
         }
     }
 
@@ -221,14 +222,11 @@ bool GUIApp::handleEvents() {
     if (readStringFromConsole(str)) {
         std::set<PieceMove> legalMoves = board->getCurrentLegalMoves();
         lastPieceMove = algebraicToPieceMove(str, legalMoves, pieceMatrix, board->getMoveTurn());
-        if (str == "undo" || str == "u") board->undoMove();
+        if (str == "undo" || str == "u") return UNDO;
         else pieceMoveAvailable = true;
     }
-
-    // Add a short delay to reduce CPU usage
-    SDL_Delay(10);
     
-    return true;
+    return NO_EVENT;
 }
 
 PieceType GUIApp::mousePosToPromotionOption(MousePos& pos) {

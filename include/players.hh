@@ -36,25 +36,13 @@ public:
     PieceMove getMove() override;
 };
 
-class EngineRandom : public Player {
+class RandomEngine : public Player {
 public:
-    EngineRandom(std::shared_ptr<Board> myBoard) {
-        board = myBoard;
-    }
-    ~EngineRandom() override {}
+    RandomEngine(std::shared_ptr<Board> myBoard);
+    ~RandomEngine() override {}
 
-    bool canMove() override {
-        return true;
-    }
-    PieceMove getMove() {
-        const std::set<PieceMove> s = board->getCurrentLegalMoves();
-        int random = rand() % s.size();
-        auto it = s.begin();
-        std::advance(it, random);
-        //Wait for the delay
-        //std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        return *it;
-    }
+    bool canMove() override;
+    PieceMove getMove();
 };
 
 class TranspositionTable {
