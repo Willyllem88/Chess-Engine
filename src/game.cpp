@@ -84,7 +84,7 @@ void Game::eventHandler(std::shared_ptr<Board> myBoard, std::unique_ptr<Player>&
     }
     else if (lastEvent == MyApp::UNDO) {
         myBoard->undoMove();
-        //Some mechanism to avoid the other player to move in one second from the undo
+        //TODO: Some mechanism to avoid the other player to move in one second from the undo
     }
     lastEventHandled = true;
     lastEvent = MyApp::NO_EVENT;
