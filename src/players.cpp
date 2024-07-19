@@ -158,6 +158,8 @@ std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMov
 }
 
 int EngineV1::search(int depth, int alpha, int beta) {
+    if (interrupted) return 0;
+
     numBoards++;
     if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, my evaluation is -INF
     if (board->getBoardResult() == STALE_MATE) return 0; //If it's a stalemate, the evaluation is 0
@@ -206,6 +208,8 @@ int EngineV1::search(int depth, int alpha, int beta) {
 }
 
 int EngineV1::quiescenceSearch(int alpha, int beta) {
+    if (interrupted) return 0;
+    
     numBoards++;
 
     int score = evaluate();

@@ -12,9 +12,9 @@ public:
 
 private:
     //Makes the needed actions to handle each event
-    static void eventHandler(std::shared_ptr<Board> myBoard, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer);
+    static void eventHandler(std::shared_ptr<Board> myBoard);
 
-    // Detects the events of the game, will run in a separate thread
+    // Detects the events of the game, will run in a separate thread. It will set the lastEvent variable
     static void eventDetector(std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer);
 
     // Prints usage information
@@ -35,9 +35,13 @@ private:
     // Loads the players based on provided names
     static void loadPlayers(std::unique_ptr<Player>& player, const std::string& playerName, std::shared_ptr<MyApp> myApp, std::shared_ptr<Board> myBoard, std::chrono::milliseconds engineTimeSpan);
 
-    static std::atomic<bool> running;
-    static std::atomic<MyApp::eventType> lastEvent;
-    static std::atomic<bool> lastEventHandled;
+    static std::atomic<bool> running; //True if the game is running
+    static std::atomic<MyApp::eventType> lastEvent; //The last event that happened
+    static std::atomic<bool> lastEventHandled; //True if the last event has been handled
+    static std::atomic<bool> gameInIdle; //True if the game is in idle state, used to prevent the players from making moves
+
+    static constexpr std::chrono::milliseconds LOOP_SLEEP_TIME = std::chrono::milliseconds(10); //The time that the game will sleep in the main loop
+    static constexpr std::chrono::milliseconds IDLE_TIME = std::chrono::milliseconds(1000); //The time that the game will be in idle state after an event
 };
 
 #endif

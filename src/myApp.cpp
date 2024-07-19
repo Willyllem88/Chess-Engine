@@ -160,8 +160,8 @@ bool GUIApp::isPieceMoveAvailable() {
 }
 
 MyApp::eventType GUIApp::handleEvents() {
-    //Wait for an event, this way we don't use 100% of the CPU
-    if (SDL_WaitEvent(&e)) {
+    //If there has been an SDL event
+    while (SDL_PollEvent(&e)) {
         //Handle QUIT
         if (e.type == SDL_QUIT) {
             return QUIT;

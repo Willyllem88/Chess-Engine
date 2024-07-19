@@ -4,6 +4,7 @@
 std::atomic<bool> Game::running;
 std::atomic<MyApp::eventType> Game::lastEvent;
 std::atomic<bool> Game::lastEventHandled;
+std::atomic<bool> Game::gameInIdle;
 
 void Game::run(int argc, char* argv[]) {
     time_t seed = time(NULL);
@@ -45,20 +46,21 @@ void Game::run(int argc, char* argv[]) {
     running = true;
     lastEvent = MyApp::NO_EVENT;
     lastEventHandled = true;
+    gameInIdle = false;
     std::thread eventThread(eventDetector, std::ref(myApp), std::ref(whitePlayer), std::ref(blackPlayer));
 
     //The match starts here
     PieceMove move;
     while (running) {
         //Player movement logic
-        if (myBoard->getMoveTurn() == WHITE && whitePlayer->canMove()) {
+        if (myBoard->getMoveTurn() == WHITE && whitePlayer->canMove() && !gameInIdle) {
             move = whitePlayer->getMove();
             if (!whitePlayer->wasInterrupted()) {
                 myBoard->movePiece(move);
                 myBoard->printLastMove();
             }
         }
-        else if (myBoard->getMoveTurn() == BLACK && blackPlayer->canMove()) {
+        else if (myBoard->getMoveTurn() == BLACK && blackPlayer->canMove() && !gameInIdle) {
             move = blackPlayer->getMove();
             if (!blackPlayer->wasInterrupted()) {
                 myBoard->movePiece(move);
@@ -66,25 +68,38 @@ void Game::run(int argc, char* argv[]) {
             }
         }
 
-        eventHandler(myBoard, whitePlayer, blackPlayer);
+        eventHandler(myBoard);
 
         myBoard->printBoardApp();
         if (myBoard->getBoardResult() != PLAYING) break;
+        
+        //Sleeps for a while to decrease CPU usage
+        std::this_thread::sleep_for(LOOP_SLEEP_TIME);
     }
 
     //Check if the game has concluded, then print the result
     if (myBoard->getBoardResult() != PLAYING) myBoard->printResult();
 
+    //Waits for the user to close the app
+    while(running) eventHandler(myBoard);
+
+    //Joins the event thread
     if (eventThread.joinable()) eventThread.join();
 }
 
-void Game::eventHandler(std::shared_ptr<Board> myBoard, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer) {
+void Game::eventHandler(std::shared_ptr<Board> myBoard) {
     if (lastEvent == MyApp::QUIT) {
         running = false;
     }
     else if (lastEvent == MyApp::UNDO) {
         myBoard->undoMove();
-        //TODO: Some mechanism to avoid the other player to move in one second from the undo
+        //There will be a cooldown of a second where no player can move, to prevent the players from instantly making a move
+        std::thread idleCooldown([&](){
+            gameInIdle = true;
+            std::this_thread::sleep_for(IDLE_TIME);
+            gameInIdle = false;
+        });
+        idleCooldown.detach();
     }
     lastEventHandled = true;
     lastEvent = MyApp::NO_EVENT;
@@ -100,6 +115,9 @@ void Game::eventDetector(std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& 
                 lastEventHandled = false; 
             }
         }
+
+        //Sleeps for a while to decrease CPU usage
+        std::this_thread::sleep_for(LOOP_SLEEP_TIME);
     }
 }
 
