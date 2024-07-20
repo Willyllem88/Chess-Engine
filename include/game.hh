@@ -11,10 +11,10 @@ public:
     static void run(int argc, char* argv[]);
 
 private:
-    //Makes the needed actions to handle each event
+    //Makes the needed actions to handle each event. Requires another thread running the eventDetector function
     static void eventHandler(std::shared_ptr<Board> myBoard);
 
-    // Detects the events of the game, will run in a separate thread. It will set the lastEvent variable
+    // Detects the events of the game, will run in a separate thread. If it detects an event that needs to be handled, it will set lastEvent and lastEventHandled variable to false, and the eventHandler will handle the event, in the main thread. Also, it will interrupt the players if needed 
     static void eventDetector(std::shared_ptr<MyApp> myApp, std::unique_ptr<Player>& whitePlayer, std::unique_ptr<Player>& blackPlayer);
 
     // Prints usage information
