@@ -24,7 +24,14 @@ Before you begin, ensure you have met the following requirements:
 * `cmake` is installed
 * You have `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-mixer-dev` installed
 
-If these are not installed, please refer to the section [Installing Dependencies on Ubuntu/Debian](#installing-dependencies-on-ubuntudebian).
+If any of these are not installed, please refer to [Installing Dependencies on Ubuntu/Debian](#installing-dependencies-on-ubuntudebian).
+
+To clone the repository, use the following command:
+
+```sh
+git clone https://github.com/Willyllem88/Chess-Engine.git
+cd Chess-Engine
+```
 
 ### Installing Dependencies on Ubuntu/Debian
 
