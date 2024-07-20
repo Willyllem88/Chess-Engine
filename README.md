@@ -8,21 +8,25 @@ The project is implemented in C++.
 
 ## Table of Contents
 
-1. [Requirements](#requirements)
+- [Guillem's Chess Engine](#guillems-chess-engine)
+  - [Table of Contents](#table-of-contents)
+  - [Requirements](#requirements)
     - [Installing Dependencies on Ubuntu/Debian](#installing-dependencies-on-ubuntudebian)
-2. [Compiling and Executing](#compiling-and-executing)
+  - [Compiling and Executing](#compiling-and-executing)
     - [Executing Options](#executing-options)
+      - [Example Usage](#example-usage)
     - [Commands](#commands)
-3. [References](#references)
+  - [References](#references)
 
 ---
 
 ## Requirements
 
 Before you begin, ensure you have met the following requirements:
-* You have installed `g++`
-* `cmake` is installed
-* You have `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-mixer-dev` installed
+
+- You have installed `g++`
+- `cmake` is installed
+- You have `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-mixer-dev` installed
 
 If any of these are not installed, please refer to [Installing Dependencies on Ubuntu/Debian](#installing-dependencies-on-ubuntudebian).
 
@@ -60,7 +64,7 @@ sudo apt-get install g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
    ```sh
    ./engine <options>
    ```
-   
+
 3. **Cleaning the Build**:
 
    To clean the directory of object files and executables, use:
@@ -75,17 +79,18 @@ sudo apt-get install g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
    make distclean
    ```
 
-The executable file will be named `engine`.
+    The executable file will be named `engine`.
 
 ### Executing Options
 
 The options are specified using the `-option` format:
-* `-h` or `--help`: Displays a usage message.
-* `-b <Player | <engine_name>>` or `--black <Player | <engine_name>>`: Specifies who will play with the black pieces.
-* `-w <Player | <engine_name>>` or `--white <Player | <engine_name>>`: Specifies who will play with the white pieces.
-* `-c` or `--console-only`: Runs the program without the GUI, allowing moves to be entered via the console.
-* `-t <seconds>` or `--timespan <seconds>`: Sets the time span (in seconds) that the engine will take to make a move after its opponent. Can handle decimals.
-* `-f "<fen>"` or `--load-fen "<fen>"`: Loads a FEN (Forsyth-Edwards_Notation) position to the board. Visit [FEN documentation](https://www.chess.com/terms/fen-chess). Important: The FEN string must be enclosed in quotes. If not specified, the initial board will be set to the default position.
+
+- `-h` or `--help`: Displays a usage message.
+- `-b <Player | <engine_name>>` or `--black <Player | <engine_name>>`: Specifies who will play with the black pieces.
+- `-w <Player | <engine_name>>` or `--white <Player | <engine_name>>`: Specifies who will play with the white pieces.
+- `-c` or `--console-only`: Runs the program without the GUI, allowing moves to be entered via the console.
+- `-t <seconds>` or `--timespan <seconds>`: Sets the time span (in seconds) that the engine will take to make a move after its opponent. Can handle decimals.
+- `-f "<fen>"` or `--load-fen "<fen>"`: Loads a FEN (Forsyth-Edwards_Notation) position to the board. Visit [FEN documentation](https://www.chess.com/terms/fen-chess). Important: The FEN string must be enclosed in quotes. If not specified, the initial board will be set to the default position.
 
 The default values are `--white Player`, `--black Player`, and `--timespan 2`.
 
@@ -100,17 +105,18 @@ To run the program with a player as white and an engine named "EngineV1" as blac
 ### Commands
 
 During the execution of the program, the user can enter the following commands:
-* `u` or `undo`: Undoes the last move. The user can undo multiple moves until the initial board is reached.
-* `<algebraic-move-notation>`: if it's a valid move, it will perform it.
+
+- `u` or `undo`: Undoes the last move. The user can undo multiple moves until the initial board is reached.
+- `<algebraic-move-notation>`: if it's a valid move, it will perform it.
 
 ## References
 
-* [FEN-Forsyth Edwards Notation](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)
-* [Negamax algorithm](https://www.chessprogramming.org/Negamax)
-* [Alpha Beta Pruning](https://www.chessprogramming.org/Alpha-Beta)
-* [Transposition Table](https://en.wikipedia.org/wiki/Transposition_table)
-* [Iterative Deepening](https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search)
-* Bartek Spitza: [The Fascinating Programming of a Chess Engine](https://youtu.be/w4FFX_otR-4?si=0K_oibyMV4wW9HrT)
-* Sebastian Lague: [Coding Adventure: Chess](https://youtu.be/U4ogK0MIzqk?si=jJONHwy9YOQYsrb2)
+- [FEN-Forsyth Edwards Notation](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)
+- [Negamax algorithm](https://www.chessprogramming.org/Negamax)
+- [Alpha Beta Pruning](https://www.chessprogramming.org/Alpha-Beta)
+- [Transposition Table](https://en.wikipedia.org/wiki/Transposition_table)
+- [Iterative Deepening](https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search)
+- Bartek Spitza: [The Fascinating Programming of a Chess Engine](https://youtu.be/w4FFX_otR-4?si=0K_oibyMV4wW9HrT)
+- Sebastian Lague: [Coding Adventure: Chess](https://youtu.be/U4ogK0MIzqk?si=jJONHwy9YOQYsrb2)
 
 ---
