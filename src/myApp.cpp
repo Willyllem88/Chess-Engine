@@ -395,48 +395,42 @@ void GUIApp::resizeWindow(int newWidth, int newHeight) {
 }
 
 bool GUIApp::loadMedia() {
-    // Get the path of the executable using /proc/self/exe on Unix-like systems
-    std::filesystem::path exePath = std::filesystem::canonical("/proc/self/exe");
-
-    // Determine the base path for resources by moving two levels up from the executable directory
-    std::filesystem::path basePath = exePath.parent_path().parent_path();
-
     // Load textures
-    mWhitePawnTexture = loadTexture((basePath / "assets/img/whitePawn.png").string());
+    mWhitePawnTexture = loadTexture("assets/img/whitePawn.png");
     if (mWhitePawnTexture == nullptr) return false;
-    mWhiteBishopTexture = loadTexture((basePath / "assets/img/whiteBishop.png").string());
+    mWhiteBishopTexture = loadTexture("assets/img/whiteBishop.png");
     if (mWhiteBishopTexture == nullptr) return false;
-    mWhiteKnightTexture = loadTexture((basePath / "assets/img/whiteKnight.png").string());
+    mWhiteKnightTexture = loadTexture("assets/img/whiteKnight.png");
     if (mWhiteKnightTexture == nullptr) return false;
-    mWhiteRookTexture = loadTexture((basePath / "assets/img/whiteRook.png").string().c_str());
+    mWhiteRookTexture = loadTexture("assets/img/whiteRook.png");
     if (mWhiteRookTexture == nullptr) return false;
-    mWhiteQueenTexture = loadTexture((basePath / "assets/img/whiteQueen.png").string().c_str());
+    mWhiteQueenTexture = loadTexture("assets/img/whiteQueen.png");
     if (mWhiteQueenTexture == nullptr) return false;
-    mWhiteKingTexture = loadTexture((basePath / "assets/img/whiteKing.png").string().c_str());
+    mWhiteKingTexture = loadTexture("assets/img/whiteKing.png");
     if (mWhiteKingTexture == nullptr) return false;
-    mBlackPawnTexture = loadTexture((basePath / "assets/img/blackPawn.png").string().c_str());
+    mBlackPawnTexture = loadTexture("assets/img/blackPawn.png");
     if (mBlackPawnTexture == nullptr) return false;
-    mBlackBishopTexture = loadTexture((basePath / "assets/img/blackBishop.png").string().c_str());
+    mBlackBishopTexture = loadTexture("assets/img/blackBishop.png");
     if (mBlackBishopTexture == nullptr) return false;
-    mBlackKnightTexture = loadTexture((basePath / "assets/img/blackKnight.png").string().c_str());
+    mBlackKnightTexture = loadTexture("assets/img/blackKnight.png");
     if (mBlackKnightTexture == nullptr) return false;
-    mBlackRookTexture = loadTexture((basePath / "assets/img/blackRook.png").string().c_str());
+    mBlackRookTexture = loadTexture("assets/img/blackRook.png");
     if (mBlackRookTexture == nullptr) return false;
-    mBlackQueenTexture = loadTexture((basePath / "assets/img/blackQueen.png").string().c_str());
+    mBlackQueenTexture = loadTexture("assets/img/blackQueen.png");
     if (mBlackQueenTexture == nullptr) return false;
-    mBlackKingTexture = loadTexture((basePath / "assets/img/blackKing.png").string().c_str());
+    mBlackKingTexture = loadTexture("assets/img/blackKing.png");
     if (mBlackKingTexture == nullptr) return false;
-    mTargetedSquareTexture = loadTexture((basePath / "assets/img/targetedSquare.png").string().c_str());
+    mTargetedSquareTexture = loadTexture("assets/img/targetedSquare.png");
     if (mTargetedSquareTexture == nullptr) return false;
-    mTargetedPieceTexture = loadTexture((basePath / "assets/img/targetedPiece.png").string().c_str());
+    mTargetedPieceTexture = loadTexture("assets/img/targetedPiece.png");
     if (mTargetedPieceTexture == nullptr) return false;
 
     // Load sounds
-    mMoveSound = Mix_LoadWAV((basePath / "assets/audio/move.wav").string().c_str());
+    mMoveSound = loadSound("assets/sounds/move.wav");
     if (mMoveSound == nullptr) return false;
-    mCaptureSound = Mix_LoadWAV((basePath / "assets/audio/capture.wav").string().c_str());
+    mCaptureSound = loadSound("assets/sounds/capture.wav");
     if (mCaptureSound == nullptr) return false;
-    mCheckmateSound = Mix_LoadWAV((basePath / "assets/audio/checkmate.wav").string().c_str());
+    mCheckmateSound = loadSound("assets/sounds/checkmate.wav");
     if (mCheckmateSound == nullptr) return false;
 
     return true;
@@ -455,6 +449,14 @@ SDL_Texture* GUIApp::loadTexture(const std::string &path) {
         SDL_FreeSurface(loadedSurface);
     }
     return newTexture;
+}
+
+Mix_Chunk* GUIApp::loadSound(const std::string &path) {
+    Mix_Chunk* newSound = Mix_LoadWAV(path.c_str());
+    if (newSound == nullptr) {
+        printf("Unable to load sound %s! SDL_mixer Error: %s\n", path.c_str(), Mix_GetError());
+    }
+    return newSound;
 }
 
 SDL_Texture* GUIApp::getPieceTexture(PieceType p) {

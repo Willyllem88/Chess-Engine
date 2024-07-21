@@ -172,12 +172,16 @@ class GUIApp : public MyApp {
         //Displays the four promotion options
         void displayPromotionOptions(PieceColor color);
 
-        //Loads all the media
+        //Loads all the media, images and sounds
         bool loadMedia();
 
         //Loads a single piece texture
         SDL_Texture* loadTexture(const std::string &path);
 
+        //Loads a sound
+        Mix_Chunk* loadSound(const std::string &path);
+
+        //Returns 
         SDL_Texture* getPieceTexture(PieceType p);
 };
 
