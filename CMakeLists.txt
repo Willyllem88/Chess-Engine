@@ -27,7 +27,8 @@ include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(engine ${SRC_FILES} ${HEADER_FILES})
 
 # Link SDL2 libraries
-target_link_libraries(engine ${SDL2_LIBRARIES})
+target_include_directories(engine PRIVATE ${SDL2_INCLUDE_DIRS})
+target_link_libraries(engine PRIVATE ${SDL2_LIBRARIES})
 
 # Set output directories to build directory
 set_target_properties(engine PROPERTIES
@@ -35,18 +36,14 @@ set_target_properties(engine PROPERTIES
     OUTPUT_NAME engine  # Rename executable to 'engine'
 )
 
+# Copy assets
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+
 # Debug target
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
-set(CMAKE_BUILD_TYPE Release)
 
 # Add custom target for distclean
 add_custom_target(distclean
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
     COMMENT "Removing build directory"
 )
-
-# Target-specific include directories
-target_include_directories(engine PRIVATE ${PROJECT_SOURCE_DIR}/include)
-
-# Ensure proper linking of SDL2
-target_link_libraries(engine ${SDL2_LIBRARIES})
