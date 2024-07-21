@@ -134,7 +134,7 @@ bool readStringFromConsole(std::string& str);
 //Returns the pieceMove represented by the algebraic notation string. The funciton will nead the legalMoves set to check if the move is legal, the PieceMatrix to check the current state of the board, and the turn of the player that is making the move.
 PieceMove algebraicToPieceMove(std::string& str, const std::set<PieceMove>& legalMoves, const PieceMatrix& pm, PieceColor turn);
 
-//Returns the algebraic notation of the move. The function will need the PieceMove, the PieceMatrix to check the current state of the board, and the legalMoves set to check if the move is legal.
-std::string pieceMoveToAlgebraic(const PieceMove& move, const PieceMatrix& pm, const std::set<PieceMove>& legalMoves);
+//Returns the algebraic notation of the move. The function will need the PieceMove, the PieceMatrix before the move is done, the legalMoves set to check for ambiguities and the lastChar will be used to determine if the move is a check (+), checkmate (#), or nothing.
+std::string pieceMoveToAlgebraic(const PieceMove& move, const PieceMatrix& pm, const std::set<PieceMove>& legalMoves, const std::string& lastChar);
 
 #endif

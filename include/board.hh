@@ -81,7 +81,7 @@ private:
     PieceColor moveTurn; //The color of the player that will move next
     unsigned int moveCounter; //The number of moves that have been made
     std::set<PieceMove> legalMoves; //The set of legal moves for the current player
-    std::string lastMove; //The last move made
+    PieceMove lastMove; //The last move made
 
     //  Log of the boardState, static because there will be copies of the board, and the log should be the same for all of them. Those copies must not modify the log.
     //  Maps a board state, represented by its zobrist hash, to the number of times it has been repeated. 

@@ -256,10 +256,6 @@ void Board::movePiece(PieceMove& move) {
         std::cout << "[ERROR] Invalid Move!\n";
         return;
     }
-
-    PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
-    bitBoardToMatrix(pm);
-    lastMove = pieceMoveToAlgebraic(move, pm, legalMoves);
     
     //If the moves is a pown that moves two squares, it updates the board info in order to let en passant
     updateEnPassant(move);
@@ -280,10 +276,14 @@ void Board::movePiece(PieceMove& move) {
     //Calculates the legal moves of the opponent
     calculateLegalMoves();
 
-    //FIX: add doc
+    //Registers the state only if the game is not in the default state
     if (moveCounter > 0) registerState();
 
+    //Detects if there has been a threefold repetition, if so updates boardResult
     if (threefoldRepetition) boardResult = THREEFOLD_REPETITION;
+
+    //Saves the last move
+    lastMove = move;
 }
 
 void Board::undoMove() {
@@ -339,7 +339,23 @@ void Board::getCurrentTakes(std::set<PieceMove>& takes) {
 }
 
 void Board::printLastMove() {
-    std::cout << lastMove << "\n";
+    //Detects the state of the game, and adds the suffix consequently
+    std::string suffix;
+    if (boardResult == CHECKMATE) suffix = "#";
+    else if (moveTurn == WHITE && whiteKing & whiteTargetedSquares) suffix = "+";
+    else if (moveTurn == BLACK && blackKing & blackTargetedSquares) suffix = "+";
+    else suffix = "";
+
+    //Undoes the last move in order to know the last state of the board
+    undoMove();
+
+    PieceMove move = lastMove;
+    PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
+    bitBoardToMatrix(pm);
+    std::string result = pieceMoveToAlgebraic(move, pm, legalMoves, suffix);
+    std::cout << result << std::endl;
+    
+    movePiece(move);
 }
 
 void Board::printBoardApp() {

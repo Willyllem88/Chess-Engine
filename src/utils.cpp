@@ -245,12 +245,12 @@ PieceMove algebraicToPieceMove(std::string& str, const std::set<PieceMove>& lega
     return move;
 }
 
-std::string pieceMoveToAlgebraic(const PieceMove& move, const PieceMatrix& pm, const std::set<PieceMove>& legalMoves) {
+std::string pieceMoveToAlgebraic(const PieceMove& move, const PieceMatrix& pm, const std::set<PieceMove>& legalMoves, const std::string& lastChar) {
     PieceType pt = pm[move.from.i][move.from.j];
     std::string str = "";
     if (pt == WHITE_KING || pt == BLACK_KING) {
-        if (move.from.j == 4 && move.to.j == 6) return "O-O";
-        if (move.from.j == 4 && move.to.j == 2) return "O-O-O";
+        if (move.from.j == 4 && move.to.j == 6) return "O-O" + lastChar;
+        if (move.from.j == 4 && move.to.j == 2) return "O-O-O" + lastChar;
         str += 'K';
     }
     else if (pt == WHITE_PAWN || pt == BLACK_PAWN) {
@@ -267,7 +267,7 @@ std::string pieceMoveToAlgebraic(const PieceMove& move, const PieceMatrix& pm, c
             else if (move.promoteTo == WHITE_BISHOP || move.promoteTo == BLACK_BISHOP) str += 'B';
             else if (move.promoteTo == WHITE_KNIGHT || move.promoteTo == BLACK_KNIGHT) str += 'N';
         }
-        return str;
+        return str + lastChar;
     }
     else if (pt == WHITE_QUEEN || pt == BLACK_QUEEN) str += 'Q';
     else if (pt == WHITE_ROOK || pt == BLACK_ROOK) str += 'R';
@@ -290,6 +290,8 @@ std::string pieceMoveToAlgebraic(const PieceMove& move, const PieceMatrix& pm, c
 
     str += (char)('a' + move.to.j);
     str += (char)('1' + 7 - move.to.i);
+
+    str += lastChar; //Adds the last character, may be +, 
 
     return str;
 }
