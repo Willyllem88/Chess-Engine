@@ -11,11 +11,22 @@ bool EngineV1::canMove() {
     return true;
 }
 
+void EngineV1::iniTimer(std::chrono::milliseconds timeSpan) {
+    stopTimer = false;
+    auto end_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeSpan);
+    while (std::chrono::steady_clock::now() < end_time) {
+        if (stopTimer) return;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    searchTimeExceeded = true;
+    //TODO: maybe not using detach, but join. But currently it works fine.
+}
+
 PieceMove EngineV1::getMove() {
     interrupted = false;
     
     //Activate timer
-    iniTimer(moveDelay);
+    std::thread timerThread(&EngineV1::iniTimer, this, moveDelay);
 
     PieceColor mateColor = NONE_COLOR;
 
@@ -35,32 +46,35 @@ PieceMove EngineV1::getMove() {
     int depth;
     for (depth = 1; depth <= MAX_DEPTH; depth++) {
         std::vector<MoveEval> actItEvaluatedMoves = firstSearch(orderedMoves, depth);
-        
+
+        //If the search has examinated at least one move
+        if (!actItEvaluatedMoves.empty()) {
+            //Sort the moves based on the evaluation, from worst to best. In the bext iteration, the moves will be examined in this order
+            std::sort(actItEvaluatedMoves.begin(), actItEvaluatedMoves.end(), std::greater<MoveEval>());
+            bestMoveEval = actItEvaluatedMoves.front();
+        }
+
         //If the time limit is exceeded, the search will stop
         if (searchTimeExceeded) break;
         if (interrupted) break;
-        
-        //Sort the moves based on the evaluation, from worst to best. In the bext iteration, the moves will be examined in this order
-        std::sort(actItEvaluatedMoves.begin(), actItEvaluatedMoves.end(), std::greater<MoveEval>());
-        MoveEval actItBestMove = actItEvaluatedMoves.front();
         
         //Reorder the moves for the next iteration based on the current evaluation, orderedMoves will have moves evaluated in the last iteration ordered from best to worst
         orderedMoves.clear();
         for (MoveEval m : actItEvaluatedMoves) orderedMoves.push_back(m.move);
 
         //If a checkmate is detected, the search will stop
-        if (actItBestMove.eval >= INF || actItBestMove.eval <= -INF){
-            if (actItBestMove.eval >= INF) mateColor = board->getMoveTurn();
+        if (bestMoveEval.eval >= INF || bestMoveEval.eval <= -INF){
+            if (bestMoveEval.eval >= INF) mateColor = board->getMoveTurn();
             else mateColor = board->getMoveTurn() == WHITE ? BLACK : WHITE;
-            bestMoveEval = actItBestMove;
             break;
         }
-
-        bestMoveEval = actItBestMove;
     }
 
-    //Stop the timer, in case it hasn't stopped yet
+    //TODO: not throwing all the current iteration info
+
+    //Stop the timer and join the thread
     stopTimer = true;
+    if (timerThread.joinable()) timerThread.join();
     
     //Print some useful information about the search
     if (interrupted) std::cout << "[INFO] Search interrupted" << std::endl;

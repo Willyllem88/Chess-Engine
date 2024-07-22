@@ -1,20 +1,6 @@
 #include "engine_v1.hh"
 #include "board.hh"
 
-void EngineV1::iniTimer(std::chrono::milliseconds timeSpan) {
-    stopTimer = false;
-    //Create a thread that will stop the timer when the timeSpan is reached. If the timer is stopped, the thread will return.
-    std::thread([this, timeSpan]() {
-        auto end_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeSpan);
-        while (std::chrono::steady_clock::now() < end_time) {
-            if (stopTimer) return;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-        searchTimeExceeded = true;
-    }).detach();
-    //TODO: maybe not using detach, but join. But currently it works fine.
-}
-
 
 std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMove>& orderedMoves, int depth) {
     numBoards++;
@@ -36,7 +22,7 @@ std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMov
 }
 
 int EngineV1::search(int depth, int alpha, int beta) {
-    if (interrupted) return 0;
+    if (interrupted || searchTimeExceeded) return 0;
 
     numBoards++;
     if (board->getBoardResult() == CHECKMATE) return -INF; //If i'm checkmated, my evaluation is -INF
@@ -71,6 +57,10 @@ int EngineV1::search(int depth, int alpha, int beta) {
         board->movePiece(m);
         int score = -search(depth - 1, -beta, -alpha);
         board->undoMove();
+
+
+        if (interrupted || searchTimeExceeded) return 0;
+
         if (score >= beta) {
             transpositionTable.insert(currentHash, beta, depth, TranspositionTable::NT_LOWERBOUND);
             return beta;
