@@ -22,37 +22,37 @@ public:
     void loadFEN(const std::string& fen);
 
     //  Returns the number of times the current board state has been repeated.
-    int timesRepeated();
+    int timesRepeated() const;
 
     //  Gets the pieceColor of the player that will move next.
-    PieceColor getMoveTurn();
+    PieceColor getMoveTurn() const;
 
     //  Gets the result of the game.
-    BoardResult getBoardResult();
+    BoardResult getBoardResult() const;
 
     //  Gets the current pieceMatrix of the board.
-    PieceMatrix getPieceMatrix();
+    PieceMatrix getPieceMatrix() const;
 
     //  Gets the piece type of the piece located in the (i, j) coordinates.
-    PieceType getPieceType(int i, int j);
+    PieceType getPieceType(int i, int j) const;
 
     //  Returns some information about the outcome of a move.
-    bool isPromotion(const PieceMove& move);
-    bool isCapture(const PieceMove& move);
-    bool isTargeted(const PieceMove& move);
+    bool isPromotion(const PieceMove& move) const;
+    bool isCapture(const PieceMove& move) const;
+    bool isTargeted(const PieceMove& move) const;
 
     //  Returns the number of pieces of the color passed as argument.
-    int getAllPiecesCount();
-    int getPlayerPiecesCount(PieceColor col);
-    int getPawnsCount(PieceColor col);
-    int getBishopsCount(PieceColor col);
-    int getKnightsCount(PieceColor col);
-    int getRooksCount(PieceColor col);
-    int getQueensCount(PieceColor col);
-    int getKingsCount(PieceColor col);
+    int getAllPiecesCount() const;
+    int getPlayerPiecesCount(PieceColor col) const;
+    int getPawnsCount(PieceColor col) const;
+    int getBishopsCount(PieceColor col) const;
+    int getKnightsCount(PieceColor col) const;
+    int getRooksCount(PieceColor col) const;
+    int getQueensCount(PieceColor col) const;
+    int getKingsCount(PieceColor col) const;
 
     //  Returns the zobrist hash of the board.
-    uint64_t getZobristHash();
+    uint64_t getZobristHash() const;
 
     //  Makes a move in the board, updating all bitmaps and variables accordingly.
     void movePiece(PieceMove& move);
@@ -61,19 +61,19 @@ public:
     void undoMove();
 
     //  Returns all the legal moves for the current player's turn.
-    const std::set<PieceMove>& getCurrentLegalMoves(); //FIX: maybe return a const reference
+    const std::set<PieceMove>& getCurrentLegalMoves() const;
 
     //  Returns all the takes for the current player's turn.
-    void getCurrentTakes(std::set<PieceMove>& takes);
+    void getCurrentTakes(std::set<PieceMove>& takes)const;
 
     //  Prints the last move made.
-    void printLastMove();
+    void printLastMove(); //TODO: should be const
 
     //  Prints the board through the app passed in the constructor.
-    void printBoardApp();
+    void printBoardApp() const;
 
     //  Prints the result of the game.
-    void printResult();
+    void printResult() const;
 
 private:
     std::shared_ptr<MyApp> app; //The app that will print the board

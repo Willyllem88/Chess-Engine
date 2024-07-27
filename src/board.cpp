@@ -162,7 +162,7 @@ void Board::loadFEN(const std::string& FEN) {
     boardLogList.push_back(*this);
 }
 
-int Board::timesRepeated() {
+int Board::timesRepeated() const{
     uint64_t hash = getZobristHash();
     if (boardStateCounter.find(hash) == boardStateCounter.end())
         return 0;
@@ -170,30 +170,30 @@ int Board::timesRepeated() {
 
 }
 
-PieceColor Board::getMoveTurn() {
+PieceColor Board::getMoveTurn() const{
     return moveTurn;
 }
 
-BoardResult Board::getBoardResult() {
+BoardResult Board::getBoardResult() const{
     return boardResult;
 }
 
-PieceMatrix Board::getPieceMatrix() {
+PieceMatrix Board::getPieceMatrix() const{
     PieceMatrix pm(8, std::vector<PieceType>(8, NONE));
     bitBoardToMatrix(pm);
     return pm;
 }
 
-PieceType Board::getPieceType(int i, int j) {
+PieceType Board::getPieceType(int i, int j) const{
     if (i < 0 || i > 7 || j < 0 || j > 7) return NONE;
     return ijToPieceType(i, j);
 }
 
-bool Board::isPromotion(const PieceMove& move) {
+bool Board::isPromotion(const PieceMove& move) const{
     return move.promoteTo != NONE;
 }
 
-bool Board::isCapture(const PieceMove& move) {
+bool Board::isCapture(const PieceMove& move) const{
     PieceType toPiece = ijToPieceType(move.to.i, move.to.j);
     PieceType fromPiece = ijToPieceType(move.from.i, move.from.j);
     //If the destination square is occupied, it will add the move to the takes set
@@ -205,47 +205,47 @@ bool Board::isCapture(const PieceMove& move) {
     return false;
 }
 
-bool Board::isTargeted(const PieceMove& move) {
+bool Board::isTargeted(const PieceMove& move) const{
     uint64_t toBit;
     ijToBit(move.to.i, move.to.j, toBit);
     return (moveTurn == WHITE) ? (toBit & blackTargetedSquares) : (toBit & whiteTargetedSquares);
 }
 
-int Board::getAllPiecesCount() {
+int Board::getAllPiecesCount() const{
     return __builtin_popcountll(allPieces);
 }
 
-int Board::getPlayerPiecesCount(PieceColor col) {
+int Board::getPlayerPiecesCount(PieceColor col) const{
     if (col == WHITE) return __builtin_popcountll(whitePieces);
     else return __builtin_popcountll(blackPieces);
 }
 
-int Board::getPawnsCount(PieceColor col) {
+int Board::getPawnsCount(PieceColor col) const{
     if (col == WHITE) return __builtin_popcountll(whitePawn);   
     else return __builtin_popcountll(blackPawn);       
 }
 
-int Board::getBishopsCount(PieceColor col) {
+int Board::getBishopsCount(PieceColor col) const{
     if (col == WHITE) return __builtin_popcountll(whiteBishop);   
     else return __builtin_popcountll(blackBishop);       
 }
 
-int Board::getKnightsCount(PieceColor col) {
+int Board::getKnightsCount(PieceColor col) const{
     if (col == WHITE) return __builtin_popcountll(whiteKnight);   
     else return __builtin_popcountll(blackKnight);       
 }
 
-int Board::getRooksCount(PieceColor col) {
+int Board::getRooksCount(PieceColor col) const{
     if (col == WHITE) return __builtin_popcountll(whiteRook);   
     else return __builtin_popcountll(blackRook);       
 }
 
-int Board::getQueensCount(PieceColor col) {
+int Board::getQueensCount(PieceColor col) const{
     if (col == WHITE) return __builtin_popcountll(whiteQueen);   
     else return __builtin_popcountll(blackQueen);       
 }
 
-int Board::getKingsCount(PieceColor col) {
+int Board::getKingsCount(PieceColor col) const{
     if (col == WHITE) return __builtin_popcountll(whiteKing);   
     else return __builtin_popcountll(blackKing);       
 }
@@ -327,18 +327,18 @@ void Board::undoMove() {
     blackKing = prevBoard->blackKing;
 }
 
-const std::set<PieceMove>& Board::getCurrentLegalMoves() {
+const std::set<PieceMove>& Board::getCurrentLegalMoves() const {
     return legalMoves;
 }
 
-void Board::getCurrentTakes(std::set<PieceMove>& takes) {
+void Board::getCurrentTakes(std::set<PieceMove>& takes) const{
     for (PieceMove move : legalMoves) {
         if (isCapture(move))
             takes.insert(move);
     }
 }
 
-void Board::printLastMove() {
+void Board::printLastMove(){
     //Detects the state of the game, and adds the suffix consequently
     std::string suffix;
     if (boardResult == CHECKMATE) suffix = "#";
@@ -355,10 +355,10 @@ void Board::printLastMove() {
     std::string result = pieceMoveToAlgebraic(move, pm, legalMoves, suffix);
     std::cout << result << std::endl;
     
-    movePiece(move);
+    movePiece(move); 
 }
 
-void Board::printBoardApp() {
+void Board::printBoardApp() const{
     PieceMatrix pm (8, std::vector<PieceType>(8, NONE));
 
     bitBoardToMatrix(pm);
@@ -367,7 +367,7 @@ void Board::printBoardApp() {
     return;
 }
 
-void Board::printResult() {
+void Board::printResult() const{
     switch(boardResult) {
         case CHECKMATE:
             if (moveTurn == BLACK)
@@ -405,7 +405,7 @@ void Board::initializeZobristTable() {
     zobristTable.zobrsitEnPassant = rand_uint64();
 }
 
-uint64_t Board::getZobristHash() {
+uint64_t Board::getZobristHash() const{
     uint64_t hash = 0;
     PieceType currentPieceType;
     uint64_t bit = 1;
