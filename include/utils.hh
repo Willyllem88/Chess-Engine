@@ -101,6 +101,12 @@ struct PieceMove {
         return promoteTo < other.promoteTo;
     }
 
+    //cout rule
+    friend std::ostream& operator<<(std::ostream& os, const PieceMove& pm) {
+        os << char(pm.from.j+'a') << char(7-pm.from.i+'1') << '-' << char(pm.to.j+'a') << char(7-pm.to.i+'1') << std::endl;
+        return os;
+    }
+
     #define invalidMove PieceMove(0,0,0,0)
 };
 
