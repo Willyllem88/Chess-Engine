@@ -4,7 +4,7 @@ This is a project made by Guillem Cabré. Its purpose is to learn how a Chess En
 
 The project is implemented in C++.
 
-![Intro Image](https://github.com/Willyllem88/images/blob/main/intro.png)
+![Intro Image](https://github.com/Willyllem88/images/blob/main/intro-chess_engine.png)
 
 ## Table of Contents
 
