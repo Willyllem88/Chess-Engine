@@ -1,5 +1,4 @@
 #include "board.hh"
-#include "myApp.hh"
 
 //  Static variables
 std::map<uint64_t, int> Board::boardStateCounter;
@@ -9,10 +8,6 @@ Board::ZobristTable Board::zobristTable;
 Board::Board() { }
 
 Board::~Board() { }
-
-void Board::setApp(std::shared_ptr<MyApp> app) {
-    this->app = app;
-}
 
 void Board::setDefaulValues() {
     boardLogList.clear();
@@ -356,15 +351,6 @@ void Board::printLastMove(){
     std::cout << result << std::endl;
     
     movePiece(move); 
-}
-
-void Board::printBoardApp() const{
-    PieceMatrix pm (8, std::vector<PieceType>(8, NONE));
-
-    bitBoardToMatrix(pm);
-    app->printBoard(pm);
-    
-    return;
 }
 
 void Board::printResult() const{

@@ -37,7 +37,7 @@ class MyApp{
         virtual eventType handleEvents() = 0;
 
         //  Prints the board
-        virtual void printBoard([[maybe_unused]] PieceMatrix& pm) = 0;
+        virtual void printBoard(const PieceMatrix& pm) = 0;
     
     protected:
         std::shared_ptr<Board> board; //The board that the app will interact with
@@ -74,7 +74,7 @@ class ConsoleApp : public MyApp {
         bool init() override;
         bool isPieceMoveAvailable() override;
         eventType handleEvents() override;
-        void printBoard(PieceMatrix& pm) override;
+        void printBoard(const PieceMatrix& pm) override;
     
     private:
 };
@@ -87,7 +87,7 @@ class GUIApp : public MyApp {
         bool init() override;
         bool isPieceMoveAvailable() override;
         eventType handleEvents() override;
-        void printBoard(PieceMatrix& pm) override;
+        void printBoard(const PieceMatrix& pm) override;
         
     private:
         //MOUSE DRAGGING INFORMATION

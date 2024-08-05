@@ -3,17 +3,12 @@
 
 #include "utils.hh"
 
-class MyApp;
-
 class Board {
 public:
-    //  Creates a board with the pieces in the initial position. An instance of MyApp is needed to print the board.
+    //  Creates a board with the pieces in the initial position.
     Board();
 
     ~Board();
-
-    //  Sets the app that will print the board.
-    void setApp(std::shared_ptr<MyApp> a);
 
     //  Sets the board to the initial position.
     void setDefaulValues();
@@ -69,15 +64,10 @@ public:
     //  Prints the last move made.
     void printLastMove(); //TODO: should be const
 
-    //  Prints the board through the app passed in the constructor.
-    void printBoardApp() const;
-
     //  Prints the result of the game.
     void printResult() const;
 
 private:
-    std::shared_ptr<MyApp> app; //The app that will print the board
-
     PieceColor moveTurn; //The color of the player that will move next
     unsigned int moveCounter; //The number of moves that have been made
     std::set<PieceMove> legalMoves; //The set of legal moves for the current player

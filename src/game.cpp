@@ -40,7 +40,7 @@ void Game::run(int argc, char* argv[]) {
         errorAndExit("ERROR: The app could not be initialized.");
 
     //Prints the initial board
-    myBoard->printBoardApp();
+    myApp->printBoard(myBoard->getPieceMatrix());
 
     //Creates a thread to handle the events
     running = true;
@@ -70,7 +70,7 @@ void Game::run(int argc, char* argv[]) {
 
         eventHandler(myBoard);
 
-        myBoard->printBoardApp();
+        myApp->printBoard(myBoard->getPieceMatrix());
         if (myBoard->getBoardResult() != PLAYING) break;
         
         //Sleeps for a while to decrease CPU usage
@@ -220,7 +220,6 @@ void Game::initializeBoardApp(std::shared_ptr<Board>& myBoard, std::shared_ptr<M
     else myApp = std::make_shared<ConsoleApp>();
 
     //Links the board with the app
-    myBoard->setApp(myApp);
     myApp->setBoard(myBoard);
 
     //Initializes the pieces on the board

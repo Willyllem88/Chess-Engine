@@ -43,7 +43,7 @@ MyApp::eventType ConsoleApp::handleEvents() {
     return NO_EVENT;
 }
 
-void ConsoleApp::printBoard(PieceMatrix& pm) {
+void ConsoleApp::printBoard(const PieceMatrix& pm) {
     //If the turn has changed, print the board
     if (board->getMoveTurn() == prevMoveTurn) return;
     prevMoveTurn = board->getMoveTurn();
@@ -280,7 +280,7 @@ void GUIApp::renderBoard() {
     }
 }
 
-void GUIApp::printBoard(PieceMatrix& pm) {
+void GUIApp::printBoard(const PieceMatrix& pm) {
     //If the turn has changed, play the sound (i don't really like this, i think the sound should be addressed in a different way)
     if (prevMoveTurn != board->getMoveTurn()) {
         if (board->getBoardResult() != PLAYING)
