@@ -1,5 +1,5 @@
-#include "board.hh"
-#include "engine_v1.hh"
+#include "board.hpp"
+#include "engine_v1.hpp"
 
 EngineV1::EngineV1(std::shared_ptr<Board> myBoard, std::chrono::milliseconds timeSpan) {
     board = myBoard;

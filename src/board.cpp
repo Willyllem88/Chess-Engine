@@ -1,4 +1,4 @@
-#include "board.hh"
+#include "board.hpp"
 
 //  Static variables
 std::map<uint64_t, int> Board::boardStateCounter;

@@ -1,5 +1,5 @@
-#include "engine_v1.hh"
-#include "board.hh"
+#include "engine_v1.hpp"
+#include "board.hpp"
 
 
 std::vector<EngineV1::MoveEval> EngineV1::firstSearch(const std::vector<PieceMove>& orderedMoves, int depth) {

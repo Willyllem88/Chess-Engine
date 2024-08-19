@@ -1,7 +1,7 @@
 #ifndef PLAYER_HH
 #define PLAYER_HH
 
-#include "utils.hh"
+#include "utils.hpp"
 
 class MyApp;
 class Board;

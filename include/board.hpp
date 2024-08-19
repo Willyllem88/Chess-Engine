@@ -1,7 +1,7 @@
 #ifndef BOARD_HH
 #define BOARD_HH
 
-#include "utils.hh"
+#include "utils.hpp"
 
 class Board {
 public:

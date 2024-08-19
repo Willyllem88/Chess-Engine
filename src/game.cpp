@@ -1,4 +1,4 @@
-#include "game.hh"
+#include "game.hpp"
 
 //Static variables
 std::atomic<bool> Game::running;

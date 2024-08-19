@@ -1,6 +1,6 @@
-#include "board.hh"
-#include "myApp.hh"
-#include "players.hh"
+#include "board.hpp"
+#include "myApp.hpp"
+#include "players.hpp"
 
 Player::Player() {
     interrupted = false;

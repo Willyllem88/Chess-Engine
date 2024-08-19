@@ -1,7 +1,7 @@
 #ifndef ENGINEV1_HH
 #define ENGINEV1_HH
 
-#include "players.hh"
+#include "players.hpp"
 
 class TranspositionTable {
 public:

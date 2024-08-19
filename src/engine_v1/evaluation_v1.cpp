@@ -1,5 +1,5 @@
-#include "engine_v1.hh"
-#include "board.hh"
+#include "engine_v1.hpp"
+#include "board.hpp"
 
 int EngineV1::evaluate() {
     int whiteEval = countMaterial(WHITE);

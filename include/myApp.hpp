@@ -5,7 +5,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 
-#include "utils.hh"
+#include "utils.hpp"
 
 class Board;
 

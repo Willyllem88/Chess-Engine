@@ -1,10 +1,10 @@
 #ifndef GAME_HH
 #define GAME_HH
 
-#include "board.hh"
-#include "myApp.hh"
-#include "players.hh"
-#include "engine_v1.hh"
+#include "board.hpp"
+#include "myApp.hpp"
+#include "players.hpp"
+#include "engine_v1.hpp"
 
 class Game {
 public:
